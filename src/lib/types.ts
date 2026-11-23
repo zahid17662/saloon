@@ -50,6 +50,7 @@ export interface Sale {
   voidedAt: string | null;
   voidedBy: VoidedBy | null;
   voidReason: string | null;
+  enteredByAdmin: boolean; // FR-22 back-dated entry
   items: SaleItem[];
 }
 

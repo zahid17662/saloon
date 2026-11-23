@@ -1,10 +1,15 @@
 import { describe, expect, it } from "vitest";
 import {
+  adminVoidInput,
   barberInput,
   barberPatch,
+  barberVoidInput,
   categoryInput,
   categoryPatch,
   idSchema,
+  pastSaleInput,
+  saleInput,
+  salesQuery,
   serviceInput,
   servicePatch,
   settingsPatch,
@@ -67,6 +72,96 @@ describe("settings patch", () => {
   it("rejects an empty shop name and an unknown paper width", () => {
     expect(msg(settingsPatch.safeParse({ shopName: " " }))).toBe("দোকানের নাম লিখুন");
     expect(settingsPatch.safeParse({ paperWidth: "100" }).success).toBe(false);
+  });
+});
+
+const KEY = "0b7f3c1e-1111-4222-8333-944455556666";
+const goodSale = { barberId: 1, items: [{ serviceId: 2, qty: 1 }], paymentMethod: "CASH", idempotencyKey: KEY };
+
+describe("saleInput (FR-8: no prices accepted from the client)", () => {
+  it("accepts a valid sale", () => expect(saleInput.safeParse(goodSale).success).toBe(true));
+
+  it("REJECTS a client-supplied price, total or share (strict)", () => {
+    for (const extra of [{ price: 1 }, { total: 1 }, { barberShare: 99 }]) {
+      expect(saleInput.safeParse({ ...goodSale, ...extra }).success).toBe(false);
+    }
+    expect(saleInput.safeParse({ ...goodSale, items: [{ serviceId: 2, qty: 1, price: 1 }] }).success).toBe(false);
+  });
+
+  it.each([0, 21, -1, 1.5, "2", null])("rejects quantity %j", (qty) => {
+    expect(saleInput.safeParse({ ...goodSale, items: [{ serviceId: 2, qty }] }).success).toBe(false);
+  });
+
+  it("accepts quantity 1 and 20", () => {
+    for (const qty of [1, 20]) {
+      expect(saleInput.safeParse({ ...goodSale, items: [{ serviceId: 2, qty }] }).success).toBe(true);
+    }
+  });
+
+  it("needs at least one line, at most 30, and no duplicate service", () => {
+    expect(saleInput.safeParse({ ...goodSale, items: [] }).error?.issues[0].message).toBe("কোনো সার্ভিস বাছাই করা হয়নি");
+    const many = Array.from({ length: 31 }, (_, i) => ({ serviceId: i + 1, qty: 1 }));
+    expect(saleInput.safeParse({ ...goodSale, items: many }).success).toBe(false);
+    const dup = [{ serviceId: 2, qty: 1 }, { serviceId: 2, qty: 3 }];
+    expect(saleInput.safeParse({ ...goodSale, items: dup }).error?.issues[0].message).toBe("একই সার্ভিস দুইবার দেওয়া যাবে না");
+  });
+
+  it("only the four payment methods", () => {
+    for (const m of ["CASH", "BKASH", "NAGAD", "OTHER"]) {
+      expect(saleInput.safeParse({ ...goodSale, paymentMethod: m }).success).toBe(true);
+    }
+    for (const m of ["card", "cash", "", null]) {
+      expect(saleInput.safeParse({ ...goodSale, paymentMethod: m }).success).toBe(false);
+    }
+  });
+
+  it("idempotency key is 8–64 characters", () => {
+    for (const k of ["short", "x".repeat(65), "", null]) {
+      expect(saleInput.safeParse({ ...goodSale, idempotencyKey: k }).success).toBe(false);
+    }
+    expect(saleInput.safeParse({ ...goodSale, idempotencyKey: "abcd1234" }).success).toBe(true);
+  });
+});
+
+describe("pastSaleInput (FR-22)", () => {
+  const past = { ...goodSale, date: "2026-03-01", time: "14:30" };
+  it("accepts a sale with a date and time", () => expect(pastSaleInput.safeParse(past).success).toBe(true));
+  it("requires both date and time", () => {
+    expect(pastSaleInput.safeParse(goodSale).success).toBe(false);
+    expect(pastSaleInput.safeParse({ ...past, time: undefined }).success).toBe(false);
+  });
+  it("cannot smuggle enteredByAdmin or createdAt from the client", () => {
+    expect(pastSaleInput.safeParse({ ...past, enteredByAdmin: true }).success).toBe(false);
+    expect(pastSaleInput.safeParse({ ...past, createdAt: "2026-03-01T00:00:00Z" }).success).toBe(false);
+  });
+});
+
+describe("void inputs", () => {
+  it("barber void needs the sale, the barber and a reason (trimmed)", () => {
+    expect(barberVoidInput.parse({ saleId: 3, barberId: 1, reason: "  ভুল  " })).toEqual({ saleId: 3, barberId: 1, reason: "ভুল" });
+    expect(barberVoidInput.safeParse({ saleId: 3, barberId: 1, reason: "  " }).error?.issues[0].message).toBe("বাতিলের কারণ লিখুন");
+    expect(barberVoidInput.safeParse({ saleId: 3, reason: "x" }).success).toBe(false);
+  });
+  it("admin void needs a reason and rejects a barberId", () => {
+    expect(adminVoidInput.safeParse({ saleId: 3, reason: "ভুল" }).success).toBe(true);
+    expect(adminVoidInput.safeParse({ saleId: 3, reason: "" }).success).toBe(false);
+    expect(adminVoidInput.safeParse({ saleId: 3, reason: "x", barberId: 1 }).success).toBe(false);
+  });
+  it("reason is capped at 200 characters", () => {
+    expect(adminVoidInput.safeParse({ saleId: 3, reason: "ক".repeat(201) }).success).toBe(false);
+  });
+});
+
+describe("salesQuery", () => {
+  it("accepts a range with optional filters", () => {
+    expect(salesQuery.safeParse({ from: "2026-03-01", to: "2026-03-10" }).success).toBe(true);
+    expect(salesQuery.safeParse({ from: "2026-03-01", to: "2026-03-10", barberId: 2, status: "void" }).success).toBe(true);
+  });
+  it("rejects bad dates, reversed ranges and ranges over a year", () => {
+    expect(salesQuery.safeParse({ from: "2026-02-30", to: "2026-03-10" }).success).toBe(false);
+    expect(salesQuery.safeParse({ from: "2026-03-10", to: "2026-03-01" }).success).toBe(false);
+    expect(salesQuery.safeParse({ from: "2024-01-01", to: "2026-03-01" }).success).toBe(false);
+    expect(salesQuery.safeParse({ from: "2026-03-01", to: "2026-03-10", status: "x" }).success).toBe(false);
   });
 });
 

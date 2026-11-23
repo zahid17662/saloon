@@ -42,6 +42,11 @@ export function inRange(iso: string, range: DateRange): boolean {
   return k >= range.from && k <= range.to;
 }
 
+/** The exact instant (UTC) a Dhaka calendar day begins, i.e. 00:00 Dhaka = 18:00 UTC the day before. */
+export function dhakaDayStart(dateKey: string): Date {
+  return new Date(Date.parse(`${dateKey}T00:00:00Z`) - DHAKA_OFFSET_MS);
+}
+
 /** Convert a Dhaka "YYYY-MM-DD" (local midday) to an ISO instant. */
 export function dhakaDateToIso(dateKey: string): string {
   return new Date(Date.parse(`${dateKey}T12:00:00Z`) - DHAKA_OFFSET_MS).toISOString();

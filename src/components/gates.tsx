@@ -1,11 +1,10 @@
 "use client";
 
-import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { useEffect, useMemo, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { checkShopSession } from "@/app/actions/auth";
 import { useStore, type State } from "@/lib/store";
 import { useCatalog } from "./catalog-context";
-import { LoadingScreen } from "./ui";
 
 /**
  * TRANSITIONAL (removed when store.ts is deleted): sales and payouts still live in localStorage, but
@@ -39,19 +38,15 @@ function useMergedState(): State | null {
  * tab regains focus, so a device whose shop code was changed (FR-21) is sent back to /unlock.
  * The authoritative check still happens in every Server Action (FR-4).
  */
-export function ShopGate({ children }: { children: (s: State) => ReactNode }) {
-  const s = useMergedState();
+export function ShopGate({ children }: { children: ReactNode }) {
   const router = useRouter();
-  const [valid, setValid] = useState<boolean | null>(null);
 
   useEffect(() => {
     let alive = true;
     const check = () =>
       checkShopSession()
         .then((r) => {
-          if (!alive) return;
-          setValid(r.valid);
-          if (!r.valid) router.replace("/unlock");
+          if (alive && !r.valid) router.replace("/unlock");
         })
         .catch(() => {
           /* offline or server error: keep the current state */
@@ -64,8 +59,7 @@ export function ShopGate({ children }: { children: (s: State) => ReactNode }) {
     };
   }, [router]);
 
-  if (!s || valid !== true) return <LoadingScreen />;
-  return <>{children(s)}</>;
+  return <>{children}</>;
 }
 
 /** For admin pages: the admin layout guarantees state is loaded. */

@@ -1,49 +1,79 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
-import { useLiveStore } from "../gates";
+import { adminVoidSale, listSales } from "@/app/actions/sales";
+import { useCatalog } from "../catalog-context";
 import { RangeFilter, useDateRange } from "../range-filter";
-import { Badge, Button, Empty, ErrorText, Field, Modal, PageTitle, Select } from "../ui";
-import { errMsg, rangeLabel, TableWrap, td, tdNum, th, thNum } from "./common";
-import { voidSale } from "@/lib/store";
-import { inRange } from "@/lib/time";
+import { Badge, Button, Empty, ErrorText, Field, LoadingScreen, Modal, PageTitle, Select } from "../ui";
+import { PastSaleForm } from "./past-sale-form";
+import { rangeLabel, TableWrap, td, tdNum, th, thNum } from "./common";
 import { bnDigits, receiptNo, taka } from "@/lib/money";
 import { fmtDateTime } from "@/lib/time";
 import { PAYMENT_LABELS, type Sale } from "@/lib/types";
 
 const PAGE = 30;
+const NET_ERR = "সংযোগে সমস্যা হয়েছে, আবার চেষ্টা করুন";
 
 export function SalesList() {
-  const s = useLiveStore();
+  const catalog = useCatalog();
   const r = useDateRange("today");
   const [barberId, setBarberId] = useState("all");
   const [status, setStatus] = useState<"all" | "live" | "void">("all");
   const [limit, setLimit] = useState(PAGE);
   const [voidTarget, setVoidTarget] = useState<Sale | null>(null);
+  const [addOpen, setAddOpen] = useState(false);
+  const [rows, setRows] = useState<Sale[] | null>(null);
+  const [loadError, setLoadError] = useState("");
+  const [reload, setReload] = useState(0);
 
-  const filtered = s.db.sales
-    .filter(
-      (x) =>
-        inRange(x.createdAt, r.range) &&
-        (barberId === "all" || x.barberId === Number(barberId)) &&
-        (status === "all" || (status === "void" ? !!x.voidedAt : !x.voidedAt)),
-    )
-    .sort((a, z) => z.id - a.id);
-  const liveTotal = filtered.filter((x) => !x.voidedAt).reduce((n, x) => n + x.total, 0);
-  const barberName = (id: number) => s.db.barbers.find((b) => b.id === id)?.name ?? "—";
+  const { from, to } = r.range;
+  useEffect(() => {
+    let current = true; // ignore a slow response that was overtaken by a newer filter
+    listSales({
+      from,
+      to,
+      status,
+      ...(barberId === "all" ? {} : { barberId: Number(barberId) }),
+    })
+      .then((res) => {
+        if (!current) return;
+        if (res.ok) {
+          setRows(res.data);
+          setLoadError("");
+        } else {
+          setRows([]);
+          setLoadError(res.error);
+        }
+      })
+      .catch(() => {
+        if (!current) return;
+        setRows([]);
+        setLoadError(NET_ERR);
+      });
+    return () => {
+      current = false;
+    };
+  }, [from, to, barberId, status, reload]);
+
+  const refresh = useCallback(() => setReload((n) => n + 1), []);
+
+  if (!catalog || rows === null) return <LoadingScreen />;
+  const liveTotal = rows.filter((x) => !x.voidedAt).reduce((n, x) => n + x.total, 0);
+  const barberName = (id: number) => catalog.barbers.find((b) => b.id === id)?.name ?? "—";
 
   return (
     <>
       <PageTitle
         title="বিক্রির তালিকা"
-        sub={`${rangeLabel(r.range)} · ${bnDigits(filtered.length)}টি এন্ট্রি · ${taka(liveTotal)}`}
+        sub={`${rangeLabel(r.range)} · ${bnDigits(rows.length)}টি এন্ট্রি · ${taka(liveTotal)}`}
+        actions={<Button onClick={() => setAddOpen(true)}>পুরনো বিক্রি যোগ করুন</Button>}
       />
       <div className="mb-4 flex flex-wrap items-end gap-3">
         <RangeFilter state={r} />
         <Select label="নাপিত" value={barberId} onChange={(e) => setBarberId(e.target.value)} className="w-40">
           <option value="all">সবাই</option>
-          {s.db.barbers.map((b) => (
+          {catalog.barbers.map((b) => (
             <option key={b.id} value={b.id}>
               {b.name}
               {!b.active ? " (নিষ্ক্রিয়)" : ""}
@@ -62,7 +92,9 @@ export function SalesList() {
         </Select>
       </div>
 
-      {filtered.length === 0 ? (
+      <ErrorText>{loadError}</ErrorText>
+
+      {rows.length === 0 ? (
         <Empty>কোনো এন্ট্রি পাওয়া যায়নি</Empty>
       ) : (
         <>
@@ -79,12 +111,19 @@ export function SalesList() {
               </tr>
             </thead>
             <tbody className="divide-y divide-line">
-              {filtered.slice(0, limit).map((x) => (
+              {rows.slice(0, limit).map((x) => (
                 <tr key={x.id} className={x.voidedAt ? "opacity-60" : ""}>
                   <td className={td}>
                     <span className="font-mono text-xs">{receiptNo(x.id)}</span>
                   </td>
-                  <td className={`${td} whitespace-nowrap text-muted`}>{fmtDateTime(x.createdAt)}</td>
+                  <td className={`${td} whitespace-nowrap text-muted`}>
+                    {fmtDateTime(x.createdAt)}
+                    {x.enteredByAdmin && (
+                      <div className="mt-1">
+                        <Badge tone="gold">পুরনো এন্ট্রি</Badge>
+                      </div>
+                    )}
+                  </td>
                   <td className={td}>{barberName(x.barberId)}</td>
                   <td className={`${td} max-w-64`}>
                     <span className={x.voidedAt ? "line-through" : ""}>
@@ -117,10 +156,10 @@ export function SalesList() {
               ))}
             </tbody>
           </TableWrap>
-          {filtered.length > limit && (
+          {rows.length > limit && (
             <div className="mt-4 text-center">
               <Button variant="secondary" onClick={() => setLimit((l) => l + PAGE)}>
-                আরো দেখুন ({bnDigits(filtered.length - limit)})
+                আরো দেখুন ({bnDigits(rows.length - limit)})
               </Button>
             </div>
           )}
@@ -128,25 +167,55 @@ export function SalesList() {
       )}
 
       <Modal open={!!voidTarget} title="বিক্রি বাতিল" onClose={() => setVoidTarget(null)}>
-        {voidTarget && <VoidForm key={voidTarget.id} sale={voidTarget} onDone={() => setVoidTarget(null)} />}
+        {voidTarget && (
+          <VoidForm
+            key={voidTarget.id}
+            sale={voidTarget}
+            onDone={() => {
+              setVoidTarget(null);
+              refresh();
+            }}
+            onCancel={() => setVoidTarget(null)}
+          />
+        )}
+      </Modal>
+
+      <Modal open={addOpen} title="পুরনো বিক্রি যোগ করুন" onClose={() => setAddOpen(false)}>
+        {addOpen && (
+          <PastSaleForm
+            onDone={(dateKey) => {
+              setAddOpen(false);
+              // Show the day that was just entered so the new row is visible.
+              r.setCustom({ from: dateKey, to: dateKey });
+              r.setPreset("custom");
+              refresh();
+            }}
+          />
+        )}
       </Modal>
     </>
   );
 }
 
-function VoidForm({ sale, onDone }: { sale: Sale; onDone: () => void }) {
+function VoidForm({ sale, onDone, onCancel }: { sale: Sale; onDone: () => void; onCancel: () => void }) {
   const [reason, setReason] = useState("");
   const [error, setError] = useState("");
+  const [busy, setBusy] = useState(false);
   return (
     <form
       className="space-y-4"
-      onSubmit={(e) => {
+      onSubmit={async (e) => {
         e.preventDefault();
+        if (busy) return;
+        setBusy(true);
         try {
-          voidSale(sale.id, "ADMIN", reason);
+          const res = await adminVoidSale({ saleId: sale.id, reason });
+          if (!res.ok) return setError(res.error);
           onDone();
-        } catch (err) {
-          setError(errMsg(err));
+        } catch {
+          setError(NET_ERR);
+        } finally {
+          setBusy(false);
         }
       }}
     >
@@ -156,11 +225,11 @@ function VoidForm({ sale, onDone }: { sale: Sale; onDone: () => void }) {
       <Field label="কারণ" value={reason} onChange={(e) => setReason(e.target.value)} placeholder="যেমন: ভুল নাপিতের নামে এন্ট্রি" required autoFocus />
       <ErrorText>{error}</ErrorText>
       <div className="flex gap-2">
-        <Button type="button" variant="secondary" className="flex-1" onClick={onDone}>
+        <Button type="button" variant="secondary" className="flex-1" onClick={onCancel}>
           না
         </Button>
-        <Button type="submit" variant="danger" className="flex-1">
-          বাতিল করুন
+        <Button type="submit" variant="danger" className="flex-1" disabled={busy}>
+          {busy ? "অপেক্ষা করুন…" : "বাতিল করুন"}
         </Button>
       </div>
     </form>

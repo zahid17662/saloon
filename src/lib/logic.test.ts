@@ -19,6 +19,7 @@ function sale(p: Partial<Sale> & { id: number; total: number }): Sale {
     voidedAt: null,
     voidedBy: null,
     voidReason: null,
+    enteredByAdmin: false,
     items: [{ serviceId: 1, nameSnapshot: "Hair Cutting", priceSnapshot: p.total, qty: 1 }],
     ...p,
   };
