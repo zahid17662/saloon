@@ -33,6 +33,9 @@ export const FIXTURE = {
 /** Deletes all business data on the E2E branch and re-creates the fixture menu. DELETE only. */
 export async function resetData(): Promise<void> {
   const s = sql();
+  // Belt and braces on top of the env.ts allow-list: the E2E branch only ever holds fixture-sized data.
+  const [size] = await rows<{ n: string }>("select (select count(*) from barbers) + (select count(*) from sales) / 50 as n");
+  if (Number(size.n) > 200) throw new Error("E2E reset refused: this database holds far more data than a test branch should.");
   await s.transaction([
     s.query("delete from payouts"),
     s.query("delete from sales"), // sale_items cascade

@@ -46,7 +46,7 @@ export function Dashboard() {
     <>
       <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight text-fg">স্বাগতম 👋</h1>
+          <h1 className="text-2xl font-semibold tracking-tight text-fg">স্বাগতম <span aria-hidden="true">👋</span></h1>
           <p className="mt-1 text-sm text-muted">
             {r.preset === "today" ? fmtDate(new Date().toISOString()) : `দেখাচ্ছে: ${rangeLabel(r.range)}`}
           </p>
@@ -126,7 +126,7 @@ export function Dashboard() {
                   <div className="text-right">
                     <div className="text-sm font-semibold tabular-nums text-fg">{taka(x.revenue)}</div>
                     <div className="text-xs font-medium text-success">
-                      {bnDigits(Math.round((x.revenue / t.total) * 100))}%
+                      {bnDigits(t.total > 0 ? Math.round((x.revenue / t.total) * 100) : 0)}%
                     </div>
                   </div>
                 </li>

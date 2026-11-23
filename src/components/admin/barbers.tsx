@@ -16,7 +16,10 @@ export function Barbers() {
   const [editing, setEditing] = useState<Barber | "new" | null>(null);
   if (!catalog) return <LoadingScreen />;
   const barbers = [...catalog.barbers].sort((a, z) => Number(z.active) - Number(a.active) || a.sortOrder - z.sortOrder);
-  const salesCount = (id: number) => view.data?.balances.find((b) => b.barberId === id)?.salesCount ?? 0;
+  const salesCount = (id: number) => {
+    const n = view.data?.balances.find((b) => b.barberId === id)?.salesCount;
+    return n === undefined ? "—" : bnDigits(n); // never show a made-up zero while loading or after an error
+  };
   const nextName = `নাপিত ${bnDigits(catalog.barbers.length + 1)}`;
 
   return (
@@ -43,7 +46,7 @@ export function Barbers() {
                 <div className="min-w-0 flex-1">
                   <div className="truncate font-semibold text-fg">{b.name}</div>
                   <div className="text-sm text-muted">
-                    কমিশন {bnDigits(b.commissionPct)}% · {bnDigits(salesCount(b.id))}টি বিক্রি
+                    কমিশন {bnDigits(b.commissionPct)}% · {salesCount(b.id)}টি বিক্রি
                   </div>
                 </div>
                 {b.active ? <Badge tone="green">সক্রিয়</Badge> : <Badge>নিষ্ক্রিয়</Badge>}

@@ -129,7 +129,6 @@ const dateKey = z
 
 const PAYOUT_MSG = {
   amount: "টাকার পরিমাণ সঠিক নয়",
-  note: "নোট ২০০ অক্ষরের বেশি হবে না",
 } as const;
 
 export const payoutInput = z.strictObject({
@@ -138,9 +137,9 @@ export const payoutInput = z.strictObject({
     .number({ error: PAYOUT_MSG.amount })
     .int(PAYOUT_MSG.amount)
     .min(1, PAYOUT_MSG.amount)
-    .max(10_000_000, PAYOUT_MSG.amount),
+    .max(10_000_000, "টাকার পরিমাণ অনেক বেশি"),
   date: dateKey,
-  note: z.string({ error: PAYOUT_MSG.note }).trim().max(200, PAYOUT_MSG.note).default(""),
+  note: z.string({ error: M.id }).trim().max(200, M.tooLong).default(""),
 });
 export const payoutDeleteInput = z.strictObject({ id: idSchema });
 

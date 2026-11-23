@@ -18,6 +18,7 @@ export function Payouts() {
   const [payTo, setPayTo] = useState<Barber | null>(null);
   const [filter, setFilter] = useState("all");
   const [error, setError] = useState("");
+  const [deleting, setDeleting] = useState<number | null>(null);
   // Clock for the 24-hour delete button; the server re-checks the window on every delete.
   const [nowMs, setNowMs] = useState(() => Date.now());
   useEffect(() => {
@@ -49,7 +50,7 @@ export function Payouts() {
                 <div className="font-semibold text-fg">{barber.name}</div>
                 {!barber.active && <Badge>নিষ্ক্রিয়</Badge>}
               </div>
-              <Button size="sm" onClick={() => setPayTo(barber)}>
+              <Button size="sm" onClick={() => setPayTo(barber)} disabled={view.loading} aria-label={`${barber.name}-কে টাকা দিন`}>
                 টাকা দিন
               </Button>
             </div>
@@ -95,14 +96,16 @@ export function Payouts() {
               <th className={th}>নাপিত</th>
               <th className={thNum}>টাকা</th>
               <th className={th}>নোট</th>
-              <th className={th} />
+              <th className={th}>
+                <span className="sr-only">কার্যক্রম</span>
+              </th>
             </tr>
           </thead>
           <tbody className="divide-y divide-line">
             {history.map((p) => (
               <tr key={p.id}>
                 <td className={`${td} whitespace-nowrap`}>{fmtDate(p.paidAt)}</td>
-                <td className={td}>{catalog.barbers.find((b) => b.id === p.barberId)?.name}</td>
+                <td className={td}>{catalog.barbers.find((b) => b.id === p.barberId)?.name ?? "—"}</td>
                 <td className={tdNum}>{taka(p.amount)}</td>
                 <td className={`${td} text-muted`}>{p.note || "—"}</td>
                 <td className={`${td} text-right`}>
@@ -110,14 +113,19 @@ export function Payouts() {
                     <Button
                       variant="ghost"
                       size="sm"
+                      disabled={deleting === p.id}
+                      aria-label={`${taka(p.amount)}-এর পেমেন্ট মুছুন`}
                       onClick={async () => {
-                        if (!window.confirm(`${taka(p.amount)}-এর পেমেন্টটি মুছবেন?`)) return;
+                        if (deleting !== null || !window.confirm(`${taka(p.amount)}-এর পেমেন্টটি মুছবেন?`)) return;
+                        setDeleting(p.id);
                         try {
                           const r = await deletePayout({ id: p.id });
                           setError(r.ok ? "" : r.error);
-                          view.reload();
+                          if (r.ok) view.reload();
                         } catch {
                           setError(NET_ERR);
+                        } finally {
+                          setDeleting(null);
                         }
                       }}
                     >
@@ -177,7 +185,7 @@ function PayoutForm({ barber, suggested, onDone }: { barber: Barber; suggested: 
     >
       <p className="text-sm text-muted">
         বর্তমান বাকি: <span className="text-primary">{taka(suggested)}</span>
-        {suggested > 0 && ` (${bnDigits(barber.commissionPct)}% হারে)`}
+        {suggested > 0 && ` (কমিশন ${bnDigits(barber.commissionPct)}%)`}
       </p>
       <Field label="টাকার পরিমাণ (৳)" inputMode="numeric" value={amount} onChange={(e) => setAmount(e.target.value)} required autoFocus />
       <Field label="তারিখ" type="date" value={date} max={todayKey()} onChange={(e) => setDate(e.target.value)} required />

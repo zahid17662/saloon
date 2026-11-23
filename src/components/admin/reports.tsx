@@ -33,7 +33,7 @@ export function Reports() {
   function exportCsv() {
     const name = `report-${mode}-${r.range.from}_${r.range.to}.csv`;
     if (mode === "service") {
-      downloadFile(name, toCsv(["সার্ভিস", "সংখ্যা", "মোট টাকা"], serviceRows.map((x) => [x.name, x.qty, x.revenue])));
+      downloadFile(name, toCsv(["সার্ভিস", "কতবার", "মোট টাকা"], serviceRows.map((x) => [x.name, x.qty, x.revenue])));
     } else {
       downloadFile(
         name,
@@ -51,7 +51,7 @@ export function Reports() {
     <>
       <PageTitle
         title="রিপোর্ট"
-        sub={`${rangeLabel(r.range)} · মোট ${taka(t.total)} · মালিক ${taka(t.ownerShare)}`}
+        sub={`${rangeLabel(r.range)} · মোট ${taka(t.total)} · মালিকের ভাগ ${taka(t.ownerShare)}`}
         actions={
           <Button variant="secondary" size="sm" onClick={exportCsv} disabled={empty}>
             সিএসভি ডাউনলোড
@@ -100,9 +100,9 @@ export function Reports() {
                 <td className={tdNum}>
                   <div className="flex items-center justify-end gap-2">
                     <div className="h-1.5 w-20 overflow-hidden rounded-full bg-surface-2">
-                      <div className="h-full bg-primary" style={{ width: `${(x.revenue / t.total) * 100}%` }} />
+                      <div className="h-full bg-primary" style={{ width: `${t.total > 0 ? (x.revenue / t.total) * 100 : 0}%` }} />
                     </div>
-                    <span className="w-10">{bnDigits(Math.round((x.revenue / t.total) * 100))}%</span>
+                    <span className="w-10">{bnDigits(t.total > 0 ? Math.round((x.revenue / t.total) * 100) : 0)}%</span>
                   </div>
                 </td>
               </tr>
