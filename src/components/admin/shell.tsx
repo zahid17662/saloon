@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { logoutAdmin } from "@/app/actions/auth";
 import { useStore } from "@/lib/store";
+import { useCatalog } from "../catalog-context";
 import { cx, LoadingScreen } from "../ui";
 import {
   ChartIcon,
@@ -33,13 +34,15 @@ const NAV = [
  * valid admin cookie; the Server Actions re-check on every call (FR-4).
  */
 export function AdminShell({ children }: { children: ReactNode }) {
-  const s = useStore();
+  const catalog = useCatalog();
+  const local = useStore(); // TRANSITIONAL: null on the server; children read sales/payouts from it
   const router = useRouter();
   const pathname = usePathname();
   const isLogin = pathname === "/admin/login";
 
   if (isLogin) return <>{children}</>;
-  if (!s) return <LoadingScreen />;
+  if (!catalog || !local) return <LoadingScreen />;
+  const shopName = catalog.settings.shopName;
 
   async function logout() {
     await logoutAdmin();
@@ -57,7 +60,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
             <ScissorsIcon className="h-5 w-5" />
           </div>
           <div className="min-w-0">
-            <div className="truncate font-semibold text-fg">{s.db.settings.shopName}</div>
+            <div className="truncate font-semibold text-fg">{shopName}</div>
             <div className="text-xs text-subtle">এডমিন প্যানেল</div>
           </div>
         </div>
@@ -112,7 +115,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
       {/* Mobile top bar */}
       <header className="sticky top-0 z-20 border-b border-line bg-bg/90 backdrop-blur lg:hidden">
         <div className="flex items-center justify-between px-4 pt-3">
-          <div className="font-semibold text-fg">{s.db.settings.shopName}</div>
+          <div className="font-semibold text-fg">{shopName}</div>
           <div className="flex gap-1">
             <Link href="/" aria-label="নাপিতের স্ক্রিন" className="rounded-lg p-2 text-muted hover:bg-surface-2">
               <HomeIcon className="h-5 w-5" />

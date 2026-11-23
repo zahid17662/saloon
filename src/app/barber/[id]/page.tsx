@@ -83,12 +83,15 @@ function BarberScreen({ s }: { s: State }) {
     setSaving(true);
     setError("");
     try {
-      const sale = createSale({
-        barberId: barber!.id,
-        items: lines.map((l) => ({ serviceId: l.svc.id, qty: l.qty })),
-        paymentMethod: payment,
-        idempotencyKey: idemKey,
-      });
+      const sale = createSale(
+        {
+          barberId: barber!.id,
+          items: lines.map((l) => ({ serviceId: l.svc.id, qty: l.qty })),
+          paymentMethod: payment,
+          idempotencyKey: idemKey,
+        },
+        s.db,
+      );
       setCart({});
       setPayment("CASH");
       setIdemKey(newKey());

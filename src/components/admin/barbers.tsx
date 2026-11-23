@@ -4,8 +4,7 @@ import { useState } from "react";
 import { useLiveStore } from "../gates";
 import { Badge, Button, Card, ErrorText, Field, Modal, PageTitle, Toggle } from "../ui";
 import { PlusIcon } from "../icons";
-import { errMsg } from "./common";
-import { addBarber, updateBarber } from "@/lib/store";
+import { addBarber, updateBarber } from "@/app/actions/catalog";
 import { bnDigits, parseIntInput } from "@/lib/money";
 import type { Barber } from "@/lib/types";
 
@@ -77,24 +76,32 @@ function BarberForm({ barber, defaultName, onDone }: { barber: Barber | null; de
   const [order, setOrder] = useState(String(barber?.sortOrder ?? ""));
   const [active, setActive] = useState(barber?.active ?? true);
   const [error, setError] = useState("");
+  const [busy, setBusy] = useState(false);
 
   return (
     <form
       className="space-y-4"
-      onSubmit={(e) => {
+      onSubmit={async (e) => {
         e.preventDefault();
+        if (busy) return;
         const commission = parseIntInput(pct);
         if (commission === null) return setError("কমিশন ০ থেকে ১০০ এর মধ্যে হবে");
+        setBusy(true);
         try {
-          if (barber) {
-            const sortOrder = parseIntInput(order) ?? barber.sortOrder;
-            updateBarber(barber.id, { name, commissionPct: commission, sortOrder, active });
-          } else {
-            addBarber(name, commission);
-          }
+          const r = barber
+            ? await updateBarber(barber.id, {
+                name,
+                commissionPct: commission,
+                sortOrder: parseIntInput(order) ?? barber.sortOrder,
+                active,
+              })
+            : await addBarber({ name, commissionPct: commission });
+          if (!r.ok) return setError(r.error);
           onDone();
-        } catch (err) {
-          setError(errMsg(err));
+        } catch {
+          setError("সংযোগে সমস্যা হয়েছে, আবার চেষ্টা করুন");
+        } finally {
+          setBusy(false);
         }
       }}
     >
@@ -114,8 +121,8 @@ function BarberForm({ barber, defaultName, onDone }: { barber: Barber | null; de
         </>
       )}
       <ErrorText>{error}</ErrorText>
-      <Button type="submit" className="w-full">
-        সেভ করুন
+      <Button type="submit" className="w-full" disabled={busy}>
+        {busy ? "সেভ হচ্ছে…" : "সেভ করুন"}
       </Button>
     </form>
   );

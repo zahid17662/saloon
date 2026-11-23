@@ -7,7 +7,7 @@
 import { useSyncExternalStore } from "react";
 import { createSeed } from "./seed";
 import { splitAmount } from "./money";
-import type { Barber, Category, DB, PaymentMethod, Payout, Sale, Service, Settings } from "./types";
+import type { DB, PaymentMethod, Payout, Sale } from "./types";
 
 const DB_KEY = "salon.db.v1";
 
@@ -108,19 +108,22 @@ export interface NewSale {
   idempotencyKey: string;
 }
 
-export function createSale(input: NewSale): Sale {
+// `catalog` is TRANSITIONAL (removed with this function in the createSale phase): barbers and
+// services now live in Neon, so the caller passes the server-loaded ones for the price lookup.
+export function createSale(input: NewSale, catalog?: Pick<DB, "barbers" | "services">): Sale {
   const { db } = ensure();
   const dup = db.sales.find((x) => x.idempotencyKey === input.idempotencyKey);
   if (dup) return dup; // FR-9
 
-  const barber = db.barbers.find((b) => b.id === input.barberId && b.active);
+  const lookup = catalog ?? db;
+  const barber = lookup.barbers.find((b) => b.id === input.barberId && b.active);
   if (!barber) throw new ActionError("নাপিত পাওয়া যায়নি");
 
   // FR-8: prices always come from the stored service list, never the client cart.
   const items = input.items
     .filter((i) => i.qty > 0)
     .map((i) => {
-      const svc = db.services.find((x) => x.id === i.serviceId && x.active);
+      const svc = lookup.services.find((x) => x.id === i.serviceId && x.active);
       if (!svc) throw new ActionError("একটি সার্ভিস আর পাওয়া যাচ্ছে না");
       return {
         serviceId: svc.id,
@@ -170,80 +173,6 @@ export function voidSale(id: number, by: "BARBER" | "ADMIN", reason: string) {
   }));
 }
 
-// ---------- barbers ----------
-
-function validateBarber(db: DB, name: string, pct: number, selfId?: number) {
-  if (!name.trim()) throw new ActionError("নাম লিখুন");
-  if (!Number.isInteger(pct) || pct < 0 || pct > 100) throw new ActionError("কমিশন ০ থেকে ১০০ এর মধ্যে হবে");
-  const clash = db.barbers.some((b) => b.active && b.id !== selfId && b.name.trim() === name.trim());
-  if (clash) throw new ActionError("এই নামে একজন নাপিত আগে থেকেই আছে");
-}
-
-export function addBarber(name: string, commissionPct = 50) {
-  const { db } = ensure();
-  validateBarber(db, name, commissionPct);
-  const barber: Barber = {
-    id: nextId(db.barbers),
-    name: name.trim(),
-    commissionPct,
-    sortOrder: db.barbers.length,
-    active: true,
-    createdAt: new Date().toISOString(),
-  };
-  updateDb((d) => ({ ...d, barbers: [...d.barbers, barber] }));
-}
-
-export function updateBarber(id: number, patch: Partial<Omit<Barber, "id" | "createdAt">>) {
-  const { db } = ensure();
-  const cur = db.barbers.find((b) => b.id === id);
-  if (!cur) throw new ActionError("নাপিত পাওয়া যায়নি");
-  const next = { ...cur, ...patch, name: (patch.name ?? cur.name).trim() };
-  if (next.active) validateBarber(db, next.name, next.commissionPct, id);
-  updateDb((d) => ({ ...d, barbers: d.barbers.map((b) => (b.id === id ? next : b)) }));
-}
-
-// ---------- categories & services ----------
-
-export function addCategory(name: string) {
-  if (!name.trim()) throw new ActionError("ক্যাটাগরির নাম লিখুন");
-  const { db } = ensure();
-  const cat: Category = { id: nextId(db.categories), name: name.trim(), sortOrder: db.categories.length, active: true };
-  updateDb((d) => ({ ...d, categories: [...d.categories, cat] }));
-}
-
-export function updateCategory(id: number, patch: Partial<Omit<Category, "id">>) {
-  if (patch.name !== undefined && !patch.name.trim()) throw new ActionError("ক্যাটাগরির নাম লিখুন");
-  updateDb((d) => ({ ...d, categories: d.categories.map((c) => (c.id === id ? { ...c, ...patch } : c)) }));
-}
-
-function validateService(name: string, price: number) {
-  if (!name.trim()) throw new ActionError("সার্ভিসের নাম লিখুন");
-  if (!Number.isInteger(price) || price <= 0) throw new ActionError("দাম ০ এর বেশি পূর্ণ সংখ্যা হবে");
-}
-
-export function addService(categoryId: number, name: string, price: number) {
-  validateService(name, price);
-  const { db } = ensure();
-  const svc: Service = {
-    id: nextId(db.services),
-    categoryId,
-    name: name.trim(),
-    price,
-    sortOrder: db.services.filter((s) => s.categoryId === categoryId).length,
-    active: true,
-  };
-  updateDb((d) => ({ ...d, services: [...d.services, svc] }));
-}
-
-export function updateService(id: number, patch: Partial<Omit<Service, "id">>) {
-  const { db } = ensure();
-  const cur = db.services.find((s) => s.id === id);
-  if (!cur) throw new ActionError("সার্ভিস পাওয়া যায়নি");
-  const next = { ...cur, ...patch, name: (patch.name ?? cur.name).trim() };
-  validateService(next.name, next.price);
-  updateDb((d) => ({ ...d, services: d.services.map((s) => (s.id === id ? next : s)) }));
-}
-
 // ---------- payouts ----------
 
 export function addPayout(barberId: number, amount: number, paidAt: string, note: string) {
@@ -267,15 +196,6 @@ export function deletePayout(id: number) {
   if (!p) return;
   if (!canDeletePayout(p)) throw new ActionError("২৪ ঘণ্টা পার হওয়া পেমেন্ট মুছা যাবে না");
   updateDb((d) => ({ ...d, payouts: d.payouts.filter((x) => x.id !== id) }));
-}
-
-// ---------- settings ----------
-
-export function updateSettings(
-  patch: Partial<Pick<Settings, "shopName" | "shopAddress" | "shopPhone" | "receiptFooter" | "paperWidth">>,
-) {
-  if (patch.shopName !== undefined && !patch.shopName.trim()) throw new ActionError("দোকানের নাম লিখুন");
-  updateDb((d) => ({ ...d, settings: { ...d.settings, ...patch } }));
 }
 
 export function exportAll(): string {

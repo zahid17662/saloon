@@ -5,7 +5,8 @@ import { useLiveStore } from "../gates";
 import { Button, Card, ErrorText, Field, PageTitle, Select } from "../ui";
 import { errMsg } from "./common";
 import { changeAdminPin, changeShopCode } from "@/app/actions/auth";
-import { exportAll, resetDemoData, updateSettings } from "@/lib/store";
+import { updateSettings } from "@/app/actions/catalog";
+import { exportAll, resetDemoData } from "@/lib/store";
 import { downloadFile } from "@/lib/reports";
 import { todayKey } from "@/lib/time";
 import type { PaperWidth } from "@/lib/types";
@@ -46,6 +47,7 @@ function ShopInfo() {
   });
   const [error, setError] = useState("");
   const [saved, setSaved] = useState(false);
+  const [busy, setBusy] = useState(false);
   const set = (k: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setForm({ ...form, [k]: e.target.value });
     setSaved(false);
@@ -56,14 +58,20 @@ function ShopInfo() {
       <h2 className="mb-4 text-lg font-semibold text-fg">দোকান ও রসিদ</h2>
       <form
         className="space-y-4"
-        onSubmit={(e) => {
+        onSubmit={async (e) => {
           e.preventDefault();
+          if (busy) return;
+          setBusy(true);
+          setSaved(false);
           try {
-            updateSettings(form);
+            const r = await updateSettings(form);
+            if (!r.ok) return setError(r.error);
             setError("");
             setSaved(true);
-          } catch (err) {
-            setError(errMsg(err));
+          } catch {
+            setError("সংযোগে সমস্যা হয়েছে, আবার চেষ্টা করুন");
+          } finally {
+            setBusy(false);
           }
         }}
       >
@@ -80,7 +88,9 @@ function ShopInfo() {
         </Select>
         <ErrorText>{error}</ErrorText>
         <Saved show={saved} />
-        <Button type="submit">সেভ করুন</Button>
+        <Button type="submit" disabled={busy}>
+          {busy ? "সেভ হচ্ছে…" : "সেভ করুন"}
+        </Button>
       </form>
     </Card>
   );

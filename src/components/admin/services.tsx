@@ -4,8 +4,7 @@ import { useState } from "react";
 import { useLiveStore } from "../gates";
 import { Badge, Button, Card, ErrorText, Field, Modal, PageTitle, Select, Toggle } from "../ui";
 import { PlusIcon } from "../icons";
-import { errMsg } from "./common";
-import { addCategory, addService, updateCategory, updateService } from "@/lib/store";
+import { addCategory, addService, updateCategory, updateService } from "@/app/actions/catalog";
 import { bnDigits, parseIntInput, taka } from "@/lib/money";
 import type { Category, Service } from "@/lib/types";
 
@@ -109,18 +108,24 @@ function CategoryForm({ category, onDone }: { category: Category | null; onDone:
   const [order, setOrder] = useState(String(category?.sortOrder ?? ""));
   const [active, setActive] = useState(category?.active ?? true);
   const [error, setError] = useState("");
+  const [busy, setBusy] = useState(false);
   return (
     <form
       className="space-y-4"
-      onSubmit={(e) => {
+      onSubmit={async (e) => {
         e.preventDefault();
+        if (busy) return;
+        setBusy(true);
         try {
-          if (category) {
-            updateCategory(category.id, { name: name.trim(), sortOrder: parseIntInput(order) ?? category.sortOrder, active });
-          } else addCategory(name);
+          const r = category
+            ? await updateCategory(category.id, { name, sortOrder: parseIntInput(order) ?? category.sortOrder, active })
+            : await addCategory({ name });
+          if (!r.ok) return setError(r.error);
           onDone();
-        } catch (err) {
-          setError(errMsg(err));
+        } catch {
+          setError("সংযোগে সমস্যা হয়েছে, আবার চেষ্টা করুন");
+        } finally {
+          setBusy(false);
         }
       }}
     >
@@ -132,8 +137,8 @@ function CategoryForm({ category, onDone }: { category: Category | null; onDone:
         </>
       )}
       <ErrorText>{error}</ErrorText>
-      <Button type="submit" className="w-full">
-        সেভ করুন
+      <Button type="submit" className="w-full" disabled={busy}>
+        {busy ? "সেভ হচ্ছে…" : "সেভ করুন"}
       </Button>
     </form>
   );
@@ -156,27 +161,33 @@ function ServiceForm({
   const [order, setOrder] = useState(String(service?.sortOrder ?? ""));
   const [active, setActive] = useState(service?.active ?? true);
   const [error, setError] = useState("");
+  const [busy, setBusy] = useState(false);
 
   return (
     <form
       className="space-y-4"
-      onSubmit={(e) => {
+      onSubmit={async (e) => {
         e.preventDefault();
+        if (busy) return;
         const p = parseIntInput(price);
         if (p === null || p <= 0) return setError("দাম ০ এর বেশি পূর্ণ সংখ্যা হবে");
+        setBusy(true);
         try {
-          if (service) {
-            updateService(service.id, {
-              name,
-              price: p,
-              categoryId: Number(cat),
-              sortOrder: parseIntInput(order) ?? service.sortOrder,
-              active,
-            });
-          } else addService(Number(cat), name, p);
+          const r = service
+            ? await updateService(service.id, {
+                name,
+                price: p,
+                categoryId: Number(cat),
+                sortOrder: parseIntInput(order) ?? service.sortOrder,
+                active,
+              })
+            : await addService({ categoryId: Number(cat), name, price: p });
+          if (!r.ok) return setError(r.error);
           onDone();
-        } catch (err) {
-          setError(errMsg(err));
+        } catch {
+          setError("সংযোগে সমস্যা হয়েছে, আবার চেষ্টা করুন");
+        } finally {
+          setBusy(false);
         }
       }}
     >
@@ -203,8 +214,8 @@ function ServiceForm({
         </>
       )}
       <ErrorText>{error}</ErrorText>
-      <Button type="submit" className="w-full">
-        সেভ করুন
+      <Button type="submit" className="w-full" disabled={busy}>
+        {busy ? "সেভ হচ্ছে…" : "সেভ করুন"}
       </Button>
     </form>
   );

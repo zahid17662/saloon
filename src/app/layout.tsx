@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Hind_Siliguri, Poppins } from "next/font/google";
+import { CatalogBoundary } from "@/components/catalog-boundary";
 import "./globals.css";
 
 // Poppins renders Latin letters and numbers; Hind Siliguri covers Bangla.
@@ -30,7 +31,9 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="bn" className={`${latin.variable} ${bangla.variable} h-full antialiased`}>
-      <body className="min-h-full font-sans">{children}</body>
+      <body className="min-h-full font-sans">
+        <CatalogBoundary>{children}</CatalogBoundary>
+      </body>
     </html>
   );
 }
