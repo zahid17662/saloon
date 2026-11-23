@@ -1,0 +1,122 @@
+"use client";
+
+import { useState } from "react";
+import { useLiveStore } from "../gates";
+import { Badge, Button, Card, ErrorText, Field, Modal, PageTitle, Toggle } from "../ui";
+import { PlusIcon } from "../icons";
+import { errMsg } from "./common";
+import { addBarber, updateBarber } from "@/lib/store";
+import { bnDigits, parseIntInput } from "@/lib/money";
+import type { Barber } from "@/lib/types";
+
+export function Barbers() {
+  const s = useLiveStore();
+  const [editing, setEditing] = useState<Barber | "new" | null>(null);
+  const barbers = [...s.db.barbers].sort((a, z) => Number(z.active) - Number(a.active) || a.sortOrder - z.sortOrder);
+  const salesCount = (id: number) => s.db.sales.filter((x) => x.barberId === id && !x.voidedAt).length;
+  const nextName = `নাপিত ${bnDigits(s.db.barbers.length + 1)}`;
+
+  return (
+    <>
+      <PageTitle
+        title="নাপিত"
+        sub={`${bnDigits(s.db.barbers.filter((b) => b.active).length)} জন সক্রিয়`}
+        actions={
+          <Button onClick={() => setEditing("new")}>
+            <PlusIcon className="h-5 w-5" />
+            নতুন নাপিত
+          </Button>
+        }
+      />
+
+      <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        {barbers.map((b) => (
+          <li key={b.id}>
+            <Card className={b.active ? "" : "opacity-60"}>
+              <div className="flex items-center gap-3">
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-primary text-lg font-bold text-white">
+                  {b.name.trim().slice(-1)}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="truncate font-semibold text-fg">{b.name}</div>
+                  <div className="text-sm text-muted">
+                    কমিশন {bnDigits(b.commissionPct)}% · {bnDigits(salesCount(b.id))}টি বিক্রি
+                  </div>
+                </div>
+                {b.active ? <Badge tone="green">সক্রিয়</Badge> : <Badge>নিষ্ক্রিয়</Badge>}
+              </div>
+              <Button variant="secondary" size="sm" className="mt-4 w-full" onClick={() => setEditing(b)}>
+                এডিট
+              </Button>
+            </Card>
+          </li>
+        ))}
+      </ul>
+
+      <Modal
+        open={editing !== null}
+        title={editing === "new" ? "নতুন নাপিত" : "নাপিত এডিট"}
+        onClose={() => setEditing(null)}
+      >
+        {editing !== null && (
+          <BarberForm
+            key={editing === "new" ? "new" : editing.id}
+            barber={editing === "new" ? null : editing}
+            defaultName={nextName}
+            onDone={() => setEditing(null)}
+          />
+        )}
+      </Modal>
+    </>
+  );
+}
+
+function BarberForm({ barber, defaultName, onDone }: { barber: Barber | null; defaultName: string; onDone: () => void }) {
+  const [name, setName] = useState(barber?.name ?? defaultName);
+  const [pct, setPct] = useState(String(barber?.commissionPct ?? 50));
+  const [order, setOrder] = useState(String(barber?.sortOrder ?? ""));
+  const [active, setActive] = useState(barber?.active ?? true);
+  const [error, setError] = useState("");
+
+  return (
+    <form
+      className="space-y-4"
+      onSubmit={(e) => {
+        e.preventDefault();
+        const commission = parseIntInput(pct);
+        if (commission === null) return setError("কমিশন ০ থেকে ১০০ এর মধ্যে হবে");
+        try {
+          if (barber) {
+            const sortOrder = parseIntInput(order) ?? barber.sortOrder;
+            updateBarber(barber.id, { name, commissionPct: commission, sortOrder, active });
+          } else {
+            addBarber(name, commission);
+          }
+          onDone();
+        } catch (err) {
+          setError(errMsg(err));
+        }
+      }}
+    >
+      <Field label="নাম" value={name} onChange={(e) => setName(e.target.value)} required autoFocus />
+      <Field
+        label="কমিশন (%)"
+        inputMode="numeric"
+        value={pct}
+        onChange={(e) => setPct(e.target.value)}
+        hint="নাপিত প্রতিটি সার্ভিসের কত শতাংশ পাবে। পরিবর্তন শুধু নতুন বিক্রিতে প্রযোজ্য হবে।"
+        required
+      />
+      {barber && (
+        <>
+          <Field label="ক্রম (ছোট সংখ্যা আগে দেখাবে)" inputMode="numeric" value={order} onChange={(e) => setOrder(e.target.value)} />
+          <Toggle checked={active} onChange={setActive} label={active ? "সক্রিয় — তালিকায় দেখাবে" : "নিষ্ক্রিয় — তালিকায় দেখাবে না"} />
+        </>
+      )}
+      <ErrorText>{error}</ErrorText>
+      <Button type="submit" className="w-full">
+        সেভ করুন
+      </Button>
+    </form>
+  );
+}

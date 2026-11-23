@@ -1,0 +1,91 @@
+@import "tailwindcss";
+
+/*
+ * Light, soft-pastel dashboard theme: off-white canvas, white rounded cards,
+ * a single blue accent, and pastel tints for stat cards.
+ */
+@theme {
+  /* Surfaces */
+  --color-bg: #f3f5f9;
+  --color-surface: #ffffff;
+  --color-surface-2: #f5f7fb;
+  --color-line: #e9ecf2;
+  --color-line-strong: #d8dde7;
+
+  /* Text */
+  --color-fg: #151826;
+  --color-muted: #6b7183;
+  --color-subtle: #9aa0b0;
+
+  /* Accent */
+  --color-primary: #3b82f6;
+  --color-primary-hover: #2f6fe0;
+  --color-primary-soft: #eaf2ff;
+
+  /* Status */
+  --color-success: #15a34a;
+  --color-success-soft: #ddf7e6;
+  --color-danger: #e5484d;
+  --color-danger-soft: #fdecec;
+  --color-warning: #c2780a;
+  --color-warning-soft: #fff4d9;
+
+  /* Pastel card tints */
+  --color-lavender: #f3f0ff;
+  --color-blush: #fff0f3;
+  --color-peach: #fff5ea;
+  --color-mint: #ebfaf1;
+
+  --font-sans: var(--font-latin), var(--font-bn), ui-sans-serif, system-ui, sans-serif;
+
+  --shadow-card: 0 1px 2px rgb(21 24 38 / 0.04), 0 4px 16px rgb(21 24 38 / 0.04);
+  --shadow-pop: 0 12px 40px rgb(21 24 38 / 0.14);
+}
+
+html {
+  color-scheme: light;
+}
+
+body {
+  background: var(--color-bg);
+  color: var(--color-fg);
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Hide number-input spinners — taka fields are typed, not stepped. */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type="number"] {
+  -moz-appearance: textfield;
+}
+
+.scrollbar-none {
+  scrollbar-width: none;
+}
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+
+/* ---------- Receipt printing (FR-13) ---------- */
+@media print {
+  @page {
+    margin: 0;
+  }
+  html,
+  body {
+    background: #fff !important;
+    color: #000 !important;
+  }
+  .no-print {
+    display: none !important;
+  }
+  .print-area {
+    box-shadow: none !important;
+    border: none !important;
+    margin: 0 !important;
+    border-radius: 0 !important;
+  }
+}
