@@ -21,7 +21,7 @@ npm run dev                  # http://localhost:3000
 | Script | What it does |
 |---|---|
 | `npm run dev` | Start the dev server |
-| `npm run build` / `npm start` | Production build / serve it |
+| `npm run build` / `npm start` | Build (runs migrations only on Vercel Production) / serve it |
 | `npm run typecheck` | `tsc --noEmit` |
 | `npm run lint` | ESLint |
 | `npm test` | Vitest |
@@ -31,7 +31,7 @@ npm run dev                  # http://localhost:3000
 
 ## Environment variables
 
-See `.env.example`. Never commit `.env.local`.
+See `.env.example`. Never commit `.env.local`. Deploying: [`docs/DEPLOY.md`](docs/DEPLOY.md).
 
 | Name | Purpose |
 |---|---|
