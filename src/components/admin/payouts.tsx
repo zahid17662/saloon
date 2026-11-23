@@ -1,30 +1,41 @@
 "use client";
 
-import { useState } from "react";
-import { useLiveStore } from "../gates";
-import { Badge, Button, Card, Empty, ErrorText, Field, Modal, PageTitle, Select } from "../ui";
-import { errMsg, TableWrap, td, tdNum, th, thNum } from "./common";
-import { addPayout, canDeletePayout, deletePayout } from "@/lib/store";
-import { barberBalance } from "@/lib/reports";
+import { useEffect, useState } from "react";
+import { addPayout, deletePayout } from "@/app/actions/payouts";
+import { useCatalog } from "../catalog-context";
+import { Badge, Button, Card, Empty, ErrorText, Field, LoadingScreen, Modal, PageTitle, Select } from "../ui";
+import { TableWrap, td, tdNum, th, thNum } from "./common";
+import { usePayoutsView } from "./use-admin-data";
+import { NET_ERR } from "@/lib/messages";
+import { canDeletePayout } from "@/lib/sale-rules";
 import { bnDigits, parseIntInput, taka } from "@/lib/money";
-import { dhakaDateToIso, fmtDate, todayKey } from "@/lib/time";
+import { fmtDate, todayKey } from "@/lib/time";
 import type { Barber } from "@/lib/types";
 
 export function Payouts() {
-  const s = useLiveStore();
+  const catalog = useCatalog();
+  const view = usePayoutsView();
   const [payTo, setPayTo] = useState<Barber | null>(null);
   const [filter, setFilter] = useState("all");
   const [error, setError] = useState("");
+  // Clock for the 24-hour delete button; the server re-checks the window on every delete.
+  const [nowMs, setNowMs] = useState(() => Date.now());
+  useEffect(() => {
+    const t = setInterval(() => setNowMs(Date.now()), 60_000);
+    return () => clearInterval(t);
+  }, []);
 
-  const cards = s.db.barbers
-    .map((b) => ({ barber: b, ...barberBalance(b.id, s.db.sales, s.db.payouts) }))
+  if (!catalog || !view.data) return view.error ? <ErrorText>{view.error}</ErrorText> : <LoadingScreen />;
+  const { balances, payouts } = view.data;
+  const balanceOf = (id: number) => balances.find((b) => b.barberId === id) ?? { earned: 0, paid: 0, balance: 0 };
+
+  const cards = catalog.barbers
+    .map((b) => ({ barber: b, ...balanceOf(b.id) }))
     .filter((c) => c.barber.active || c.balance !== 0)
     .sort((a, z) => a.barber.sortOrder - z.barber.sortOrder);
   const totalOwed = cards.reduce((n, c) => n + Math.max(0, c.balance), 0);
 
-  const history = s.db.payouts
-    .filter((p) => filter === "all" || p.barberId === Number(filter))
-    .sort((a, z) => (a.paidAt < z.paidAt ? 1 : a.paidAt > z.paidAt ? -1 : z.id - a.id));
+  const history = payouts.filter((p) => filter === "all" || p.barberId === Number(filter)); // already newest first
 
   return (
     <>
@@ -66,7 +77,7 @@ export function Payouts() {
         <h2 className="text-lg font-semibold text-fg">পেমেন্টের ইতিহাস</h2>
         <Select label="নাপিত" value={filter} onChange={(e) => setFilter(e.target.value)} className="w-40">
           <option value="all">সবাই</option>
-          {s.db.barbers.map((b) => (
+          {catalog.barbers.map((b) => (
             <option key={b.id} value={b.id}>
               {b.name}
             </option>
@@ -91,21 +102,22 @@ export function Payouts() {
             {history.map((p) => (
               <tr key={p.id}>
                 <td className={`${td} whitespace-nowrap`}>{fmtDate(p.paidAt)}</td>
-                <td className={td}>{s.db.barbers.find((b) => b.id === p.barberId)?.name}</td>
+                <td className={td}>{catalog.barbers.find((b) => b.id === p.barberId)?.name}</td>
                 <td className={tdNum}>{taka(p.amount)}</td>
                 <td className={`${td} text-muted`}>{p.note || "—"}</td>
                 <td className={`${td} text-right`}>
-                  {canDeletePayout(p) && (
+                  {canDeletePayout(p, nowMs) && (
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => {
-                        if (!window.confirm(`${taka(p.amount)} এর পেমেন্টটি মুছবেন?`)) return;
+                      onClick={async () => {
+                        if (!window.confirm(`${taka(p.amount)}-এর পেমেন্টটি মুছবেন?`)) return;
                         try {
-                          deletePayout(p.id);
-                          setError("");
-                        } catch (e) {
-                          setError(errMsg(e));
+                          const r = await deletePayout({ id: p.id });
+                          setError(r.ok ? "" : r.error);
+                          view.reload();
+                        } catch {
+                          setError(NET_ERR);
                         }
                       }}
                     >
@@ -124,8 +136,11 @@ export function Payouts() {
           <PayoutForm
             key={payTo.id}
             barber={payTo}
-            suggested={Math.max(0, barberBalance(payTo.id, s.db.sales, s.db.payouts).balance)}
-            onDone={() => setPayTo(null)}
+            suggested={Math.max(0, balanceOf(payTo.id).balance)}
+            onDone={() => {
+              setPayTo(null);
+              view.reload();
+            }}
           />
         )}
       </Modal>
@@ -138,19 +153,25 @@ function PayoutForm({ barber, suggested, onDone }: { barber: Barber; suggested: 
   const [date, setDate] = useState(todayKey());
   const [note, setNote] = useState("");
   const [error, setError] = useState("");
+  const [busy, setBusy] = useState(false);
 
   return (
     <form
       className="space-y-4"
-      onSubmit={(e) => {
+      onSubmit={async (e) => {
         e.preventDefault();
+        if (busy) return;
         const value = parseIntInput(amount);
         if (value === null || value <= 0) return setError("টাকার পরিমাণ সঠিক নয়");
+        setBusy(true);
         try {
-          addPayout(barber.id, value, dhakaDateToIso(date), note);
+          const r = await addPayout({ barberId: barber.id, amount: value, date, note });
+          if (!r.ok) return setError(r.error);
           onDone();
-        } catch (err) {
-          setError(errMsg(err));
+        } catch {
+          setError(NET_ERR);
+        } finally {
+          setBusy(false);
         }
       }}
     >
@@ -162,8 +183,8 @@ function PayoutForm({ barber, suggested, onDone }: { barber: Barber; suggested: 
       <Field label="তারিখ" type="date" value={date} max={todayKey()} onChange={(e) => setDate(e.target.value)} required />
       <Field label="নোট (ঐচ্ছিক)" value={note} onChange={(e) => setNote(e.target.value)} placeholder="যেমন: সাপ্তাহিক পেমেন্ট" />
       <ErrorText>{error}</ErrorText>
-      <Button type="submit" className="w-full">
-        পেমেন্ট সেভ করুন
+      <Button type="submit" className="w-full" disabled={busy}>
+        {busy ? "সেভ হচ্ছে…" : "পেমেন্ট সেভ করুন"}
       </Button>
     </form>
   );

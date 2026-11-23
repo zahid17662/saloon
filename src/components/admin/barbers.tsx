@@ -1,8 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { useLiveStore } from "../gates";
-import { Badge, Button, Card, ErrorText, Field, Modal, PageTitle, Toggle } from "../ui";
+import { useCatalog } from "../catalog-context";
+import { Badge, Button, Card, ErrorText, Field, LoadingScreen, Modal, PageTitle, Toggle } from "../ui";
+import { usePayoutsView } from "./use-admin-data";
 import { PlusIcon } from "../icons";
 import { addBarber, updateBarber } from "@/app/actions/catalog";
 import { NET_ERR } from "@/lib/messages";
@@ -10,17 +11,19 @@ import { bnDigits, nameInitial, parseIntInput } from "@/lib/money";
 import type { Barber } from "@/lib/types";
 
 export function Barbers() {
-  const s = useLiveStore();
+  const catalog = useCatalog();
+  const view = usePayoutsView(); // per-barber live sale counts come with the balances
   const [editing, setEditing] = useState<Barber | "new" | null>(null);
-  const barbers = [...s.db.barbers].sort((a, z) => Number(z.active) - Number(a.active) || a.sortOrder - z.sortOrder);
-  const salesCount = (id: number) => s.db.sales.filter((x) => x.barberId === id && !x.voidedAt).length;
-  const nextName = `নাপিত ${bnDigits(s.db.barbers.length + 1)}`;
+  if (!catalog) return <LoadingScreen />;
+  const barbers = [...catalog.barbers].sort((a, z) => Number(z.active) - Number(a.active) || a.sortOrder - z.sortOrder);
+  const salesCount = (id: number) => view.data?.balances.find((b) => b.barberId === id)?.salesCount ?? 0;
+  const nextName = `নাপিত ${bnDigits(catalog.barbers.length + 1)}`;
 
   return (
     <>
       <PageTitle
         title="নাপিত"
-        sub={`${bnDigits(s.db.barbers.filter((b) => b.active).length)} জন সক্রিয়`}
+        sub={`${bnDigits(catalog.barbers.filter((b) => b.active).length)} জন সক্রিয়`}
         actions={
           <Button onClick={() => setEditing("new")}>
             <PlusIcon className="h-5 w-5" />

@@ -125,6 +125,27 @@ const dateKey = z
   .regex(/^\d{4}-\d{2}-\d{2}$/, SALE_MSG.badDate)
   .refine((k) => !Number.isNaN(Date.parse(`${k}T00:00:00Z`)) && new Date(`${k}T00:00:00Z`).toISOString().startsWith(k), SALE_MSG.badDate);
 
+// ---------- payouts (FR-18, BR-7) ----------
+
+const PAYOUT_MSG = {
+  amount: "টাকার পরিমাণ সঠিক নয়",
+  note: "নোট ২০০ অক্ষরের বেশি হবে না",
+} as const;
+
+export const payoutInput = z.strictObject({
+  barberId: idSchema,
+  amount: z
+    .number({ error: PAYOUT_MSG.amount })
+    .int(PAYOUT_MSG.amount)
+    .min(1, PAYOUT_MSG.amount)
+    .max(10_000_000, PAYOUT_MSG.amount),
+  date: dateKey,
+  note: z.string({ error: PAYOUT_MSG.note }).trim().max(200, PAYOUT_MSG.note).default(""),
+});
+export const payoutDeleteInput = z.strictObject({ id: idSchema });
+
+export type PayoutInput = z.infer<typeof payoutInput>;
+
 export const salesQuery = z
   .strictObject({
     from: dateKey,

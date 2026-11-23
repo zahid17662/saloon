@@ -1,15 +1,16 @@
 "use client";
 
 import Link from "next/link";
-import { useLiveStore } from "../gates";
+import { useCatalog } from "../catalog-context";
 import { RangeFilter, useDateRange } from "../range-filter";
-import { Badge, Card, CardHeader, Empty, Stat } from "../ui";
+import { Badge, Card, CardHeader, Empty, ErrorText, LoadingScreen, Stat } from "../ui";
 import { ArrowUpRightIcon, BagIcon, ReceiptIcon, UsersIcon, WalletIcon } from "../icons";
 import { BarberTable, rangeLabel } from "./common";
 import { SalesChart } from "./sales-chart";
+import { useSalesWindow } from "./use-admin-data";
 import { byBarber, byService, liveSales, summarize } from "@/lib/reports";
 import { bnDigits, receiptNo, taka } from "@/lib/money";
-import { fmtDate, fmtDateTime, shiftDays, type DateRange } from "@/lib/time";
+import { fmtDate, fmtDateTime, shiftDays, todayKey, type DateRange } from "@/lib/time";
 
 /** Same-length period immediately before `r`, for the trend pills. */
 function previousRange(r: DateRange): DateRange {
@@ -20,16 +21,25 @@ function previousRange(r: DateRange): DateRange {
 const pct = (cur: number, prev: number) => (prev > 0 ? ((cur - prev) / prev) * 100 : null);
 
 export function Dashboard() {
-  const s = useLiveStore();
+  const catalog = useCatalog();
   const r = useDateRange("today");
-  const sales = liveSales(s.db.sales, r.range);
-  const prev = summarize(liveSales(s.db.sales, previousRange(r.range)));
+  // One request covers the chosen period, the period before it (trend pills) and the 14-day chart.
+  const today = todayKey();
+  const loaded = useSalesWindow(
+    [previousRange(r.range).from, shiftDays(today, -13)].sort()[0],
+    [r.range.to, today].sort()[1],
+  );
+  if (!catalog || !loaded.data) return loaded.error ? <ErrorText>{loaded.error}</ErrorText> : <LoadingScreen />;
+  const all = loaded.data;
+  const barbers = catalog.barbers;
+  const sales = liveSales(all, r.range);
+  const prev = summarize(liveSales(all, previousRange(r.range)));
   const t = summarize(sales);
   const avg = t.count ? Math.round(t.total / t.count) : 0;
   const prevAvg = prev.count ? Math.round(prev.total / prev.count) : 0;
-  const rows = byBarber(sales, s.db.barbers);
+  const rows = byBarber(sales, barbers);
   const top = byService(sales).slice(0, 5);
-  const recent = [...s.db.sales].sort((a, z) => z.id - a.id).slice(0, 5);
+  const recent = [...all].sort((a, z) => z.id - a.id).slice(0, 5);
   const vsLabel = r.preset === "today" ? "গতকালের তুলনায়" : "আগের সময়ের তুলনায়";
 
   return (
@@ -126,7 +136,7 @@ export function Dashboard() {
         </Card>
 
         <Card className="xl:col-span-8">
-          <SalesChart sales={s.db.sales} />
+          <SalesChart sales={all} />
         </Card>
 
         <Card className="xl:col-span-4">
@@ -146,7 +156,7 @@ export function Dashboard() {
                 <li key={sale.id} className="flex items-center gap-3 rounded-2xl px-2 py-2.5 hover:bg-surface-2">
                   <div className="min-w-0 flex-1">
                     <div className="truncate text-sm font-medium text-fg">
-                      {s.db.barbers.find((b) => b.id === sale.barberId)?.name}
+                      {barbers.find((b) => b.id === sale.barberId)?.name}
                     </div>
                     <div className="truncate text-xs text-muted">
                       {receiptNo(sale.id)} · {fmtDateTime(sale.createdAt)}

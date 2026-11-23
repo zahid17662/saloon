@@ -1,9 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { useLiveStore } from "../gates";
+import { useCatalog } from "../catalog-context";
 import { RangeFilter, useDateRange } from "../range-filter";
-import { Button, cx, Empty, PageTitle } from "../ui";
+import { Button, cx, Empty, ErrorText, LoadingScreen, PageTitle } from "../ui";
+import { useSalesWindow } from "./use-admin-data";
 import { rangeLabel, TableWrap, td, tdNum, th, thNum } from "./common";
 import { byPeriod, byService, downloadFile, liveSales, summarize, toCsv } from "@/lib/reports";
 import { bnDigits, taka } from "@/lib/money";
@@ -17,13 +18,15 @@ const TABS: { id: Mode; label: string }[] = [
 ];
 
 export function Reports() {
-  const s = useLiveStore();
+  const catalog = useCatalog();
   const r = useDateRange("month");
   const [mode, setMode] = useState<Mode>("day");
-  const sales = liveSales(s.db.sales, r.range);
+  const loaded = useSalesWindow(r.range.from, r.range.to);
+  if (!catalog || !loaded.data) return loaded.error ? <ErrorText>{loaded.error}</ErrorText> : <LoadingScreen />;
+  const sales = liveSales(loaded.data, r.range);
   const t = summarize(sales);
 
-  const periodRows = mode === "service" ? [] : byPeriod(sales, s.db.barbers, mode);
+  const periodRows = mode === "service" ? [] : byPeriod(sales, catalog.barbers, mode);
   const serviceRows = mode === "service" ? byService(sales) : [];
   const fmtPeriod = (p: string) => (mode === "month" ? fmtMonthKey(p) : fmtDateKey(p));
 
