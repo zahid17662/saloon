@@ -5,12 +5,10 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { loginAdmin } from "@/app/actions/auth";
 import { safeNext } from "@/lib/route-guard";
-import { useStore } from "@/lib/store";
 import { Button, ErrorText } from "../ui";
 import { LockIcon } from "../icons";
 
-export function AdminLogin() {
-  const s = useStore();
+export function AdminLogin({ shopName }: { shopName: string }) {
   const router = useRouter();
   const [pin, setPin] = useState("");
   const [error, setError] = useState("");
@@ -36,7 +34,7 @@ export function AdminLogin() {
           <LockIcon className="h-8 w-8" />
         </div>
         <h1 className="text-xl font-bold text-fg">এডমিন লগইন</h1>
-        <p className="mt-1 text-sm text-muted">{s?.db.settings.shopName}</p>
+        <p className="mt-1 text-sm text-muted">{shopName}</p>
         <input
           type="password"
           inputMode="numeric"
@@ -53,7 +51,7 @@ export function AdminLogin() {
         <div className="mt-3">
           <ErrorText>{error}</ErrorText>
         </div>
-        <Button type="submit" size="lg" className="mt-4 w-full" disabled={!pin || !s || pending}>
+        <Button type="submit" size="lg" className="mt-4 w-full" disabled={!pin || pending}>
           লগইন
         </Button>
         <Link href="/" className="mt-2 inline-block text-sm text-primary hover:underline">

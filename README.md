@@ -49,9 +49,9 @@ See `.env.example`. Never commit `.env.local`. Deploying: [`docs/DEPLOY.md`](doc
 ## Layout
 
 - `src/db/` schema, `db` client, migrations
-- `src/lib/` money, time (Asia/Dhaka), reports, and `store.ts` (temporary localStorage layer, to be replaced by Server Actions)
+- `src/lib/` money, time (Asia/Dhaka), reports, the pure report functions, and zod schemas; `src/server/` holds the database functions and `src/app/actions/` the Server Actions
 - `src/components/ui.tsx` shared UI kit
 
 ## Status
 
-Frontend is complete on a temporary localStorage data layer; backend (Server Actions, auth, Neon) is in progress. See PRD §0.
+Everything runs on Neon through Server Actions (the localStorage layer is gone); Playwright E2E passes. Open items are listed in PRD §0 and §17.

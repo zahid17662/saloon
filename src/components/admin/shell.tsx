@@ -5,7 +5,6 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { logoutAdmin } from "@/app/actions/auth";
 import { NET_ERR } from "@/lib/messages";
-import { useStore } from "@/lib/store";
 import { useCatalog } from "../catalog-context";
 import { cx, LoadingScreen } from "../ui";
 import {
@@ -36,14 +35,13 @@ const NAV = [
  */
 export function AdminShell({ children }: { children: ReactNode }) {
   const catalog = useCatalog();
-  const local = useStore(); // TRANSITIONAL: null on the server; children read sales/payouts from it
   const router = useRouter();
   const pathname = usePathname();
   const isLogin = pathname === "/admin/login";
   const loggingOut = useRef(false);
 
   if (isLogin) return <>{children}</>;
-  if (!catalog || !local) return <LoadingScreen />;
+  if (!catalog) return <LoadingScreen />;
   const shopName = catalog.settings.shopName;
 
   async function logout() {

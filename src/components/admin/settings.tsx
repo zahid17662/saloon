@@ -1,17 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { useLiveStore } from "../gates";
-import { Button, Card, ErrorText, Field, PageTitle, Select } from "../ui";
-import { errMsg } from "./common";
+import { useCatalog } from "../catalog-context";
+import { Button, Card, ErrorText, Field, LoadingScreen, PageTitle, Select } from "../ui";
 import { changeAdminPin, changeShopCode } from "@/app/actions/auth";
 import { updateSettings } from "@/app/actions/catalog";
 import { NET_ERR } from "@/lib/messages";
 import { bnDigits } from "@/lib/money";
-import { exportAll, resetDemoData } from "@/lib/store";
-import { downloadFile } from "@/lib/reports";
-import { todayKey } from "@/lib/time";
-import type { PaperWidth } from "@/lib/types";
+import type { PaperWidth, Settings } from "@/lib/types";
 
 function Saved({ show }: { show: boolean }) {
   if (!show) return null;
@@ -23,11 +19,13 @@ function Saved({ show }: { show: boolean }) {
 }
 
 export function SettingsPage() {
+  const catalog = useCatalog();
+  if (!catalog) return <LoadingScreen />;
   return (
     <>
       <PageTitle title="সেটিংস" />
       <div className="grid gap-4 lg:grid-cols-2">
-        <ShopInfo />
+        <ShopInfo settings={catalog.settings} />
         <div className="space-y-4">
           <PinForm />
           <ShopCodeForm />
@@ -38,14 +36,13 @@ export function SettingsPage() {
   );
 }
 
-function ShopInfo() {
-  const { db } = useLiveStore();
+function ShopInfo({ settings }: { settings: Settings }) {
   const [form, setForm] = useState({
-    shopName: db.settings.shopName,
-    shopAddress: db.settings.shopAddress,
-    shopPhone: db.settings.shopPhone,
-    receiptFooter: db.settings.receiptFooter,
-    paperWidth: db.settings.paperWidth,
+    shopName: settings.shopName,
+    shopAddress: settings.shopAddress,
+    shopPhone: settings.shopPhone,
+    receiptFooter: settings.receiptFooter,
+    paperWidth: settings.paperWidth,
   });
   const [error, setError] = useState("");
   const [saved, setSaved] = useState(false);
@@ -171,42 +168,22 @@ function ShopCodeForm() {
   );
 }
 
+// A plain file download from the admin-only route (the browser keeps the current page).
+function downloadBackup() {
+  const a = document.createElement("a");
+  a.href = "/admin/backup";
+  a.download = "";
+  a.click();
+}
+
 function DataTools() {
-  const [error, setError] = useState("");
   return (
     <Card>
       <h2 className="mb-1 text-lg font-semibold text-fg">ডেটা</h2>
       <p className="mb-4 text-sm text-muted">সব হিসাবের একটি কপি ডাউনলোড করে রাখুন।</p>
-      <div className="flex flex-wrap gap-2">
-        <Button
-          variant="secondary"
-          onClick={() => {
-            try {
-              downloadFile(`salon-backup-${todayKey()}.json`, exportAll(), "application/json");
-            } catch (err) {
-              setError(errMsg(err));
-            }
-          }}
-        >
-          ব্যাকআপ ডাউনলোড
-        </Button>
-        <Button
-          variant="danger"
-          onClick={() => {
-            if (!window.confirm("সব বিক্রি, পেমেন্ট ও পরিবর্তন মুছে শুরুর ডেমো ডেটায় ফিরে যাবে। নিশ্চিত?")) return;
-            try {
-              resetDemoData();
-            } catch (err) {
-              setError(errMsg(err));
-            }
-          }}
-        >
-          ডেমো ডেটা রিসেট
-        </Button>
-      </div>
-      <div className="mt-3">
-        <ErrorText>{error}</ErrorText>
-      </div>
+      <Button variant="secondary" onClick={downloadBackup}>
+        ব্যাকআপ ডাউনলোড
+      </Button>
     </Card>
   );
 }

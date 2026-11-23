@@ -1,14 +1,9 @@
 "use client";
 
-import { ActionError } from "@/lib/store";
-import { GENERIC_ERR } from "@/lib/messages";
 import { bnDigits, nameInitial, taka } from "@/lib/money";
 import { fmtDateKey, type DateRange } from "@/lib/time";
 import type { BarberRow } from "@/lib/reports";
 import { Empty } from "../ui";
-
-export const errMsg = (e: unknown) =>
-  e instanceof ActionError ? e.message : GENERIC_ERR;
 
 export const rangeLabel = (r: DateRange) =>
   r.from === r.to ? fmtDateKey(r.from) : `${fmtDateKey(r.from)} – ${fmtDateKey(r.to)}`;

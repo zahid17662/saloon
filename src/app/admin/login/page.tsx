@@ -1,10 +1,11 @@
+import { connection } from "next/server";
 import { AdminLogin } from "@/components/admin/login";
+import { publicShopName } from "@/lib/shop-name";
 
-// Admin data is read in the browser for now (frontend-only data layer), so
-// there is no server-rendered content to validate. Remove once pages load
-// their data from Neon on the server.
+// Reads the shop name from the database on every request.
 export const instant = false;
 
-export default function Page() {
-  return <AdminLogin />;
+export default async function Page() {
+  await connection();
+  return <AdminLogin shopName={await publicShopName()} />;
 }

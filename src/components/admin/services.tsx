@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { useLiveStore } from "../gates";
-import { Badge, Button, Card, ErrorText, Field, Modal, PageTitle, Select, Toggle } from "../ui";
+import { useCatalog } from "../catalog-context";
+import { Badge, Button, Card, ErrorText, Field, LoadingScreen, Modal, PageTitle, Select, Toggle } from "../ui";
 import { PlusIcon } from "../icons";
 import { addCategory, addService, updateCategory, updateService } from "@/app/actions/catalog";
 import { NET_ERR } from "@/lib/messages";
@@ -15,15 +15,16 @@ type Editing =
   | null;
 
 export function Services() {
-  const s = useLiveStore();
+  const catalog = useCatalog();
   const [editing, setEditing] = useState<Editing>(null);
-  const categories = [...s.db.categories].sort((a, z) => a.sortOrder - z.sortOrder);
+  if (!catalog) return <LoadingScreen />;
+  const categories = [...catalog.categories].sort((a, z) => a.sortOrder - z.sortOrder);
 
   return (
     <>
       <PageTitle
         title="সার্ভিস ও দাম"
-        sub={`${bnDigits(s.db.services.filter((x) => x.active).length)}টি সক্রিয় সার্ভিস`}
+        sub={`${bnDigits(catalog.services.filter((x) => x.active).length)}টি সক্রিয় সার্ভিস`}
         actions={
           <Button variant="secondary" onClick={() => setEditing({ kind: "category", category: null })}>
             <PlusIcon className="h-5 w-5" />
@@ -34,7 +35,7 @@ export function Services() {
 
       <div className="space-y-4">
         {categories.map((cat) => {
-          const list = s.db.services.filter((x) => x.categoryId === cat.id).sort((a, z) => a.sortOrder - z.sortOrder);
+          const list = catalog.services.filter((x) => x.categoryId === cat.id).sort((a, z) => a.sortOrder - z.sortOrder);
           return (
             <Card key={cat.id} className={cat.active ? "" : "opacity-60"}>
               <div className="mb-3 flex flex-wrap items-center gap-2">

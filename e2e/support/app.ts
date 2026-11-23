@@ -24,6 +24,8 @@ export async function unlockShop(page: Page): Promise<void> {
 export async function pickBarber(page: Page, name: string): Promise<void> {
   await page.getByRole("link", { name }).click();
   await expect(page).toHaveURL(/\/barber\/\d+/);
+  // Ready = the screen has loaded its catalog (the first load after a database reset can be slow).
+  await expect(page.getByRole("link", { name: "নাপিত তালিকা" })).toBeVisible({ timeout: 30_000 });
 }
 
 export async function addService(page: Page, name: string): Promise<void> {
