@@ -29,7 +29,10 @@ export function loadE2eEnv(): void {
   if (test.E2E_CONFIRM_RESET !== expected) {
     throw new Error("E2E: set E2E_CONFIRM_RESET=<the same ep-... id> in .env.test to confirm this branch may be wiped. Refusing to run.");
   }
-  for (const other of [local.DATABASE_URL, local.DIRECT_URL, process.env.DATABASE_URL]) {
+  // A DATABASE_URL already in the environment that is exactly the test URL is our own export seen by a
+  // worker process, not a different database.
+  const inherited = process.env.DATABASE_URL === url ? undefined : process.env.DATABASE_URL;
+  for (const other of [local.DATABASE_URL, local.DIRECT_URL, inherited]) {
     if (other && endpointOf(other) === expected) {
       throw new Error("E2E: E2E_ENDPOINT is the same database as .env.local (dev). Use a separate Neon branch. Refusing to run.");
     }

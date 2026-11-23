@@ -24,6 +24,9 @@ test("reports page: today, per barber and per service", async ({ page }) => {
   const totals = page.locator("tfoot").first();
   await expect(totals).toContainText(tk(400));
   await expect(page.getByRole("row", { name: /Karim/ }).first()).toContainText(tk(60));
+
+  // The per-service view is a separate button next to daily / monthly.
+  await page.getByRole("button", { name: "সার্ভিস অনুযায়ী" }).click();
   await expect(page.getByRole("row", { name: /Hair Cutting/ })).toContainText(tk(300)); // 2 x 150
   await expect(page.getByText("Hair Wash")).toHaveCount(0); // only sold in the voided sale
 });
