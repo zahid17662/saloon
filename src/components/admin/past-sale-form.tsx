@@ -1,16 +1,16 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { addPastSale } from "@/app/actions/sales";
 import { useCatalog } from "../catalog-context";
 import { MinusIcon, PlusIcon } from "../icons";
 import { Button, ErrorText, Field, Select } from "../ui";
 import { BACKDATE_MAX_DAYS, resolveBackdate } from "@/lib/backdate";
+import { NET_ERR } from "@/lib/messages";
 import { bnDigits, splitAmount, taka } from "@/lib/money";
 import { shiftDays, todayKey } from "@/lib/time";
 import { PAYMENT_LABELS, type PaymentMethod } from "@/lib/types";
 
-const NET_ERR = "সংযোগে সমস্যা হয়েছে, আবার চেষ্টা করুন";
 
 function newKey() {
   if (typeof crypto !== "undefined" && "randomUUID" in crypto) return crypto.randomUUID();
@@ -22,7 +22,14 @@ function newKey() {
  * The limits shown here (today back to 60 days, never the future) are a convenience; the server
  * re-checks them against its own clock and is the only place that sets "entered by admin".
  */
-export function PastSaleForm({ onDone }: { onDone: (dateKey: string) => void }) {
+export function PastSaleForm({
+  onDone,
+  onBusyChange,
+}: {
+  onDone: (dateKey: string) => void;
+  /** Lets the parent block closing the dialog while a save is in flight. */
+  onBusyChange?: (busy: boolean) => void;
+}) {
   const catalog = useCatalog();
   const today = todayKey();
   const [date, setDate] = useState(today);
@@ -30,14 +37,19 @@ export function PastSaleForm({ onDone }: { onDone: (dateKey: string) => void }) 
   const [barberId, setBarberId] = useState("");
   const [payment, setPayment] = useState<PaymentMethod>("CASH");
   const [cart, setCart] = useState<Record<number, number>>({});
-  const [idemKey] = useState(newKey);
+  // One idempotency key per distinct entry: a pure retry reuses it, an edited entry gets a new one.
+  const keyRef = useRef({ sig: "", key: "" });
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+  useEffect(() => {
+    onBusyChange?.(busy);
+  }, [busy, onBusyChange]);
 
   if (!catalog) return null;
   const barbers = catalog.barbers.filter((b) => b.active).sort((a, z) => a.sortOrder - z.sortOrder);
   const cats = catalog.categories.filter((c) => c.active).sort((a, z) => a.sortOrder - z.sortOrder);
-  const svcs = catalog.services.filter((s) => s.active);
+  const liveCats = new Set(cats.map((c) => c.id));
+  const svcs = catalog.services.filter((s) => s.active && liveCats.has(s.categoryId));
   const barber = barbers.find((b) => b.id === Number(barberId));
 
   const lines = Object.entries(cart)
@@ -64,6 +76,8 @@ export function PastSaleForm({ onDone }: { onDone: (dateKey: string) => void }) 
         if (lines.length === 0) return setError("কোনো সার্ভিস বাছাই করা হয়নি");
         const when = resolveBackdate(date, time, new Date());
         if (!when.ok) return setError(when.error);
+        const sig = JSON.stringify([barber.id, payment, date, time, lines.map((l) => [l.svc.id, l.qty])]);
+        if (keyRef.current.sig !== sig) keyRef.current = { sig, key: newKey() };
         setBusy(true);
         setError("");
         try {
@@ -71,7 +85,7 @@ export function PastSaleForm({ onDone }: { onDone: (dateKey: string) => void }) 
             barberId: barber.id,
             items: lines.map((l) => ({ serviceId: l.svc.id, qty: l.qty })),
             paymentMethod: payment,
-            idempotencyKey: idemKey,
+            idempotencyKey: keyRef.current.key,
             date,
             time,
           });
@@ -140,7 +154,7 @@ export function PastSaleForm({ onDone }: { onDone: (dateKey: string) => void }) 
                           onClick={() => setQty(s.id, qty - 1)}
                           disabled={qty === 0}
                           aria-label={`${s.name} কমান`}
-                          className="flex h-8 w-8 items-center justify-center rounded-lg bg-surface-2 text-fg disabled:opacity-40"
+                          className="flex h-11 w-11 items-center justify-center rounded-lg bg-surface-2 text-fg disabled:opacity-40"
                         >
                           <MinusIcon className="h-4 w-4" />
                         </button>
@@ -150,7 +164,7 @@ export function PastSaleForm({ onDone }: { onDone: (dateKey: string) => void }) 
                           onClick={() => setQty(s.id, qty + 1)}
                           disabled={qty >= 20}
                           aria-label={`${s.name} বাড়ান`}
-                          className="flex h-8 w-8 items-center justify-center rounded-lg bg-surface-2 text-fg disabled:opacity-40"
+                          className="flex h-11 w-11 items-center justify-center rounded-lg bg-surface-2 text-fg disabled:opacity-40"
                         >
                           <PlusIcon className="h-4 w-4" />
                         </button>

@@ -5,7 +5,8 @@ import { useLiveStore } from "../gates";
 import { Badge, Button, Card, ErrorText, Field, Modal, PageTitle, Toggle } from "../ui";
 import { PlusIcon } from "../icons";
 import { addBarber, updateBarber } from "@/app/actions/catalog";
-import { bnDigits, parseIntInput } from "@/lib/money";
+import { NET_ERR } from "@/lib/messages";
+import { bnDigits, nameInitial, parseIntInput } from "@/lib/money";
 import type { Barber } from "@/lib/types";
 
 export function Barbers() {
@@ -34,7 +35,7 @@ export function Barbers() {
             <Card className={b.active ? "" : "opacity-60"}>
               <div className="flex items-center gap-3">
                 <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-primary text-lg font-bold text-white">
-                  {b.name.trim().slice(-1)}
+                  {nameInitial(b.name)}
                 </div>
                 <div className="min-w-0 flex-1">
                   <div className="truncate font-semibold text-fg">{b.name}</div>
@@ -85,7 +86,7 @@ function BarberForm({ barber, defaultName, onDone }: { barber: Barber | null; de
         e.preventDefault();
         if (busy) return;
         const commission = parseIntInput(pct);
-        if (commission === null) return setError("কমিশন ০ থেকে ১০০ এর মধ্যে হবে");
+        if (commission === null) return setError("কমিশন ০ থেকে ১০০-এর মধ্যে হতে হবে");
         setBusy(true);
         try {
           const r = barber
@@ -99,7 +100,7 @@ function BarberForm({ barber, defaultName, onDone }: { barber: Barber | null; de
           if (!r.ok) return setError(r.error);
           onDone();
         } catch {
-          setError("সংযোগে সমস্যা হয়েছে, আবার চেষ্টা করুন");
+          setError(NET_ERR);
         } finally {
           setBusy(false);
         }

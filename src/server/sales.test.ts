@@ -116,8 +116,8 @@ describe("createSale: the server decides every number", () => {
     expect(await domainMsg(createSale(t.db, mk(B, [{ serviceId: CUT, qty: 1 }])))).toBe("নাপিত পাওয়া যায়নি");
     expect(await domainMsg(createSale(t.db, mk(9999, [{ serviceId: CUT, qty: 1 }])))).toBe("নাপিত পাওয়া যায়নি");
     await t.db.update(services).set({ active: false }).where(eq(services.id, WASH));
-    expect(await domainMsg(createSale(t.db, mk(A, [{ serviceId: WASH, qty: 1 }])))).toBe("একটি সার্ভিস আর পাওয়া যাচ্ছে না");
-    expect(await domainMsg(createSale(t.db, mk(A, [{ serviceId: 9999, qty: 1 }])))).toBe("একটি সার্ভিস আর পাওয়া যাচ্ছে না");
+    expect(await domainMsg(createSale(t.db, mk(A, [{ serviceId: WASH, qty: 1 }])))).toBe("কোনো সার্ভিস আর পাওয়া যাচ্ছে না");
+    expect(await domainMsg(createSale(t.db, mk(A, [{ serviceId: 9999, qty: 1 }])))).toBe("কোনো সার্ভিস আর পাওয়া যাচ্ছে না");
   });
 
   it("a failed sale leaves no partial rows (all or nothing)", async () => {
@@ -152,6 +152,23 @@ describe("createSale: idempotency (FR-9)", () => {
     const retry = await createSale(t.db, mk(A, [{ serviceId: WASH, qty: 5 }], { idempotencyKey: key1 }), { now: NOW });
     expect(retry.id).toBe(first.id);
     expect(retry.total).toBe(150);
+  });
+
+  it("the same key for a DIFFERENT barber is refused, not replayed", async () => {
+    const key1 = key();
+    await createSale(t.db, mk(A, [{ serviceId: CUT, qty: 1 }], { idempotencyKey: key1 }), { now: NOW });
+    const msg = await domainMsg(createSale(t.db, mk(B, [{ serviceId: CUT, qty: 1 }], { idempotencyKey: key1 }), { now: NOW }));
+    expect(msg).toBe("এই এন্ট্রি আগেই অন্য নাপিতের নামে সেভ হয়েছে");
+    expect(await t.db.select().from(sales)).toHaveLength(1);
+  });
+});
+
+describe("createSale: hidden categories", () => {
+  it("refuses a service whose category was switched off, even if the service itself is active", async () => {
+    await t.db.update(categories).set({ active: false });
+    const msg = await domainMsg(createSale(t.db, mk(A, [{ serviceId: CUT, qty: 1 }]), { now: NOW }));
+    expect(msg).toBe("কোনো সার্ভিস আর পাওয়া যাচ্ছে না");
+    expect(await t.db.select().from(sales)).toHaveLength(0);
   });
 });
 

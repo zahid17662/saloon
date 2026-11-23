@@ -3,12 +3,13 @@
 // itself (requireShop / requireAdmin) stays visible at the top of each action.
 
 import type { z } from "zod";
+import { GENERIC_ERR } from "../lib/messages";
 import { DomainError } from "./errors";
 
 export type ActionResult<T = void> = { ok: true; data: T } | { ok: false; error: string };
 
 export const MSG = {
-  generic: "কিছু একটা ভুল হয়েছে, আবার চেষ্টা করুন",
+  generic: GENERIC_ERR,
   unauthorized: "আবার এডমিন পিন দিয়ে ঢুকুন",
   badInput: "ভুল তথ্য পাঠানো হয়েছে",
 } as const;

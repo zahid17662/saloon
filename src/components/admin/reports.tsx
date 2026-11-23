@@ -51,7 +51,7 @@ export function Reports() {
         sub={`${rangeLabel(r.range)} · মোট ${taka(t.total)} · মালিক ${taka(t.ownerShare)}`}
         actions={
           <Button variant="secondary" size="sm" onClick={exportCsv} disabled={empty}>
-            CSV ডাউনলোড
+            সিএসভি ডাউনলোড
           </Button>
         }
       />

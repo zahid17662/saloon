@@ -119,7 +119,7 @@ export function Payouts() {
         </TableWrap>
       )}
 
-      <Modal open={!!payTo} title={`${payTo?.name ?? ""} কে টাকা দিন`} onClose={() => setPayTo(null)}>
+      <Modal open={!!payTo} title={`${payTo?.name ?? ""}-কে টাকা দিন`} onClose={() => setPayTo(null)}>
         {payTo && (
           <PayoutForm
             key={payTo.id}

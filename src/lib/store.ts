@@ -118,7 +118,7 @@ export const canDeletePayout = (p: Payout) => Date.now() - Date.parse(p.createdA
 export function deletePayout(id: number) {
   const p = ensure().db.payouts.find((x) => x.id === id);
   if (!p) return;
-  if (!canDeletePayout(p)) throw new ActionError("২৪ ঘণ্টা পার হওয়া পেমেন্ট মুছা যাবে না");
+  if (!canDeletePayout(p)) throw new ActionError("২৪ ঘণ্টা পার হওয়া পেমেন্ট মোছা যাবে না");
   updateDb((d) => ({ ...d, payouts: d.payouts.filter((x) => x.id !== id) }));
 }
 

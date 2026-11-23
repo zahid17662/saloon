@@ -14,18 +14,18 @@
 
   /* Text */
   --color-fg: #151826;
-  --color-muted: #6b7183;
-  --color-subtle: #9aa0b0;
+  --color-muted: #5b6174;
+  --color-subtle: #6f7587;
 
   /* Accent */
-  --color-primary: #3b82f6;
-  --color-primary-hover: #2f6fe0;
+  --color-primary: #2563eb;
+  --color-primary-hover: #1d4ed8;
   --color-primary-soft: #eaf2ff;
 
   /* Status */
-  --color-success: #15a34a;
+  --color-success: #0f7a37;
   --color-success-soft: #ddf7e6;
-  --color-danger: #e5484d;
+  --color-danger: #c52a30;
   --color-danger-soft: #fdecec;
   --color-warning: #c2780a;
   --color-warning-soft: #fff4d9;

@@ -6,6 +6,8 @@ import { Button, Card, ErrorText, Field, PageTitle, Select } from "../ui";
 import { errMsg } from "./common";
 import { changeAdminPin, changeShopCode } from "@/app/actions/auth";
 import { updateSettings } from "@/app/actions/catalog";
+import { NET_ERR } from "@/lib/messages";
+import { bnDigits } from "@/lib/money";
 import { exportAll, resetDemoData } from "@/lib/store";
 import { downloadFile } from "@/lib/reports";
 import { todayKey } from "@/lib/time";
@@ -69,7 +71,7 @@ function ShopInfo() {
             setError("");
             setSaved(true);
           } catch {
-            setError("সংযোগে সমস্যা হয়েছে, আবার চেষ্টা করুন");
+            setError(NET_ERR);
           } finally {
             setBusy(false);
           }
@@ -82,7 +84,7 @@ function ShopInfo() {
         <Select label="রসিদের কাগজ" value={form.paperWidth} onChange={set("paperWidth")}>
           {(["58", "80", "A4"] as PaperWidth[]).map((p) => (
             <option key={p} value={p}>
-              {p === "A4" ? "A4" : `${p} মিমি থার্মাল`}
+              {p === "A4" ? "A4" : `${bnDigits(p)} মিমি থার্মাল`}
             </option>
           ))}
         </Select>

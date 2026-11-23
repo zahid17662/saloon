@@ -27,8 +27,8 @@ const MSG = {
   needLogin: "এডমিন হিসেবে আবার লগইন করুন",
   wrongCurrentPin: "বর্তমান পিন ভুল",
   badNewPin: "নতুন পিন ৪–৮ সংখ্যার হতে হবে",
-  badNewCode: "শপ কোড ৪–৮ সংখ্যার হতে হবে",
-  generic: "কিছু একটা সমস্যা হয়েছে, আবার চেষ্টা করুন",
+  badNewCode: "দোকানের কোড ৪–৮ সংখ্যার হতে হবে",
+  generic: "কিছু একটা ভুল হয়েছে, আবার চেষ্টা করুন",
 } as const;
 
 const fail = (error: string): ActionResult => ({ ok: false, error });

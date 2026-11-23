@@ -29,7 +29,7 @@ describe("barber schemas", () => {
     expect(barberInput.safeParse({ name: "রহিম", commissionPct: v }).success).toBe(false);
   });
   it("gives the commission range message", () => {
-    expect(msg(barberInput.safeParse({ name: "রহিম", commissionPct: 101 }))).toBe("কমিশন ০ থেকে ১০০ এর মধ্যে হবে");
+    expect(msg(barberInput.safeParse({ name: "রহিম", commissionPct: 101 }))).toBe("কমিশন ০ থেকে ১০০-এর মধ্যে হতে হবে");
   });
   it("patch is partial but strict: unknown fields such as id or createdAt are rejected", () => {
     expect(barberPatch.safeParse({ active: false }).success).toBe(true);
@@ -48,7 +48,7 @@ describe("category and service schemas", () => {
     for (const price of [0, -5, 12.5, "150", 1_000_001]) {
       expect(serviceInput.safeParse({ categoryId: 1, name: "কাটিং", price }).success).toBe(false);
     }
-    expect(msg(serviceInput.safeParse({ categoryId: 1, name: "কাটিং", price: 0 }))).toBe("দাম ০ এর বেশি পূর্ণ সংখ্যা হবে");
+    expect(msg(serviceInput.safeParse({ categoryId: 1, name: "কাটিং", price: 0 }))).toBe("দাম ০-এর বেশি পূর্ণসংখ্যা হতে হবে");
   });
   it("requires a service name", () => {
     expect(msg(serviceInput.safeParse({ categoryId: 1, name: "", price: 100 }))).toBe("সার্ভিসের নাম লিখুন");

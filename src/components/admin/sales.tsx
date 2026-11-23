@@ -8,12 +8,12 @@ import { RangeFilter, useDateRange } from "../range-filter";
 import { Badge, Button, Empty, ErrorText, Field, LoadingScreen, Modal, PageTitle, Select } from "../ui";
 import { PastSaleForm } from "./past-sale-form";
 import { rangeLabel, TableWrap, td, tdNum, th, thNum } from "./common";
+import { NET_ERR } from "@/lib/messages";
 import { bnDigits, receiptNo, taka } from "@/lib/money";
 import { fmtDateTime } from "@/lib/time";
 import { PAYMENT_LABELS, type Sale } from "@/lib/types";
 
 const PAGE = 30;
-const NET_ERR = "সংযোগে সমস্যা হয়েছে, আবার চেষ্টা করুন";
 
 export function SalesList() {
   const catalog = useCatalog();
@@ -23,11 +23,14 @@ export function SalesList() {
   const [limit, setLimit] = useState(PAGE);
   const [voidTarget, setVoidTarget] = useState<Sale | null>(null);
   const [addOpen, setAddOpen] = useState(false);
+  const [addBusy, setAddBusy] = useState(false);
+  const [rowsKey, setRowsKey] = useState("");
   const [rows, setRows] = useState<Sale[] | null>(null);
   const [loadError, setLoadError] = useState("");
   const [reload, setReload] = useState(0);
 
   const { from, to } = r.range;
+  const queryKey = `${from}|${to}|${barberId}|${status}`;
   useEffect(() => {
     let current = true; // ignore a slow response that was overtaken by a newer filter
     listSales({
@@ -40,8 +43,11 @@ export function SalesList() {
         if (!current) return;
         if (res.ok) {
           setRows(res.data);
+          setRowsKey(queryKey);
+          setLimit(PAGE); // a new filter starts at the first page again
           setLoadError("");
         } else {
+          setRowsKey(queryKey);
           setRows([]);
           setLoadError(res.error);
         }
@@ -54,11 +60,12 @@ export function SalesList() {
     return () => {
       current = false;
     };
-  }, [from, to, barberId, status, reload]);
+  }, [from, to, barberId, status, reload, queryKey]);
 
   const refresh = useCallback(() => setReload((n) => n + 1), []);
 
   if (!catalog || rows === null) return <LoadingScreen />;
+  const stale = rowsKey !== queryKey; // the table still shows the previous filter until the reply arrives
   const liveTotal = rows.filter((x) => !x.voidedAt).reduce((n, x) => n + x.total, 0);
   const barberName = (id: number) => catalog.barbers.find((b) => b.id === id)?.name ?? "—";
 
@@ -98,6 +105,7 @@ export function SalesList() {
         <Empty>কোনো এন্ট্রি পাওয়া যায়নি</Empty>
       ) : (
         <>
+          <div aria-busy={stale} className={stale ? "opacity-50 transition-opacity" : undefined}>
           <TableWrap>
             <thead className="border-b border-line">
               <tr>
@@ -107,7 +115,9 @@ export function SalesList() {
                 <th className={th}>সার্ভিস</th>
                 <th className={thNum}>মোট</th>
                 <th className={th}>পেমেন্ট</th>
-                <th className={th} />
+                <th className={th}>
+                  <span className="sr-only">কার্যক্রম</span>
+                </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-line">
@@ -156,10 +166,11 @@ export function SalesList() {
               ))}
             </tbody>
           </TableWrap>
+          </div>
           {rows.length > limit && (
             <div className="mt-4 text-center">
               <Button variant="secondary" onClick={() => setLimit((l) => l + PAGE)}>
-                আরো দেখুন ({bnDigits(rows.length - limit)})
+                আরও দেখুন ({bnDigits(rows.length - limit)})
               </Button>
             </div>
           )}
@@ -180,9 +191,10 @@ export function SalesList() {
         )}
       </Modal>
 
-      <Modal open={addOpen} title="পুরনো বিক্রি যোগ করুন" onClose={() => setAddOpen(false)}>
+      <Modal open={addOpen} title="পুরনো বিক্রি যোগ করুন" onClose={() => setAddOpen(false)} dismissible={!addBusy}>
         {addOpen && (
           <PastSaleForm
+            onBusyChange={setAddBusy}
             onDone={(dateKey) => {
               setAddOpen(false);
               // Show the day that was just entered so the new row is visible.

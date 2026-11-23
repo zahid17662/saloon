@@ -84,7 +84,7 @@ export function Dashboard() {
         <Card className="xl:col-span-8">
           <CardHeader
             title="নাপিত অনুযায়ী হিসাব"
-            sub="প্রত্যেক নাপিতের বিক্রি ও ৫০/৫০ ভাগ"
+            sub="প্রত্যেক নাপিতের বিক্রি ও কমিশন ভাগ"
             actions={
               <Link
                 href="/admin/reports"

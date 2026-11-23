@@ -134,7 +134,7 @@ export function ReceiptView({ sale }: { sale: Sale | null }) {
         </div>
 
         {sale.voidedAt && (
-          <div className="my-2 border-2 border-black py-1 text-center text-[1.2em] font-bold">বাতিল / VOID</div>
+          <div className="my-2 border-2 border-black py-1 text-center text-[1.2em] font-bold">বাতিল</div>
         )}
 
         <div className="my-2 border-t border-dashed border-black" />

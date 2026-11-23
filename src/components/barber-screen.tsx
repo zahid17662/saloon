@@ -1,12 +1,13 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createSale, voidMySale } from "@/app/actions/sales";
 import { useCatalog } from "@/components/catalog-context";
 import { Badge, Button, cx, ErrorText, Field, LoadingScreen, Modal } from "@/components/ui";
 import { BackIcon, MinusIcon, PlusIcon, ReceiptIcon } from "@/components/icons";
+import { NET_ERR } from "@/lib/messages";
 import { bnDigits, receiptNo, splitAmount, taka } from "@/lib/money";
 import { canBarberVoid } from "@/lib/sale-rules";
 import { fmtTime } from "@/lib/time";
@@ -17,7 +18,6 @@ function newKey() {
   return `${Date.now()}-${Math.random().toString(36).slice(2)}`;
 }
 
-const NET_ERR = "সংযোগে সমস্যা হয়েছে, আবার চেষ্টা করুন";
 
 /** `todaySales` is this barber's entries for today (Dhaka), loaded from Neon by the server page. */
 export function BarberScreen({ barberId, todaySales }: { barberId: number; todaySales: Sale[] }) {
@@ -39,7 +39,10 @@ export function BarberScreen({ barberId, todaySales }: { barberId: number; today
   const [tab, setTab] = useState<number | "all">("all");
   const [cart, setCart] = useState<Record<number, number>>({});
   const [payment, setPayment] = useState<PaymentMethod>("CASH");
-  const [idemKey, setIdemKey] = useState(newKey);
+  // One idempotency key per distinct cart. A pure retry (same cart) reuses it, so a lost response
+  // never creates a second sale; if the barber changes the cart after a failed try, a new key is
+  // used so the change is not silently dropped by the server returning the first sale.
+  const keyRef = useRef({ sig: "", key: "" });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [cartOpen, setCartOpen] = useState(false);
@@ -86,6 +89,8 @@ export function BarberScreen({ barberId, todaySales }: { barberId: number; today
     if (saving) return; // a second tap while the first is in flight
     setSaving(true);
     setError("");
+    const sig = JSON.stringify([barber!.id, payment, lines.map((l) => [l.svc.id, l.qty])]);
+    if (keyRef.current.sig !== sig) keyRef.current = { sig, key: newKey() };
     try {
       // Only WHICH services and how many are sent. The server prices and splits the sale (FR-8),
       // and the same idempotency key is reused on a retry so a double tap cannot create two sales.
@@ -93,7 +98,7 @@ export function BarberScreen({ barberId, todaySales }: { barberId: number; today
         barberId: barber!.id,
         items: lines.map((l) => ({ serviceId: l.svc.id, qty: l.qty })),
         paymentMethod: payment,
-        idempotencyKey: idemKey,
+        idempotencyKey: keyRef.current.key,
       });
       if (!r.ok) {
         setError(r.error);
@@ -102,7 +107,7 @@ export function BarberScreen({ barberId, todaySales }: { barberId: number; today
       }
       setCart({});
       setPayment("CASH");
-      setIdemKey(newKey());
+      keyRef.current = { sig: "", key: "" };
       setCartOpen(false);
       router.push(`/receipt/${r.data.id}?from=barber`);
     } catch {
@@ -113,14 +118,16 @@ export function BarberScreen({ barberId, todaySales }: { barberId: number; today
     }
   }
 
-  const visibleCats = tab === "all" ? categories : categories.filter((c) => c.id === tab);
+  // If the open category was hidden meanwhile, fall back to "all" instead of an empty grid.
+  const activeTab = tab !== "all" && !categories.some((c) => c.id === tab) ? "all" : tab;
+  const visibleCats = activeTab === "all" ? categories : categories.filter((c) => c.id === activeTab);
 
   return (
     <div className="mx-auto max-w-6xl lg:grid lg:grid-cols-[1fr_360px] lg:gap-6 lg:p-6">
       <main className="p-4 pb-44 lg:p-0">
         {/* Header */}
         <header className="mb-4 flex items-center gap-3">
-          <Link href="/" aria-label="নাপিত তালিকা" className="rounded-xl p-2 text-muted hover:bg-surface-2 hover:text-fg">
+          <Link href="/" aria-label="নাপিত তালিকা" className="rounded-xl p-2.5 text-muted hover:bg-surface-2 hover:text-fg">
             <BackIcon className="h-6 w-6" />
           </Link>
           <div className="flex-1">
@@ -137,10 +144,10 @@ export function BarberScreen({ barberId, todaySales }: { barberId: number; today
             <button
               key={c.id}
               onClick={() => setTab(c.id)}
-              aria-pressed={tab === c.id}
+              aria-pressed={activeTab === c.id}
               className={cx(
-                "shrink-0 rounded-full border px-4 py-2 text-sm transition-colors",
-                tab === c.id
+                "min-h-11 shrink-0 rounded-full border px-4 py-2 text-sm transition-colors",
+                activeTab === c.id
                   ? "border-primary bg-primary font-semibold text-white"
                   : "border-line bg-surface text-muted hover:text-fg",
               )}
@@ -158,7 +165,7 @@ export function BarberScreen({ barberId, todaySales }: { barberId: number; today
             return (
               <section key={cat.id}>
                 <h2 className="mb-2 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-primary">
-                  <span className="h-2 w-2 rounded-full bg-danger" />
+                  <span aria-hidden="true" className="h-2 w-2 rounded-full bg-danger" />
                   {cat.name}
                 </h2>
                 <ul className="grid grid-cols-2 gap-2 sm:grid-cols-3">
@@ -168,6 +175,7 @@ export function BarberScreen({ barberId, todaySales }: { barberId: number; today
                       <li key={svc.id}>
                         <button
                           onClick={() => setQty(svc.id, qty + 1)}
+                          aria-label={`${svc.name}, ${taka(svc.price)}${qty > 0 ? `, ${bnDigits(qty)}টি` : ""}`}
                           className={cx(
                             "relative flex h-full min-h-24 w-full flex-col justify-between rounded-2xl border p-3 text-left transition-all active:scale-[0.97]",
                             qty > 0
@@ -178,7 +186,7 @@ export function BarberScreen({ barberId, todaySales }: { barberId: number; today
                           <span className="pr-6 text-[15px] leading-snug font-medium text-fg">{svc.name}</span>
                           <span className="mt-2 text-lg font-bold text-primary tabular-nums">{taka(svc.price)}</span>
                           {qty > 0 && (
-                            <span className="absolute top-2 right-2 flex h-6 min-w-6 items-center justify-center rounded-full bg-primary px-1.5 text-sm font-bold text-white">
+                            <span aria-hidden="true" className="absolute top-2 right-2 flex h-6 min-w-6 items-center justify-center rounded-full bg-primary px-1.5 text-sm font-bold text-white">
                               {bnDigits(qty)}
                             </span>
                           )}
@@ -225,7 +233,7 @@ export function BarberScreen({ barberId, todaySales }: { barberId: number; today
                   </Link>
                   {canBarberVoid(sale, nowMs) && (
                     <Button variant="danger" size="sm" onClick={() => setVoidTarget(sale)}>
-                      ভুল এন্ট্রি
+                      বাতিল
                     </Button>
                   )}
                 </li>
@@ -257,7 +265,7 @@ export function BarberScreen({ barberId, todaySales }: { barberId: number; today
                   <button
                     onClick={() => setQty(svc.id, qty - 1)}
                     aria-label={`${svc.name} কমান`}
-                    className="flex h-9 w-9 items-center justify-center rounded-lg bg-surface-2 text-fg hover:bg-line"
+                    className="flex h-11 w-11 items-center justify-center rounded-lg bg-surface-2 text-fg hover:bg-line"
                   >
                     <MinusIcon className="h-4 w-4" />
                   </button>
@@ -266,7 +274,7 @@ export function BarberScreen({ barberId, todaySales }: { barberId: number; today
                     onClick={() => setQty(svc.id, qty + 1)}
                     disabled={qty >= 20}
                     aria-label={`${svc.name} বাড়ান`}
-                    className="flex h-9 w-9 items-center justify-center rounded-lg bg-surface-2 text-fg hover:bg-line disabled:opacity-40"
+                    className="flex h-11 w-11 items-center justify-center rounded-lg bg-surface-2 text-fg hover:bg-line disabled:opacity-40"
                   >
                     <PlusIcon className="h-4 w-4" />
                   </button>
@@ -284,7 +292,7 @@ export function BarberScreen({ barberId, todaySales }: { barberId: number; today
                   onClick={() => setPayment(m)}
                   aria-pressed={payment === m}
                   className={cx(
-                    "rounded-lg border py-2 text-sm",
+                    "min-h-11 rounded-lg border py-2 text-sm",
                     payment === m ? "border-primary bg-primary-soft text-primary" : "border-line text-muted",
                   )}
                 >
@@ -318,17 +326,17 @@ export function BarberScreen({ barberId, todaySales }: { barberId: number; today
         </div>
       </aside>
 
-      <VoidModal sale={voidTarget} barberId={barber.id} onClose={() => setVoidTarget(null)} />
+      <VoidModal key={voidTarget?.id ?? 0} sale={voidTarget} barberId={barber.id} onClose={() => setVoidTarget(null)} />
     </div>
   );
 }
 
 function VoidModal({ sale, barberId, onClose }: { sale: Sale | null; barberId: number; onClose: () => void }) {
-  const [reason, setReason] = useState("ভুল সার্ভিস সিলেক্ট হয়েছে");
+  const [reason, setReason] = useState("ভুল সার্ভিস বাছাই হয়েছে");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   return (
-    <Modal open={!!sale} title="এন্ট্রি বাতিল করবেন?" onClose={onClose}>
+    <Modal open={!!sale} title="এন্ট্রি বাতিল করবেন?" onClose={onClose} dismissible={!busy}>
       {sale && (
         <form
           className="space-y-4"

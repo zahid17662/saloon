@@ -5,6 +5,7 @@ import { useLiveStore } from "../gates";
 import { Badge, Button, Card, ErrorText, Field, Modal, PageTitle, Select, Toggle } from "../ui";
 import { PlusIcon } from "../icons";
 import { addCategory, addService, updateCategory, updateService } from "@/app/actions/catalog";
+import { NET_ERR } from "@/lib/messages";
 import { bnDigits, parseIntInput, taka } from "@/lib/money";
 import type { Category, Service } from "@/lib/types";
 
@@ -123,7 +124,7 @@ function CategoryForm({ category, onDone }: { category: Category | null; onDone:
           if (!r.ok) return setError(r.error);
           onDone();
         } catch {
-          setError("সংযোগে সমস্যা হয়েছে, আবার চেষ্টা করুন");
+          setError(NET_ERR);
         } finally {
           setBusy(false);
         }
@@ -170,7 +171,7 @@ function ServiceForm({
         e.preventDefault();
         if (busy) return;
         const p = parseIntInput(price);
-        if (p === null || p <= 0) return setError("দাম ০ এর বেশি পূর্ণ সংখ্যা হবে");
+        if (p === null || p <= 0) return setError("দাম ০-এর বেশি পূর্ণসংখ্যা হতে হবে");
         setBusy(true);
         try {
           const r = service
@@ -185,7 +186,7 @@ function ServiceForm({
           if (!r.ok) return setError(r.error);
           onDone();
         } catch {
-          setError("সংযোগে সমস্যা হয়েছে, আবার চেষ্টা করুন");
+          setError(NET_ERR);
         } finally {
           setBusy(false);
         }

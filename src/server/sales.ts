@@ -7,7 +7,7 @@
 // snapshotted, BR-5 days are Asia/Dhaka, BR-4 voided sales are excluded from totals.
 
 import { and, desc, eq, gte, inArray, isNull, lt, sql } from "drizzle-orm";
-import { barbers, saleItems, sales, services } from "../db/schema";
+import { barbers, categories, saleItems, sales, services } from "../db/schema";
 import { splitAmount } from "../lib/money";
 import { BARBER_VOID_WINDOW_MS } from "../lib/sale-rules";
 import type { SaleInput, SalesQuery } from "../lib/schemas";
@@ -18,10 +18,11 @@ import { DomainError } from "./errors";
 
 const MSG = {
   noBarber: "নাপিত পাওয়া যায়নি",
-  noService: "একটি সার্ভিস আর পাওয়া যাচ্ছে না",
+  noService: "কোনো সার্ভিস আর পাওয়া যাচ্ছে না",
   noSale: "বিক্রি পাওয়া যায়নি",
   windowOver: "১০ মিনিট পার হয়ে গেছে — এডমিনকে বলুন",
   adminOnly: "এই এন্ট্রি শুধু এডমিন বাতিল করতে পারবে",
+  keyOther: "এই এন্ট্রি আগেই অন্য নাপিতের নামে সেভ হয়েছে",
 } as const;
 
 type SaleRow = typeof sales.$inferSelect;
@@ -50,18 +51,16 @@ const toSale = (r: SaleRow, items: ItemRow[]): Sale => ({
 });
 
 /** Attach the line items to a batch of sale rows with one extra query (not one per sale). */
+const ITEM_CHUNK = 5000;
+
 async function withItems(db: Db, rows: SaleRow[]): Promise<Sale[]> {
   if (rows.length === 0) return [];
-  const items = await db
-    .select()
-    .from(saleItems)
-    .where(
-      inArray(
-        saleItems.saleId,
-        rows.map((r) => r.id),
-      ),
-    )
-    .orderBy(saleItems.id);
+  // Chunked so a long date range can never exceed the Postgres limit of 65535 bind parameters.
+  const items: ItemRow[] = [];
+  for (let i = 0; i < rows.length; i += ITEM_CHUNK) {
+    const ids = rows.slice(i, i + ITEM_CHUNK).map((r) => r.id);
+    items.push(...(await db.select().from(saleItems).where(inArray(saleItems.saleId, ids)).orderBy(saleItems.id)));
+  }
   const bySale = new Map<number, ItemRow[]>();
   for (const i of items) bySale.set(i.saleId, [...(bySale.get(i.saleId) ?? []), i]);
   return rows.map((r) => toSale(r, bySale.get(r.id) ?? []));
@@ -100,7 +99,11 @@ export async function createSale(db: Db, input: SaleInput, opts: CreateSaleOptio
 
   // FR-9: a repeated key returns the sale that already exists.
   const existing = await findByKey(db, input.idempotencyKey);
-  if (existing) return existing;
+  if (existing) {
+    // A key only ever belongs to one barber's sale; anything else is a client bug, not a replay.
+    if (existing.barberId !== input.barberId) throw new DomainError(MSG.keyOther);
+    return existing;
+  }
 
   try {
     return await db.transaction(async (tx) => {
@@ -112,11 +115,13 @@ export async function createSale(db: Db, input: SaleInput, opts: CreateSaleOptio
 
       // FR-8: prices come from the stored services, never from the request.
       const ids = input.items.map((i) => i.serviceId);
+      // A service in a hidden category is not for sale either (the UI hides it; this covers stale tabs).
       const found = await tx
-        .select()
+        .select({ svc: services })
         .from(services)
-        .where(and(inArray(services.id, ids), eq(services.active, true)));
-      const byId = new Map(found.map((s) => [s.id, s]));
+        .innerJoin(categories, eq(categories.id, services.categoryId))
+        .where(and(inArray(services.id, ids), eq(services.active, true), eq(categories.active, true)));
+      const byId = new Map(found.map((r) => [r.svc.id, r.svc]));
       const lines = input.items.map((i) => {
         const svc = byId.get(i.serviceId);
         if (!svc) throw new DomainError(MSG.noService);

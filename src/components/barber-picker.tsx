@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useCatalog } from "@/components/catalog-context";
 import { ChartIcon, ScissorsIcon } from "@/components/icons";
 import { LoadingScreen } from "@/components/ui";
-import { bnDigits, taka } from "@/lib/money";
+import { bnDigits, nameInitial, taka } from "@/lib/money";
 
 export interface TodayStat {
   barberId: number;
@@ -53,8 +53,8 @@ export function BarberPicker({ stats }: { stats: TodayStat[] }) {
                   href={`/barber/${b.id}`}
                   className="group flex h-full min-h-36 flex-col justify-between rounded-3xl border border-line bg-surface p-5 transition-colors hover:border-primary/50 hover:bg-surface-2 active:scale-[0.98]"
                 >
-                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary text-xl font-bold text-white">
-                    {b.name.trim().slice(-1)}
+                  <div aria-hidden="true" className="flex h-12 w-12 items-center justify-center rounded-full bg-primary text-xl font-bold text-white">
+                    {nameInitial(b.name)}
                   </div>
                   <div>
                     <div className="mt-3 text-lg font-semibold text-fg">{b.name}</div>

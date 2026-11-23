@@ -17,7 +17,7 @@ export function taka(amount: number): string {
 }
 
 export function receiptNo(id: number): string {
-  return `R-${String(id).padStart(6, "0")}`;
+  return `R-${bnDigits(String(id).padStart(6, "0"))}`;
 }
 
 /** Parse a user-typed whole number, accepting Bangla or English digits. */
@@ -25,4 +25,12 @@ export function parseIntInput(raw: string): number | null {
   const ascii = raw.trim().replace(/[০-৯]/g, (d) => String(BN_DIGITS.indexOf(d)));
   if (!/^\d+$/.test(ascii)) return null;
   return Number(ascii);
+}
+
+/** Last visible character (grapheme) of a name for avatars, so a Bangla vowel sign is never cut off alone. */
+export function nameInitial(name: string): string {
+  const t = name.trim();
+  const seg = new Intl.Segmenter("bn", { granularity: "grapheme" });
+  const parts = [...seg.segment(t)];
+  return parts.length ? parts[parts.length - 1].segment : "";
 }

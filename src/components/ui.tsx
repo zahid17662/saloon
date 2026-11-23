@@ -1,6 +1,8 @@
 "use client";
 
-import { useEffect, useId, type ButtonHTMLAttributes, type InputHTMLAttributes, type ReactNode } from "react";
+import { useEffect, useId, useRef, type ButtonHTMLAttributes, type InputHTMLAttributes, type ReactNode } from "react";
+
+import { bnDigits } from "@/lib/money";
 
 export function cx(...c: (string | false | null | undefined)[]) {
   return c.filter(Boolean).join(" ");
@@ -16,7 +18,7 @@ const VARIANTS: Record<Variant, string> = {
   ghost: "text-muted hover:text-fg hover:bg-surface-2",
 };
 const SIZES: Record<Size, string> = {
-  sm: "h-9 px-3.5 text-sm rounded-full",
+  sm: "h-9 pointer-coarse:h-11 px-3.5 text-sm rounded-full",
   md: "h-11 px-5 text-[15px] rounded-full",
   lg: "h-14 px-7 text-lg rounded-full",
 };
@@ -45,7 +47,7 @@ export function IconButton({ className, ...props }: ButtonHTMLAttributes<HTMLBut
   return (
     <button
       className={cx(
-        "inline-flex h-10 w-10 items-center justify-center rounded-full border border-line bg-surface text-fg transition-colors hover:bg-surface-2",
+        "inline-flex h-10 w-10 pointer-coarse:h-11 pointer-coarse:w-11 items-center justify-center rounded-full border border-line bg-surface text-fg transition-colors hover:bg-surface-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary",
         className,
       )}
       {...props}
@@ -79,11 +81,16 @@ export function Field({
   ...props
 }: InputHTMLAttributes<HTMLInputElement> & { label: string; hint?: string }) {
   const id = useId();
+  const hintId = `${id}-hint`;
   return (
     <label htmlFor={id} className={cx("block", className)}>
       <span className="mb-1.5 block text-sm font-medium text-muted">{label}</span>
-      <input id={id} className={inputCls} {...props} />
-      {hint && <span className="mt-1 block text-xs text-subtle">{hint}</span>}
+      <input id={id} className={inputCls} aria-describedby={hint ? hintId : undefined} {...props} />
+      {hint && (
+        <span id={hintId} className="mt-1 block text-xs text-subtle">
+          {hint}
+        </span>
+      )}
     </label>
   );
 }
@@ -123,7 +130,7 @@ export function Badge({ tone = "neutral", children }: { tone?: "neutral" | "gold
 export function TrendPill({ value, onDark }: { value: number | null; onDark?: boolean }) {
   if (value === null) return null;
   const up = value >= 0;
-  const text = `${up ? "+" : ""}${value.toFixed(1)}%`;
+  const text = bnDigits(`${up ? "+" : ""}${value.toFixed(1)}%`);
   return (
     <span
       className={cx(
@@ -208,7 +215,7 @@ export function Empty({ children }: { children: ReactNode }) {
 export function LoadingScreen() {
   return (
     <div className="flex min-h-dvh items-center justify-center">
-      <div className="h-10 w-10 animate-spin rounded-full border-4 border-line border-t-primary" aria-label="লোড হচ্ছে" />
+      <div className="h-10 w-10 animate-spin rounded-full border-4 border-line border-t-primary" role="status" aria-label="লোড হচ্ছে" />
     </div>
   );
 }
@@ -222,38 +229,89 @@ export function ErrorText({ children }: { children: ReactNode }) {
   );
 }
 
+const FOCUSABLE = "a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex=\"-1\"])";
+
+/**
+ * Accessible modal dialog: labelled by its heading, moves focus inside on open, keeps Tab inside,
+ * closes on Escape, and returns focus to the control that opened it. Set `dismissible={false}`
+ * while a save is in flight so Escape/backdrop/X cannot discard it.
+ */
 export function Modal({
   open,
   title,
   onClose,
   children,
+  dismissible = true,
 }: {
   open: boolean;
   title: string;
   onClose: () => void;
   children: ReactNode;
+  dismissible?: boolean;
 }) {
+  const panel = useRef<HTMLDivElement>(null);
+  const titleId = useId();
+  // Latest callbacks without re-running the focus effect on every parent render.
+  const live = useRef({ onClose, dismissible });
+  useEffect(() => {
+    live.current = { onClose, dismissible };
+  });
+
   useEffect(() => {
     if (!open) return;
-    const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [open, onClose]);
+    const opener = document.activeElement as HTMLElement | null;
+    const root = panel.current;
+    if (root && !root.contains(document.activeElement)) {
+      const first = root.querySelector<HTMLElement>("input,select,textarea") ?? root.querySelector<HTMLElement>(FOCUSABLE);
+      (first ?? root).focus();
+    }
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        if (live.current.dismissible) live.current.onClose();
+        return;
+      }
+      if (e.key !== "Tab" || !root) return;
+      const items = [...root.querySelectorAll<HTMLElement>(FOCUSABLE)].filter((el) => el.offsetParent !== null);
+      if (items.length === 0) return e.preventDefault();
+      const first = items[0];
+      const last = items[items.length - 1];
+      const active = document.activeElement;
+      if (e.shiftKey && (active === first || !root.contains(active))) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && (active === last || !root.contains(active))) {
+        e.preventDefault();
+        first.focus();
+      }
+    };
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      opener?.focus?.();
+    };
+  }, [open]);
 
   if (!open) return null;
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-slate-900/30 backdrop-blur-sm sm:items-center sm:p-4" onClick={onClose}>
+    <div
+      className="fixed inset-0 z-50 flex items-end justify-center bg-slate-900/30 backdrop-blur-sm sm:items-center sm:p-4"
+      onClick={() => live.current.dismissible && live.current.onClose()}
+    >
       <div
+        ref={panel}
         role="dialog"
         aria-modal="true"
-        aria-label={title}
-        className="max-h-[90dvh] w-full overflow-y-auto rounded-t-3xl bg-surface p-6 shadow-pop sm:max-w-md sm:rounded-3xl"
+        aria-labelledby={titleId}
+        tabIndex={-1}
+        className="max-h-[90dvh] w-full overflow-y-auto rounded-t-3xl bg-surface p-6 shadow-pop focus:outline-none sm:max-w-md sm:rounded-3xl"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="mb-5 flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-fg">{title}</h2>
-          <IconButton onClick={onClose} aria-label="বন্ধ করুন" className="h-9 w-9">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <h2 id={titleId} className="text-lg font-semibold text-fg">
+            {title}
+          </h2>
+          <IconButton onClick={onClose} disabled={!dismissible} aria-label="বন্ধ করুন" className="disabled:opacity-40">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
               <path d="M6 6l12 12M18 6L6 18" />
             </svg>
           </IconButton>
@@ -272,7 +330,7 @@ export function Toggle({ checked, onChange, label }: { checked: boolean; onChang
       role="switch"
       aria-checked={checked}
       onClick={() => onChange(!checked)}
-      className="flex items-center gap-3 text-sm text-muted"
+      className="flex min-h-11 items-center gap-3 text-sm text-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
     >
       <span className={cx("relative h-6 w-11 rounded-full transition-colors", checked ? "bg-primary" : "bg-line-strong")}>
         <span className={cx("absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-all", checked ? "left-5.5" : "left-0.5")} />

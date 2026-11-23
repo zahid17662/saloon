@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { bnDigits, parseIntInput, receiptNo, splitAmount, taka } from "./money";
+import { bnDigits, nameInitial, parseIntInput, receiptNo, splitAmount, taka } from "./money";
 import { dhakaDateKey, dhakaDateToIso, presetRange, shiftDays } from "./time";
 import { barberBalance, byBarber, byPeriod, byService, liveSales, summarize, toCsv } from "./reports";
 import { createSeed } from "./seed";
@@ -46,7 +46,7 @@ describe("formatting", () => {
     expect(bnDigits(2026)).toBe("২০২৬");
     expect(taka(125000)).toBe("৳১,২৫,০০০");
     expect(taka(-500)).toBe("-৳৫০০");
-    expect(receiptNo(123)).toBe("R-000123");
+    expect(receiptNo(123)).toBe("R-০০০১২৩");
   });
   it("parses Bangla and English digits", () => {
     expect(parseIntInput("১৫০")).toBe(150);
@@ -142,5 +142,14 @@ describe("seed (PRD §7)", () => {
     expect(db.categories).toHaveLength(5);
     expect(db.barbers.map((b) => b.commissionPct)).toEqual([50, 50, 50]);
     expect(db.services.find((s) => s.name === "Hydra Facial (full)")?.price).toBe(1800);
+  });
+});
+
+describe("nameInitial (avatar letter)", () => {
+  it("never returns a lone Bangla vowel sign", () => {
+    expect(nameInitial("রবি")).toBe("বি"); // not just the vowel sign ি
+    expect(nameInitial("  করিম ")).toBe("ম");
+    expect(nameInitial("নাপিত ১")).toBe("১");
+    expect(nameInitial("")).toBe("");
   });
 });

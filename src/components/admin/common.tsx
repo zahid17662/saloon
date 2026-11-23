@@ -1,13 +1,14 @@
 "use client";
 
 import { ActionError } from "@/lib/store";
-import { bnDigits, taka } from "@/lib/money";
+import { GENERIC_ERR } from "@/lib/messages";
+import { bnDigits, nameInitial, taka } from "@/lib/money";
 import { fmtDateKey, type DateRange } from "@/lib/time";
 import type { BarberRow } from "@/lib/reports";
 import { Empty } from "../ui";
 
 export const errMsg = (e: unknown) =>
-  e instanceof ActionError ? e.message : "কিছু একটা ভুল হয়েছে, আবার চেষ্টা করুন";
+  e instanceof ActionError ? e.message : GENERIC_ERR;
 
 export const rangeLabel = (r: DateRange) =>
   r.from === r.to ? fmtDateKey(r.from) : `${fmtDateKey(r.from)} – ${fmtDateKey(r.to)}`;
@@ -57,7 +58,7 @@ export function BarberTable({ rows, flat }: { rows: BarberRow[]; flat?: boolean 
             <td className={td}>
               <span className="flex items-center gap-2.5">
                 <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary-soft text-xs font-semibold text-primary">
-                  {r.barberName.trim().slice(-1)}
+                  {nameInitial(r.barberName)}
                 </span>
                 {r.barberName}
               </span>

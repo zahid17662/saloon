@@ -1,6 +1,9 @@
 import type { Metadata, Viewport } from "next";
 import { Hind_Siliguri, Poppins } from "next/font/google";
+import { connection } from "next/server";
+import { db } from "@/db";
 import { CatalogBoundary } from "@/components/catalog-boundary";
+import { getSettings } from "@/server/catalog";
 import "./globals.css";
 
 // Poppins renders Latin letters and numbers; Hind Siliguri covers Bangla.
@@ -17,10 +20,20 @@ const bangla = Hind_Siliguri({
   weight: ["400", "500", "600", "700"],
 });
 
-export const metadata: Metadata = {
-  title: "সেলুন হিসাব",
-  description: "সেলুনের সার্ভিস, নাপিতের কমিশন ও দৈনিক হিসাব",
-};
+const FALLBACK_TITLE = "সেলুন হিসাব";
+
+// The browser tab shows the shop name from Settings (it is already shown on the public unlock page).
+// If the database is unreachable the tab falls back to a generic title rather than failing the page.
+export async function generateMetadata(): Promise<Metadata> {
+  await connection();
+  let title = FALLBACK_TITLE;
+  try {
+    title = (await getSettings(db)).shopName.trim() || FALLBACK_TITLE;
+  } catch {
+    /* keep the fallback */
+  }
+  return { title, description: "সেলুনের সার্ভিস, নাপিতের কমিশন ও দৈনিক হিসাব" };
+}
 
 export const viewport: Viewport = {
   themeColor: "#f3f5f9",
