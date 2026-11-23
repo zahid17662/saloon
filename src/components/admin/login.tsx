@@ -1,9 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { loginAdmin, useStore } from "@/lib/store";
+import { loginAdmin } from "@/app/actions/auth";
+import { safeNext } from "@/lib/route-guard";
+import { useStore } from "@/lib/store";
 import { Button, ErrorText } from "../ui";
 import { LockIcon } from "../icons";
 
@@ -12,16 +14,19 @@ export function AdminLogin() {
   const router = useRouter();
   const [pin, setPin] = useState("");
   const [error, setError] = useState("");
+  const [pending, startTransition] = useTransition();
 
   function submit(e: React.FormEvent) {
     e.preventDefault();
-    if (!loginAdmin(pin)) {
-      setError("পিন ভুল হয়েছে");
-      setPin("");
-      return;
-    }
-    const next = new URLSearchParams(window.location.search).get("next");
-    router.replace(next && next.startsWith("/admin") && next !== "/admin/login" ? next : "/admin");
+    startTransition(async () => {
+      const r = await loginAdmin({ pin });
+      if (!r.ok) {
+        setError(r.error);
+        setPin("");
+        return;
+      }
+      router.replace(safeNext(new URLSearchParams(window.location.search).get("next")));
+    });
   }
 
   return (
@@ -48,10 +53,9 @@ export function AdminLogin() {
         <div className="mt-3">
           <ErrorText>{error}</ErrorText>
         </div>
-        <Button type="submit" size="lg" className="mt-4 w-full" disabled={!pin || !s}>
+        <Button type="submit" size="lg" className="mt-4 w-full" disabled={!pin || !s || pending}>
           লগইন
         </Button>
-        <p className="mt-4 text-xs text-subtle">ডেমো পিন: ০০০০</p>
         <Link href="/" className="mt-2 inline-block text-sm text-primary hover:underline">
           নাপিতের স্ক্রিনে যান
         </Link>

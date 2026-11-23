@@ -10,17 +10,12 @@ import { splitAmount } from "./money";
 import type { Barber, Category, DB, PaymentMethod, Payout, Sale, Service, Settings } from "./types";
 
 const DB_KEY = "salon.db.v1";
-const SHOP_KEY = "salon.shop.v1"; // stores the shopCodeVersion this device unlocked
-const ADMIN_KEY = "salon.admin.v1"; // stores admin session expiry (ms)
 
-export const ADMIN_TTL_MS = 12 * 60 * 60 * 1000;
 export const BARBER_VOID_WINDOW_MS = 10 * 60 * 1000;
 export const PAYOUT_DELETE_WINDOW_MS = 24 * 60 * 60 * 1000;
 
 export interface State {
   db: DB;
-  shopVersion: number | null;
-  adminUntil: number;
 }
 
 let state: State | null = null;
@@ -50,20 +45,21 @@ function loadState(): State {
   } catch {
     db = createSeed();
   }
-  const shop = Number(read(SHOP_KEY));
-  const admin = Number(read(ADMIN_KEY));
-  return {
-    db,
-    shopVersion: Number.isFinite(shop) && shop > 0 ? shop : null,
-    adminUntil: Number.isFinite(admin) ? admin : 0,
-  };
+  // Older demo data kept the PIN and shop code in plaintext here. Auth is server-side now: drop them.
+  const s = db.settings as unknown as Record<string, unknown>;
+  delete s.adminPin;
+  delete s.shopCode;
+  delete s.shopCodeVersion;
+  write("salon.shop.v1", null);
+  write("salon.admin.v1", null);
+  return { db };
 }
 
 function ensure(): State {
   if (!state) {
     state = loadState();
     window.addEventListener("storage", (e) => {
-      if (e.key === DB_KEY || e.key === SHOP_KEY || e.key === ADMIN_KEY) {
+      if (e.key === DB_KEY) {
         state = loadState();
         listeners.forEach((l) => l());
       }
@@ -76,9 +72,6 @@ function commit(next: State) {
   const prev = state;
   state = next;
   if (!prev || prev.db !== next.db) write(DB_KEY, JSON.stringify(next.db));
-  if (!prev || prev.shopVersion !== next.shopVersion)
-    write(SHOP_KEY, next.shopVersion === null ? null : String(next.shopVersion));
-  if (!prev || prev.adminUntil !== next.adminUntil) write(ADMIN_KEY, String(next.adminUntil));
   listeners.forEach((l) => l());
 }
 
@@ -102,32 +95,9 @@ const nextId = (rows: { id: number }[]) => rows.reduce((m, r) => Math.max(m, r.i
 export class ActionError extends Error {}
 
 // ---------- access ----------
-
-export const isShopUnlocked = (s: State) => s.shopVersion === s.db.settings.shopCodeVersion;
-export const isAdmin = (s: State) => s.adminUntil > Date.now();
-
-export function unlockShop(code: string): boolean {
-  const s = ensure();
-  if (code.trim() !== s.db.settings.shopCode) return false;
-  commit({ ...s, shopVersion: s.db.settings.shopCodeVersion });
-  return true;
-}
-
-export function loginAdmin(pin: string): boolean {
-  const s = ensure();
-  if (pin.trim() !== s.db.settings.adminPin) return false;
-  // An admin login also unlocks this device for the barber screens.
-  commit({ ...s, adminUntil: Date.now() + ADMIN_TTL_MS, shopVersion: s.db.settings.shopCodeVersion });
-  return true;
-}
-
-export function logoutAdmin() {
-  commit({ ...ensure(), adminUntil: 0 });
-}
-
-function requireAdmin() {
-  if (!isAdmin(ensure())) throw new ActionError("এডমিন হিসেবে আবার লগইন করুন");
-}
+// Shop unlock and admin login/PIN/shop-code live in src/app/actions/auth.ts (server-side, bcrypt +
+// signed cookies). Admin pages are guarded by proxy.ts. When each action below becomes a Server
+// Action it must call requireAdmin()/requireShop() from "@/lib/auth" on the server (PRD FR-4).
 
 // ---------- sales ----------
 
@@ -190,8 +160,7 @@ export function voidSale(id: number, by: "BARBER" | "ADMIN", reason: string) {
   const sale = db.sales.find((x) => x.id === id);
   if (!sale) throw new ActionError("বিক্রি পাওয়া যায়নি");
   if (sale.voidedAt) return;
-  if (by === "ADMIN") requireAdmin();
-  else if (!canBarberVoid(sale)) throw new ActionError("১০ মিনিট পার হয়ে গেছে — এডমিনকে বলুন");
+  if (by !== "ADMIN" && !canBarberVoid(sale)) throw new ActionError("১০ মিনিট পার হয়ে গেছে — এডমিনকে বলুন");
   if (!reason.trim()) throw new ActionError("বাতিলের কারণ লিখুন");
   updateDb((d) => ({
     ...d,
@@ -211,7 +180,6 @@ function validateBarber(db: DB, name: string, pct: number, selfId?: number) {
 }
 
 export function addBarber(name: string, commissionPct = 50) {
-  requireAdmin();
   const { db } = ensure();
   validateBarber(db, name, commissionPct);
   const barber: Barber = {
@@ -226,7 +194,6 @@ export function addBarber(name: string, commissionPct = 50) {
 }
 
 export function updateBarber(id: number, patch: Partial<Omit<Barber, "id" | "createdAt">>) {
-  requireAdmin();
   const { db } = ensure();
   const cur = db.barbers.find((b) => b.id === id);
   if (!cur) throw new ActionError("নাপিত পাওয়া যায়নি");
@@ -238,7 +205,6 @@ export function updateBarber(id: number, patch: Partial<Omit<Barber, "id" | "cre
 // ---------- categories & services ----------
 
 export function addCategory(name: string) {
-  requireAdmin();
   if (!name.trim()) throw new ActionError("ক্যাটাগরির নাম লিখুন");
   const { db } = ensure();
   const cat: Category = { id: nextId(db.categories), name: name.trim(), sortOrder: db.categories.length, active: true };
@@ -246,7 +212,6 @@ export function addCategory(name: string) {
 }
 
 export function updateCategory(id: number, patch: Partial<Omit<Category, "id">>) {
-  requireAdmin();
   if (patch.name !== undefined && !patch.name.trim()) throw new ActionError("ক্যাটাগরির নাম লিখুন");
   updateDb((d) => ({ ...d, categories: d.categories.map((c) => (c.id === id ? { ...c, ...patch } : c)) }));
 }
@@ -257,7 +222,6 @@ function validateService(name: string, price: number) {
 }
 
 export function addService(categoryId: number, name: string, price: number) {
-  requireAdmin();
   validateService(name, price);
   const { db } = ensure();
   const svc: Service = {
@@ -272,7 +236,6 @@ export function addService(categoryId: number, name: string, price: number) {
 }
 
 export function updateService(id: number, patch: Partial<Omit<Service, "id">>) {
-  requireAdmin();
   const { db } = ensure();
   const cur = db.services.find((s) => s.id === id);
   if (!cur) throw new ActionError("সার্ভিস পাওয়া যায়নি");
@@ -284,7 +247,6 @@ export function updateService(id: number, patch: Partial<Omit<Service, "id">>) {
 // ---------- payouts ----------
 
 export function addPayout(barberId: number, amount: number, paidAt: string, note: string) {
-  requireAdmin();
   if (!Number.isInteger(amount) || amount <= 0) throw new ActionError("টাকার পরিমাণ সঠিক নয়");
   const { db } = ensure();
   const payout: Payout = {
@@ -301,7 +263,6 @@ export function addPayout(barberId: number, amount: number, paidAt: string, note
 export const canDeletePayout = (p: Payout) => Date.now() - Date.parse(p.createdAt) <= PAYOUT_DELETE_WINDOW_MS;
 
 export function deletePayout(id: number) {
-  requireAdmin();
   const p = ensure().db.payouts.find((x) => x.id === id);
   if (!p) return;
   if (!canDeletePayout(p)) throw new ActionError("২৪ ঘণ্টা পার হওয়া পেমেন্ট মুছা যাবে না");
@@ -313,44 +274,15 @@ export function deletePayout(id: number) {
 export function updateSettings(
   patch: Partial<Pick<Settings, "shopName" | "shopAddress" | "shopPhone" | "receiptFooter" | "paperWidth">>,
 ) {
-  requireAdmin();
   if (patch.shopName !== undefined && !patch.shopName.trim()) throw new ActionError("দোকানের নাম লিখুন");
   updateDb((d) => ({ ...d, settings: { ...d.settings, ...patch } }));
 }
 
-export function changeAdminPin(current: string, next: string) {
-  requireAdmin();
-  const { db } = ensure();
-  if (current !== db.settings.adminPin) throw new ActionError("বর্তমান পিন ভুল");
-  if (!/^\d{4,8}$/.test(next)) throw new ActionError("নতুন পিন ৪–৮ সংখ্যার হতে হবে");
-  updateDb((d) => ({ ...d, settings: { ...d.settings, adminPin: next } }));
-}
-
-/** FR-21: bumping the version logs every shop device out. */
-export function changeShopCode(next: string) {
-  requireAdmin();
-  if (!/^\d{4,8}$/.test(next)) throw new ActionError("শপ কোড ৪–৮ সংখ্যার হতে হবে");
-  const s = ensure();
-  const version = s.db.settings.shopCodeVersion + 1;
-  commit({
-    ...s,
-    shopVersion: version, // keep this (admin) device unlocked
-    db: { ...s.db, settings: { ...s.db.settings, shopCode: next, shopCodeVersion: version } },
-  });
-}
-
 export function exportAll(): string {
-  requireAdmin();
   const { db } = ensure();
-  const { adminPin: _pin, shopCode: _code, ...settings } = db.settings;
-  void _pin;
-  void _code;
-  return JSON.stringify({ ...db, settings, exportedAt: new Date().toISOString() }, null, 2);
+  return JSON.stringify({ ...db, exportedAt: new Date().toISOString() }, null, 2);
 }
 
 export function resetDemoData() {
-  requireAdmin();
-  const s = ensure();
-  const seed = createSeed();
-  commit({ ...s, db: seed, shopVersion: seed.settings.shopCodeVersion });
+  commit({ db: createSeed() });
 }

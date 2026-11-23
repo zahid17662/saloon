@@ -21,11 +21,11 @@
 | All screens in §11 | ✅ Done | Light pastel theme (Poppins + Hind Siliguri), mobile-first |
 | Domain logic | ✅ Done | `src/lib/money.ts`, `time.ts`, `reports.ts`, with 16 Vitest tests |
 | Data layer | ⚠️ Temporary | `src/lib/store.ts` keeps data in the browser's localStorage. Every exported action there maps 1:1 to a future Server Action, and must be replaced by Drizzle + Neon. |
-| Auth | ⚠️ Temporary | PIN and shop code are checked in the browser (demo `0000` / `1234`). Must move to the server (§5.1). |
-| Drizzle setup | ✅ Done | Prisma removed. `src/db/schema.ts`, `src/db/index.ts` (neon-serverless Pool, `server-only`), `drizzle.config.ts`, first migration `src/db/migrations/0000_*.sql`. Still to do: `entered_by_admin` column (FR-22) and a seed script. |
-| Database | ⏳ Pending | Neon project exists; `.env.local` has `DATABASE_URL` + `DIRECT_URL`. Confirm the migration has been applied to the Neon `dev` branch. |
+| Auth | ✅ Done (server-side) | HMAC-signed httpOnly cookies, bcrypt, `login_attempts` rate limit (5 / 15 min per IP network + a global cap), `proxy.ts` redirects and the Server Actions `unlockShop`, `loginAdmin`, `logoutAdmin`, `changeAdminPin`, `changeShopCode` in `src/app/actions/auth.ts`. The remaining `store.ts` actions must call `requireAdmin()` / `requireShop()` from `src/lib/auth.ts` when they become Server Actions. The demo PIN `0000` and shop code `1234` are still set in the dev DB: change them before launch. |
+| Drizzle setup | ✅ Done | Prisma removed. `src/db/schema.ts`, `src/db/index.ts` (neon-serverless Pool, `server-only`), `drizzle.config.ts`, first migration `src/db/migrations/0000_*.sql`. Migration `0001` adds `sales.entered_by_admin` plus integrity CHECK constraints, and `npm run db:seed` (idempotent) seeds the menu, barbers and settings. |
+| Database | ✅ Dev done | Migrations `0000` and `0001` are applied to the Neon `dev` branch and it is seeded. Neon `main` is not migrated or seeded yet. |
 | FR-22 back-dated sale | ⏳ Pending | |
-| Git, CI, deploy | ⏳ Pending | The folder is not a git repo yet |
+| Git, CI, deploy | ⚠️ Partial | Git repo initialised with a first commit. No remote, CI or Vercel deploy yet. |
 
 ---
 
@@ -88,7 +88,7 @@ Today this is done by hand or from memory. That leads to disputes over what each
 
 ### 5.1 Access
 - **FR-1** On first visit, a device without a valid shop cookie is sent to `/unlock` to enter the shop access code. On success, set an httpOnly, Secure, SameSite=Lax signed cookie valid for 180 days.
-- **FR-2** `/admin/*` routes require a valid admin cookie (12-hour expiry); otherwise redirect to `/admin/login`.
+- **FR-2** `/admin/*` routes require a valid admin cookie (8-hour expiry); otherwise redirect to `/admin/login`.
 - **FR-3** After 5 wrong PIN/code attempts from one IP, block further attempts for 15 minutes.
 - **FR-4** Authorization is enforced **server-side in every Server Action and Route Handler**. `proxy.ts` only does convenience redirects.
 

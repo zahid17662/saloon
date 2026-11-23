@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { unlockShop, useStore } from "@/lib/store";
+import { unlockShop } from "@/app/actions/auth";
+import { useStore } from "@/lib/store";
 import { Button, ErrorText } from "@/components/ui";
 import { ScissorsIcon } from "@/components/icons";
 
@@ -12,14 +13,18 @@ export default function UnlockPage() {
   const router = useRouter();
   const [code, setCode] = useState("");
   const [error, setError] = useState("");
+  const [pending, startTransition] = useTransition();
 
   function submit(e: React.FormEvent) {
     e.preventDefault();
-    if (unlockShop(code)) router.replace("/");
-    else {
-      setError("কোড ভুল হয়েছে, আবার চেষ্টা করুন");
-      setCode("");
-    }
+    startTransition(async () => {
+      const r = await unlockShop({ code });
+      if (r.ok) router.replace("/");
+      else {
+        setError(r.error);
+        setCode("");
+      }
+    });
   }
 
   return (
@@ -47,10 +52,9 @@ export default function UnlockPage() {
         <div className="mt-3">
           <ErrorText>{error}</ErrorText>
         </div>
-        <Button type="submit" size="lg" className="mt-4 w-full" disabled={!code || !s}>
+        <Button type="submit" size="lg" className="mt-4 w-full" disabled={!code || !s || pending}>
           চালু করুন
         </Button>
-        <p className="mt-4 text-xs text-subtle">ডেমো কোড: ১২৩৪</p>
         <Link href="/admin/login" className="mt-2 inline-block text-sm text-primary hover:underline">
           এডমিন লগইন
         </Link>

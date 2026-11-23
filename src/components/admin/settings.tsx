@@ -4,7 +4,8 @@ import { useState } from "react";
 import { useLiveStore } from "../gates";
 import { Button, Card, ErrorText, Field, PageTitle, Select } from "../ui";
 import { errMsg } from "./common";
-import { changeAdminPin, changeShopCode, exportAll, resetDemoData, updateSettings } from "@/lib/store";
+import { changeAdminPin, changeShopCode } from "@/app/actions/auth";
+import { exportAll, resetDemoData, updateSettings } from "@/lib/store";
 import { downloadFile } from "@/lib/reports";
 import { todayKey } from "@/lib/time";
 import type { PaperWidth } from "@/lib/types";
@@ -97,20 +98,17 @@ function PinForm() {
       <h2 className="mb-4 text-lg font-semibold text-fg">এডমিন পিন পরিবর্তন</h2>
       <form
         className="space-y-4"
-        onSubmit={(e) => {
+        onSubmit={async (e) => {
           e.preventDefault();
           setSaved(false);
           if (next !== confirm) return setError("নতুন পিন দুইবার একই হয়নি");
-          try {
-            changeAdminPin(current, next);
-            setError("");
-            setSaved(true);
-            setCurrent("");
-            setNext("");
-            setConfirm("");
-          } catch (err) {
-            setError(errMsg(err));
-          }
+          const r = await changeAdminPin({ current, next });
+          if (!r.ok) return setError(r.error);
+          setError("");
+          setSaved(true);
+          setCurrent("");
+          setNext("");
+          setConfirm("");
         }}
       >
         <Field label="বর্তমান পিন" type="password" inputMode="numeric" value={current} onChange={(e) => setCurrent(e.target.value)} required />
@@ -139,18 +137,15 @@ function ShopCodeForm() {
       <p className="mb-4 text-sm text-muted">কোড বদলালে দোকানের সব ফোন/কম্পিউটারে আবার নতুন কোড দিতে হবে।</p>
       <form
         className="space-y-4"
-        onSubmit={(e) => {
+        onSubmit={async (e) => {
           e.preventDefault();
           setSaved(false);
           if (!window.confirm("সব ডিভাইস থেকে লগআউট হবে। কোড বদলাবেন?")) return;
-          try {
-            changeShopCode(code);
-            setError("");
-            setSaved(true);
-            setCode("");
-          } catch (err) {
-            setError(errMsg(err));
-          }
+          const r = await changeShopCode({ next: code });
+          if (!r.ok) return setError(r.error);
+          setError("");
+          setSaved(true);
+          setCode("");
         }}
       >
         <Field label="নতুন কোড (৪–৮ সংখ্যা)" type="password" inputMode="numeric" value={code} onChange={(e) => setCode(e.target.value)} required />

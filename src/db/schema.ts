@@ -80,12 +80,21 @@ export const sales = pgTable(
     voidedAt: tz("voided_at"),
     voidedBy: voidedBy("voided_by"),
     voidReason: text("void_reason"),
+    enteredByAdmin: boolean("entered_by_admin").notNull().default(false), // FR-22 back-dated entry
   },
   (t) => [
     uniqueIndex("sales_idempotency_uq").on(t.idempotencyKey),
     index("sales_created_idx").on(t.createdAt),
     index("sales_barber_created_idx").on(t.barberId, t.createdAt),
     check("shares_sum", sql`${t.barberShare} + ${t.ownerShare} = ${t.total}`),
+    check("total_positive", sql`${t.total} > 0`),
+    check("shares_nonneg", sql`${t.barberShare} >= 0 and ${t.ownerShare} >= 0`),
+    check("pct_snapshot_range", sql`${t.commissionPctSnapshot} between 0 and 100`),
+    // voided_at and voided_by are set together; a reason only exists on a voided sale.
+    check(
+      "void_consistent",
+      sql`(${t.voidedAt} is null) = (${t.voidedBy} is null) and (${t.voidedAt} is not null or ${t.voidReason} is null)`,
+    ),
   ],
 );
 
@@ -106,6 +115,7 @@ export const saleItems = pgTable(
   (t) => [
     index("sale_items_sale_idx").on(t.saleId),
     check("qty_range", sql`${t.qty} between 1 and 20`),
+    check("price_snapshot_positive", sql`${t.priceSnapshot} > 0`),
   ],
 );
 

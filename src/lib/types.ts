@@ -68,10 +68,8 @@ export interface Settings {
   shopPhone: string;
   receiptFooter: string;
   paperWidth: PaperWidth;
-  /** Demo only — the backend stores bcrypt hashes, never plain values. */
-  adminPin: string;
-  shopCode: string;
-  shopCodeVersion: number;
+  // The admin PIN, shop code and shopCodeVersion are server-only (bcrypt hashes in the DB, see
+  // src/lib/auth.ts). They are never part of the client-side data.
 }
 
 export interface DB {

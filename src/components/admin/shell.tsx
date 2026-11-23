@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, type ReactNode } from "react";
+import type { ReactNode } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { isAdmin, logoutAdmin, useStore } from "@/lib/store";
+import { logoutAdmin } from "@/app/actions/auth";
+import { useStore } from "@/lib/store";
 import { cx, LoadingScreen } from "../ui";
 import {
   ChartIcon,
@@ -27,20 +28,23 @@ const NAV = [
   { href: "/admin/settings", label: "সেটিংস", Icon: GearIcon },
 ] as const;
 
-/** FR-2: every /admin page except login needs an admin session. */
+/**
+ * FR-2: every /admin page except login needs an admin session. proxy.ts redirects requests without a
+ * valid admin cookie; the Server Actions re-check on every call (FR-4).
+ */
 export function AdminShell({ children }: { children: ReactNode }) {
   const s = useStore();
   const router = useRouter();
   const pathname = usePathname();
   const isLogin = pathname === "/admin/login";
-  const ok = s !== null && isAdmin(s);
-
-  useEffect(() => {
-    if (s && !ok && !isLogin) router.replace(`/admin/login?next=${encodeURIComponent(pathname)}`);
-  }, [s, ok, isLogin, pathname, router]);
 
   if (isLogin) return <>{children}</>;
-  if (!s || !ok) return <LoadingScreen />;
+  if (!s) return <LoadingScreen />;
+
+  async function logout() {
+    await logoutAdmin();
+    router.replace("/admin/login");
+  }
 
   const active = (href: string) => (href === "/admin" ? pathname === "/admin" : pathname.startsWith(href));
 
@@ -94,10 +98,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
             নাপিতের স্ক্রিন
           </Link>
           <button
-            onClick={() => {
-              logoutAdmin();
-              router.replace("/admin/login");
-            }}
+            onClick={logout}
             className="flex w-full items-center gap-3 rounded-full py-1.5 pr-3 pl-1.5 text-sm text-muted hover:bg-surface-2 hover:text-fg"
           >
             <span className="flex h-9 w-9 items-center justify-center rounded-full bg-surface-2">
@@ -118,10 +119,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
             </Link>
             <button
               aria-label="লগআউট"
-              onClick={() => {
-                logoutAdmin();
-                router.replace("/admin/login");
-              }}
+              onClick={logout}
               className="rounded-lg p-2 text-muted hover:bg-surface-2"
             >
               <LogoutIcon className="h-5 w-5" />

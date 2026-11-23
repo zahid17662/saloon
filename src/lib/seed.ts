@@ -54,6 +54,11 @@ const MENU: { category: string; services: [string, number][] }[] = [
   },
 ];
 
+/** Dev-only fallback used by `npm run db:seed` when SEED_ADMIN_PIN / SEED_SHOP_CODE are unset. */
+export const DEMO_ADMIN_PIN = "0000";
+export const DEMO_SHOP_CODE = "1234";
+export const INITIAL_SHOP_CODE_VERSION = 1;
+
 export function createSeed(now = new Date().toISOString()): DB {
   const db: DB = {
     categories: [],
@@ -74,9 +79,6 @@ export function createSeed(now = new Date().toISOString()): DB {
       shopPhone: "",
       receiptFooter: "আবার আসবেন, ধন্যবাদ!",
       paperWidth: "80",
-      adminPin: "0000",
-      shopCode: "1234",
-      shopCodeVersion: 1,
     },
   };
 
