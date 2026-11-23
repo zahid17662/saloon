@@ -136,12 +136,28 @@ Use the Settings screen in `/admin/settings`.
 - **Where to look when something fails:** Vercel, **Logs** (filter by Error), and for the database Neon, **Monitoring**.
 - **The `login_attempts` table grows slowly** (one row per login try). It is safe to clear old rows from the Neon SQL editor, for example `delete from login_attempts where created_at < now() - interval '30 days';`.
 
+## 8b. The owner forgot the admin PIN
+
+There is no recovery inside the app (by design). You reset it from your computer, against the database you mean to change (check the endpoint id it prints):
+
+PowerShell:
+
+```powershell
+$env:DIRECT_URL = "<direct string of main>"
+$env:NEW_ADMIN_PIN = "<new 4 to 8 digit PIN>"
+npm run admin:reset-pin
+Remove-Item Env:DIRECT_URL, Env:NEW_ADMIN_PIN
+```
+
+Bash: `DIRECT_URL=... NEW_ADMIN_PIN=... npm run admin:reset-pin`. Every existing admin session stops working. Tell the owner the new PIN in person, not in a chat message, and ask them to change it in Settings.
+
 ## 9. Command summary
 
 | What | Command |
 |---|---|
 | Generate a migration after editing `src/db/schema.ts` | `npm run db:generate` (then read the SQL) |
 | Apply migrations to the database in `DIRECT_URL` | `npm run db:migrate` |
+| Reset a forgotten admin PIN | `npm run admin:reset-pin` (see section 8b) |
 | Seed the first menu, barbers and credentials | `npm run db:seed` (see section 3 for the variables) |
 | Check the code before you push | `npm run typecheck && npm run lint && npm test && npm run build` |
 | Browser tests (separate Neon branch, never `main`) | `npm run test:e2e` |
