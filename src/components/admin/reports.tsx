@@ -60,12 +60,12 @@ export function Reports() {
       />
 
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-        <div className="inline-flex rounded-xl border border-line bg-surface p-1" role="tablist">
+        <div className="inline-flex rounded-xl border border-line bg-surface p-1" role="group" aria-label="হিসাবের ধরন">
           {TABS.map((tab) => (
             <button
               key={tab.id}
-              role="tab"
-              aria-selected={mode === tab.id}
+              type="button"
+              aria-pressed={mode === tab.id}
               onClick={() => setMode(tab.id)}
               className={cx(
                 "rounded-lg px-3 py-1.5 text-sm",

@@ -41,6 +41,9 @@ export function Payouts() {
   return (
     <>
       <PageTitle title="নাপিতের পেমেন্ট" sub={`মোট পাওনা ${taka(totalOwed)}`} />
+      <p role="status" className="sr-only">
+        {view.loading ? "হিসাব হালনাগাদ হচ্ছে…" : ""}
+      </p>
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {cards.map(({ barber, earned, paid, balance }) => (

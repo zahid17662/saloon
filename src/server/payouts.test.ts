@@ -1,3 +1,4 @@
+import { eq } from "drizzle-orm";
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { barbers, categories, payouts, sales, services } from "../db/schema";
 import { DomainError } from "./errors";
@@ -89,6 +90,26 @@ describe("addPayout", () => {
     );
   });
 
+  it("never stamps a payout in the future (today, before noon Dhaka)", async () => {
+    const earlyMorning = new Date("2026-03-10T03:00:00Z"); // 09:00 Dhaka
+    const p = await addPayout(t.db, { barberId: A, amount: 50, date: "2026-03-10", note: "" }, earlyMorning);
+    expect(p.paidAt).toBe(earlyMorning.toISOString());
+  });
+
+  it("refuses the same payment twice within 30 seconds, but allows it later", async () => {
+    const input = { barberId: A, amount: 500, date: "2026-03-10", note: "" };
+    await addPayout(t.db, input, NOW);
+    expect(await msg(addPayout(t.db, input, new Date(NOW.getTime() + 5_000)))).toBe("এই পেমেন্ট এইমাত্র সেভ হয়েছে");
+    await addPayout(t.db, input, new Date(NOW.getTime() + 60_000));
+    expect(await listPayouts(t.db)).toHaveLength(2);
+  });
+
+  it("pays an inactive barber", async () => {
+    await t.db.update(barbers).set({ active: false }).where(eq(barbers.id, A));
+    await addPayout(t.db, { barberId: A, amount: 10, date: "2026-03-10", note: "" }, NOW);
+    expect(await listPayouts(t.db)).toHaveLength(1);
+  });
+
   it("lists newest first", async () => {
     await addPayout(t.db, { barberId: A, amount: 10, date: "2026-03-08", note: "" }, NOW);
     await addPayout(t.db, { barberId: A, amount: 20, date: "2026-03-10", note: "" }, NOW);
@@ -106,5 +127,14 @@ describe("deletePayout (24 hours)", () => {
     expect(await msg(deletePayout(t.db, q.id, hours(24.1)))).toBe("২৪ ঘণ্টা পার হওয়া পেমেন্ট মোছা যাবে না");
     expect(await listPayouts(t.db)).toHaveLength(1);
     expect(await msg(deletePayout(t.db, 424242, NOW))).toBe("পেমেন্ট পাওয়া যায়নি");
+  });
+
+  it("is inclusive at exactly 24 h and refuses 1 ms later", async () => {
+    const p = await addPayout(t.db, { barberId: A, amount: 30, date: "2026-03-10", note: "" }, NOW);
+    expect(await msg(deletePayout(t.db, p.id, new Date(hours(24).getTime() + 1)))).toBe(
+      "২৪ ঘণ্টা পার হওয়া পেমেন্ট মোছা যাবে না",
+    );
+    await deletePayout(t.db, p.id, hours(24));
+    expect(await listPayouts(t.db)).toHaveLength(0);
   });
 });
