@@ -2,6 +2,19 @@
 
 You run every command yourself. Nothing here is automatic except the migration step in the Production build (section 4).
 
+## Read first: two apps
+
+The project is two apps: `frontend/` (Next.js) and `backend/` (Express API). Deploy both. Where the rest of this guide says "the app", the database, migrations, seed and `SESSION_SECRET` belong to the **backend**, and every `npm run db:*` / `admin:reset-pin` command is run **from the `backend/` folder**.
+
+- **Frontend: Vercel**, Root Directory `frontend`. Only env var: `BACKEND_URL` (the public or private URL of the API, no trailing slash).
+- **Backend: any host that runs a long-lived Node 20+ process** (Render, Railway, Fly.io, a VPS). Build: `npm install`. Start: `npm start`. It needs a Singapore region to stay next to Neon. Env: `DATABASE_URL`, `DIRECT_URL`, `SESSION_SECRET`, `TRUST_PROXY_HEADERS=1`, `PORT` if your host does not set one. Health check: `GET /api/health`.
+- **Migrations are no longer run by the Vercel build.** Run `npm run db:migrate` from `backend/` (section 3) before each release that has a new migration, or add it as a release / pre-deploy command on the backend host.
+- **Cookies and HTTPS:** production cookies use the `__Host-` prefix, so the site must be served over HTTPS and the frontend and backend must run with `NODE_ENV=production` (hosts set this by default).
+- **Keep the API private** where the host allows (private network or firewall), because it trusts the client-IP header the frontend forwards. See README, Security notes.
+- Deploy the backend first, then the frontend, and check `GET <backend>/api/health` before opening the site.
+
+The numbered sections below still apply with these changes: section 2 is the frontend project, section 4's build-time migration step is gone.
+
 ## 0. What you need
 
 - A GitHub repo with this code pushed (the client's or a handed-over account).
@@ -29,7 +42,7 @@ If you have no `openssl`: `node -e "console.log(require('crypto').randomBytes(32
 
 ## 2. Vercel: create the project
 
-1. Vercel dashboard, **Add New, Project**, import the GitHub repo. Framework: Next.js (detected). Leave the build command and output directory alone. `package.json` already sets `npm run build`, and `vercel.json` pins the region to `sin1`.
+1. Vercel dashboard, **Add New, Project**, import the GitHub repo. Set **Root Directory** to `frontend`. Framework: Next.js (detected). Leave the build command and output directory alone. `frontend/package.json` already sets the build, and `frontend/vercel.json` pins the region to `sin1`.
 2. Before the first deploy, open **Settings, Environment Variables** and add these. Tick **Production** for all of them. For Preview, see the note below.
 
 | Name | Value | Notes |
@@ -46,7 +59,7 @@ Do **not** set `TRUST_PROXY_HEADERS`. On Vercel the client IP header is trusted 
 
 ## 3. First-time database setup on `main` (you run this from your computer)
 
-Use a one-off shell. The strings are only in that shell's environment, not in a file.
+Use a one-off shell opened in the `backend/` folder. The strings are only in that shell's environment, not in a file.
 
 PowerShell (Windows):
 
@@ -84,15 +97,14 @@ select count(*) from barbers;
 
 ## 4. Deploying and how migrations run
 
-`npm run build` runs `scripts/build.mjs`:
+Migrations are **not** part of the Vercel build any more (the old `scripts/build.mjs` is gone). Run them yourself from `backend/` (section 3), or as a release command on the backend host, **before** the new code goes live:
 
-- On a **Vercel Production build** (`VERCEL_ENV=production`) it runs `drizzle-kit migrate` against `DIRECT_URL` first, then `next build`.
-- On **Preview builds, CI and your computer** it skips the migration and only builds. A pull request can never change the production database.
-- If a migration fails, the build fails. Vercel keeps serving the previous deployment. Read the build log, fix, and push again.
+- A pull request or preview can never change the production database, because nothing in the frontend build touches it.
+- If a migration fails, nothing was deployed yet. Read the error, fix, and run it again.
 
 Why this is not fully safe on its own, and the rule that makes it safe: during a deploy, the old code keeps running against the new schema until the new deployment goes live. So every migration must be **backward compatible**: add tables and columns (nullable or with a default), and drop or rename things only in a later release, after no running code uses them. Never edit a migration that has already been applied. Always run `npm run db:generate`, read the SQL, and commit it.
 
-If you would rather not migrate during the build at all (the stricter option), run `npm run db:migrate` from your computer (section 3) before every deploy that has a new migration, and delete the `drizzle-kit migrate` step from `scripts/build.mjs`.
+If you would rather not migrate automatically at all (the stricter option), keep running `npm run db:migrate` from your computer (section 3) before every deploy that has a new migration, and do not add it as a release command.
 
 First deploy:
 
