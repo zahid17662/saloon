@@ -19,6 +19,10 @@ test("a barber can void their own fresh sale", async ({ page }) => {
 });
 
 test("after 10 minutes the button is gone, and the server refuses a stale click", async ({ page }) => {
+  // A sale that is older than 10 minutes yet still "today" (Dhaka day, BR-5) cannot exist in the
+  // first minutes after Dhaka midnight: it would belong to yesterday and the screen rightly omits it.
+  const dhaka = new Date(Date.now() + 6 * 3_600_000);
+  test.skip(dhaka.getUTCHours() * 60 + dhaka.getUTCMinutes() < 12, "needs a today-sale older than 10 min; impossible just after Dhaka midnight");
   // Older than 10 minutes when the page loads: no void button at all.
   await seedSale({ barber: "Rahim", items: [{ name: "Hair Cutting" }], at: new Date(Date.now() - 11 * 60_000) });
   await unlockShop(page);

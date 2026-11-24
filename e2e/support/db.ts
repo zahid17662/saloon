@@ -129,6 +129,11 @@ export async function saleItemsOf(id: number): Promise<{ name_snapshot: string; 
   return rows("select name_snapshot, price_snapshot from sale_items where sale_id = $1", [id]);
 }
 
+/** Adds a barber after the fixture reset (the fixture has two). */
+export async function addBarber(name: string, pct: number): Promise<void> {
+  await rows("insert into barbers (name, commission_pct, sort_order) values ($1, $2, (select coalesce(max(sort_order), 0) + 1 from barbers))", [name, pct]);
+}
+
 export async function adminEnteredSales(): Promise<{ id: number; created_at: string; total: number }[]> {
   return rows("select id, created_at, total from sales where entered_by_admin = true order by id");
 }

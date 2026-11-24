@@ -114,6 +114,7 @@ export const saleItems = pgTable(
   },
   (t) => [
     index("sale_items_sale_idx").on(t.saleId),
+    index("sale_items_service_idx").on(t.serviceId),
     check("qty_range", sql`${t.qty} between 1 and 20`),
     check("price_snapshot_positive", sql`${t.priceSnapshot} > 0`),
   ],

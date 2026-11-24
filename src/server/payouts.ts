@@ -20,6 +20,7 @@ const MSG = {
 } as const;
 
 const DUPLICATE_WINDOW_MS = 30_000;
+const PAYOUT_LOCK_NS = 7001; // namespace for pg_advisory_xact_lock(ns, barberId)
 
 type Row = typeof payouts.$inferSelect;
 const toPayout = (r: Row): Payout => ({
@@ -41,37 +42,43 @@ export interface BarberBalance {
 
 export async function addPayout(db: Db, input: PayoutInput, now: Date = new Date()): Promise<Payout> {
   if (input.date > todayKey(now)) throw new DomainError(MSG.future);
-  const [barber] = await db.select({ id: barbers.id }).from(barbers).where(eq(barbers.id, input.barberId));
-  if (!barber) throw new DomainError(MSG.noBarber); // inactive barbers can still be paid what they earned
-  // A double tap or a retry on a slow network must not record the same payment twice.
-  const recent = new Date(now.getTime() - DUPLICATE_WINDOW_MS);
-  const [twin] = await db
-    .select({ id: payouts.id })
-    .from(payouts)
-    .where(
-      and(
-        eq(payouts.barberId, input.barberId),
-        eq(payouts.amount, input.amount),
-        eq(payouts.note, input.note),
-        gte(payouts.createdAt, recent),
-      ),
-    )
-    .limit(1);
-  if (twin) throw new DomainError(MSG.duplicate);
-  // A payout is stamped at noon Dhaka of its day, but never in the future (today, before noon).
-  const noon = new Date(dhakaDateToIso(input.date));
-  const paidAt = noon > now ? now : noon;
-  const [row] = await db
-    .insert(payouts)
-    .values({
-      barberId: input.barberId,
-      amount: input.amount,
-      note: input.note,
-      paidAt,
-      createdAt: now,
-    })
-    .returning();
-  return toPayout(row);
+  // The check-then-insert below has no unique constraint to fall back on, so it runs in one
+  // transaction that first takes a per-barber advisory lock: concurrent taps for the same barber
+  // queue up, and the second one sees the first one's committed row.
+  return db.transaction(async (tx) => {
+    await tx.execute(sql`select pg_advisory_xact_lock(${PAYOUT_LOCK_NS}, ${input.barberId})`);
+    const [barber] = await tx.select({ id: barbers.id }).from(barbers).where(eq(barbers.id, input.barberId));
+    if (!barber) throw new DomainError(MSG.noBarber); // inactive barbers can still be paid what they earned
+    // A double tap or a retry on a slow network must not record the same payment twice.
+    const recent = new Date(now.getTime() - DUPLICATE_WINDOW_MS);
+    const [twin] = await tx
+      .select({ id: payouts.id })
+      .from(payouts)
+      .where(
+        and(
+          eq(payouts.barberId, input.barberId),
+          eq(payouts.amount, input.amount),
+          eq(payouts.note, input.note),
+          gte(payouts.createdAt, recent),
+        ),
+      )
+      .limit(1);
+    if (twin) throw new DomainError(MSG.duplicate);
+    // A payout is stamped at noon Dhaka of its day, but never in the future (today, before noon).
+    const noon = new Date(dhakaDateToIso(input.date));
+    const paidAt = noon > now ? now : noon;
+    const [row] = await tx
+      .insert(payouts)
+      .values({
+        barberId: input.barberId,
+        amount: input.amount,
+        note: input.note,
+        paidAt,
+        createdAt: now,
+      })
+      .returning();
+    return toPayout(row);
+  });
 }
 
 export async function listPayouts(db: Db): Promise<Payout[]> {

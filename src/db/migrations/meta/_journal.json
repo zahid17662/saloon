@@ -15,6 +15,13 @@
       "when": 1795437849651,
       "tag": "0001_dizzy_hiroim",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1795451613687,
+      "tag": "0002_sale_items_service_idx",
+      "breakpoints": true
     }
   ]
 }
