@@ -167,3 +167,42 @@ export type CategoryPatch = z.infer<typeof categoryPatch>;
 export type ServiceInput = z.infer<typeof serviceInput>;
 export type ServicePatch = z.infer<typeof servicePatch>;
 export type SettingsPatch = z.infer<typeof settingsPatch>;
+
+// ---------- customer appointments ----------
+
+const APPT_MSG = {
+  name: "আপনার নাম লিখুন",
+  phone: "সঠিক মোবাইল নম্বর দিন (যেমন 01712345678)",
+  services: "কমপক্ষে একটি সেবা বেছে নিন",
+  dup: "একই সেবা দুইবার নেওয়া যাবে না",
+} as const;
+
+export const appointmentInput = z
+  .strictObject({
+    customerName: z.string({ error: APPT_MSG.name }).trim().min(1, APPT_MSG.name).max(60, M.tooLong),
+    phone: z.string({ error: APPT_MSG.phone }).trim().regex(/^(?:\+?88)?01[3-9]\d{8}$/, APPT_MSG.phone),
+    barberId: idSchema.nullable().optional(),
+    serviceIds: z.array(idSchema, { error: APPT_MSG.services }).min(1, APPT_MSG.services).max(8, M.id),
+    date: dateKey,
+    time: z.string({ error: SALE_MSG.badDate }).regex(/^\d{2}:\d{2}$/, SALE_MSG.badDate),
+    note: z.string({ error: M.id }).trim().max(200, M.tooLong).default(""),
+  })
+  .refine((v) => new Set(v.serviceIds).size === v.serviceIds.length, { message: APPT_MSG.dup, path: ["serviceIds"] });
+
+export const appointmentStatusInput = z.strictObject({ status: z.enum(["CONFIRMED", "CANCELLED", "DONE"], { error: M.id }) });
+
+export const appointmentsQuery = z
+  .strictObject({
+    from: dateKey,
+    to: dateKey,
+    status: z.enum(["all", "PENDING", "CONFIRMED", "CANCELLED", "DONE"], { error: M.id }).optional(),
+  })
+  .refine((q) => q.from <= q.to && Date.parse(`${q.to}T00:00:00Z`) - Date.parse(`${q.from}T00:00:00Z`) <= 366 * 86_400_000, {
+    message: SALE_MSG.badRange,
+    path: ["to"],
+  });
+
+export const slotsQuery = z.strictObject({ date: dateKey, barberId: idSchema });
+
+export type AppointmentInput = z.infer<typeof appointmentInput>;
+export type AppointmentsQuery = z.infer<typeof appointmentsQuery>;

@@ -1,6 +1,7 @@
 import "server-only";
 
 import { BACKEND_URL } from "./backend";
+import { PREVIEW, previewApi } from "./preview";
 
 // Forwards a browser request to the Salon API and streams the answer back, so the browser only ever
 // talks to this site: the session cookies the API sets belong to this origin (no CORS, no
@@ -15,6 +16,19 @@ const SKIP_REQUEST = new Set(["host", "connection", "content-length", "accept-en
 const SKIP_RESPONSE = new Set(["connection", "keep-alive", "transfer-encoding", "content-encoding", "content-length", "set-cookie"]);
 
 export async function forwardToBackend(req: Request, backendPath: string): Promise<Response> {
+  if (PREVIEW) {
+    const url = new URL(req.url);
+    let body: Record<string, unknown> = {};
+    if (req.method !== "GET" && req.method !== "HEAD") {
+      try {
+        body = (await req.json()) as Record<string, unknown>;
+      } catch {
+        /* no body */
+      }
+    }
+    const r = previewApi(req.method, backendPath.replace(/^\/api/, ""), url.searchParams, body);
+    return Response.json(r.body, { status: r.status, headers: { "cache-control": "no-store" } });
+  }
   const search = new URL(req.url).search;
   const headers = new Headers();
   req.headers.forEach((value, key) => {

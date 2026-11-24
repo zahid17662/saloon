@@ -1,6 +1,7 @@
 import "server-only";
 
 import { cookies } from "next/headers";
+import { PREVIEW, previewApi } from "./preview";
 
 // Server-side access to the Salon API (the backend/ app). Used by server components and layouts to
 // load data on the server; the visitor's own cookies are forwarded so the backend authorises the
@@ -23,6 +24,13 @@ export class BackendUnauthorized extends Error {
  * message (replies and URLs can carry hostnames).
  */
 export async function backendData<T>(path: string): Promise<T> {
+  if (PREVIEW) {
+    const [p, q] = path.split("?");
+    const r = previewApi("GET", p, new URLSearchParams(q ?? ""));
+    const b = r.body as { ok?: boolean; data?: T };
+    if (r.status === 200 && b.ok) return b.data as T;
+    throw new Error(`preview request failed (${r.status})`);
+  }
   const cookie = (await cookies())
     .getAll()
     .map((c) => `${c.name}=${c.value}`)

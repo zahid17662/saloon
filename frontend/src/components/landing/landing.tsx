@@ -1,0 +1,155 @@
+import Link from "next/link";
+import { bnDigits, taka } from "@/lib/money";
+import type { PublicMenu } from "@/lib/types";
+import { CalendarIcon, PhoneIcon, PinIcon, ScissorsIcon } from "../icons";
+import { BookingForm } from "./booking-form";
+
+/** The customer-facing home page. No login; staff and admin have their own entrances in the footer. */
+export function Landing({ menu }: { menu: PublicMenu | null }) {
+  if (!menu) {
+    return (
+      <main className="flex min-h-dvh flex-col items-center justify-center gap-3 p-6 text-center">
+        <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-primary-soft text-primary">
+          <ScissorsIcon className="h-8 w-8" />
+        </div>
+        <h1 className="text-xl font-bold text-fg">পেজটি এখন লোড করা যাচ্ছে না</h1>
+        <p className="text-sm text-muted">কিছুক্ষণ পরে আবার চেষ্টা করুন।</p>
+        <Link href="/staff" className="mt-4 text-xs text-subtle hover:text-primary">
+          স্টাফ লগইন
+        </Link>
+      </main>
+    );
+  }
+
+  const { shop } = menu;
+  const name = shop.name.trim() || "সেলুন";
+  const groups = menu.categories
+    .map((c) => ({ ...c, items: menu.services.filter((s) => s.categoryId === c.id) }))
+    .filter((g) => g.items.length > 0);
+
+  return (
+    <div className="min-h-dvh">
+      <header className="sticky top-0 z-20 border-b border-line bg-bg/90 backdrop-blur">
+        <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3">
+          <div className="flex items-center gap-2.5">
+            <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-primary text-white">
+              <ScissorsIcon className="h-5 w-5" />
+            </span>
+            <span className="font-semibold text-fg">{name}</span>
+          </div>
+          <a
+            href="#book"
+            className="inline-flex h-10 items-center gap-2 rounded-full bg-primary px-5 text-sm font-semibold text-white transition-colors hover:bg-primary-hover"
+          >
+            <CalendarIcon className="h-4 w-4" />
+            বুক করুন
+          </a>
+        </div>
+      </header>
+
+      <main className="mx-auto max-w-5xl space-y-12 px-4 pb-16">
+        <section className="pt-10 text-center sm:pt-16">
+          <h1 className="text-3xl leading-tight font-bold text-fg sm:text-5xl">
+            ভালো কাট, <span className="text-primary">ভালো সময়</span>
+          </h1>
+          <p className="mx-auto mt-4 max-w-xl text-base text-muted">
+            আমাদের সেবা আর দাম দেখে নিন, পছন্দের barber আর সময় বেছে আগেই বুক করে রাখুন। লাইনে দাঁড়াতে হবে না।
+          </p>
+          <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
+            <a
+              href="#book"
+              className="inline-flex h-12 items-center rounded-full bg-primary px-7 font-semibold text-white shadow-[0_6px_18px_rgb(59_130_246/0.35)] transition-colors hover:bg-primary-hover"
+            >
+              অ্যাপয়েন্টমেন্ট নিন
+            </a>
+            <a
+              href="#services"
+              className="inline-flex h-12 items-center rounded-full border border-line-strong bg-surface px-7 font-medium text-fg transition-colors hover:bg-surface-2"
+            >
+              সেবা ও দাম
+            </a>
+          </div>
+        </section>
+
+        <section id="services" aria-labelledby="services-h" className="scroll-mt-20">
+          <h2 id="services-h" className="mb-4 text-xl font-bold text-fg">
+            সেবা ও দাম
+          </h2>
+          {groups.length === 0 ? (
+            <p className="rounded-3xl bg-surface p-6 text-center text-sm text-muted shadow-card">সেবার তালিকা শীঘ্রই যোগ হবে।</p>
+          ) : (
+            <div className="grid gap-4 md:grid-cols-2">
+              {groups.map((g) => (
+                <div key={g.id} className="rounded-3xl bg-surface p-5 shadow-card">
+                  <h3 className="mb-3 text-base font-semibold text-fg">{g.name}</h3>
+                  <ul className="divide-y divide-line">
+                    {g.items.map((s) => (
+                      <li key={s.id} className="flex items-center justify-between gap-3 py-2.5 text-[15px]">
+                        <span className="text-fg">{s.name}</span>
+                        <span className="font-semibold text-primary tabular-nums">{taka(s.price)}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
+
+        {menu.barbers.length > 0 && (
+          <section aria-labelledby="barbers-h">
+            <h2 id="barbers-h" className="mb-4 text-xl font-bold text-fg">
+              আমাদের barber
+            </h2>
+            <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
+              {menu.barbers.map((b) => (
+                <li key={b.id} className="flex flex-col items-center gap-2 rounded-3xl bg-surface p-5 text-center shadow-card">
+                  <span className="flex h-16 w-16 items-center justify-center rounded-full bg-primary-soft text-2xl font-bold text-primary">
+                    {b.name.trim().charAt(0)}
+                  </span>
+                  <span className="font-semibold text-fg">{b.name}</span>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
+
+        <section id="book" aria-labelledby="book-h" className="scroll-mt-20">
+          <h2 id="book-h" className="mb-1 text-xl font-bold text-fg">
+            অ্যাপয়েন্টমেন্ট বুক করুন
+          </h2>
+          <p className="mb-4 text-sm text-muted">
+            নাম আর ফোন নম্বর দিলেই হবে, কোনো অ্যাকাউন্ট লাগবে না। দোকান আপনার বুকিং নিশ্চিত করবে।
+          </p>
+          <BookingForm menu={menu} />
+        </section>
+      </main>
+
+      <footer className="border-t border-line bg-surface">
+        <div className="mx-auto flex max-w-5xl flex-col gap-4 px-4 py-8 sm:flex-row sm:items-end sm:justify-between">
+          <div className="space-y-2 text-sm text-muted">
+            <div className="font-semibold text-fg">{name}</div>
+            {shop.address && (
+              <div className="flex items-center gap-2">
+                <PinIcon className="h-4 w-4 text-primary" />
+                {shop.address}
+              </div>
+            )}
+            {shop.phone && (
+              <div className="flex items-center gap-2">
+                <PhoneIcon className="h-4 w-4 text-primary" />
+                <a href={`tel:${shop.phone}`} className="hover:text-primary">
+                  {bnDigits(shop.phone)}
+                </a>
+              </div>
+            )}
+            <div className="text-xs text-subtle">প্রতিদিন সকাল ১০টা থেকে রাত ৯টা</div>
+          </div>
+          <Link href="/staff" className="text-xs text-subtle hover:text-primary">
+            স্টাফ লগইন
+          </Link>
+        </div>
+      </footer>
+    </div>
+  );
+}

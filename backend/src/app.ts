@@ -3,6 +3,7 @@
 // 200 ok, 400 a message for the user, 401 not logged in, 500 a bug or an outage.
 
 import express, { type Request, type RequestHandler, type Response } from "express";
+import * as appointmentActions from "./actions/appointments";
 import * as auth from "./actions/auth";
 import { GET as backupGET } from "./actions/backup";
 import * as catalogActions from "./actions/catalog";
@@ -64,6 +65,21 @@ export function createApp() {
   // ----- catalog
   api.get("/public/shop-name", route(async () => ({ ok: true, data: await reads.getPublicShopName() })));
   api.get("/catalog", route(() => reads.getCatalogView()));
+
+  // ----- customers (no login): menu, free slots, booking
+  api.get("/public/menu", route(() => appointmentActions.getPublicMenu()));
+  api.get("/public/slots", route((req) => appointmentActions.getBookedTimes({ date: req.query.date, barberId: Number(req.query.barberId) })));
+  api.post("/public/appointments", route((req) => appointmentActions.bookAppointment(req.body)));
+
+  // ----- appointments (admin)
+  api.get(
+    "/appointments",
+    route((req) => {
+      const q = req.query;
+      return appointmentActions.listAppointments({ from: q.from, to: q.to, ...(q.status === undefined ? {} : { status: q.status }) });
+    }),
+  );
+  api.patch("/appointments/:id", route((req) => appointmentActions.setAppointmentStatus(Number(req.params.id), req.body)));
   api.post("/barbers", route((req) => catalogActions.addBarber(req.body)));
   api.patch("/barbers/:id", route((req) => catalogActions.updateBarber(Number(req.params.id), req.body)));
   api.post("/categories", route((req) => catalogActions.addCategory(req.body)));

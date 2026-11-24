@@ -1,4 +1,4 @@
-// Item 6: migrations apply cleanly on an EMPTY database and match schema.ts, and the seed can be
+﻿// Item 6: migrations apply cleanly on an EMPTY database and match schema.ts, and the seed can be
 // run any number of times (even at once) without duplicates or overwriting a changed PIN.
 // Runs on PGlite; the seed function is the same one `npm run db:seed` runs against Neon.
 
@@ -27,14 +27,14 @@ describe("migrations on an empty database", () => {
     await migrate(db, { migrationsFolder: folder });
     await migrate(db, { migrationsFolder: folder });
     const r = await db.execute(sql`select count(*)::int as n from drizzle.__drizzle_migrations`);
-    expect((r.rows[0] as { n: number }).n).toBe(3); // 0000, 0001, 0002: none applied twice
+    expect((r.rows[0] as { n: number }).n).toBe(4); // 0000 to 0003
     await client.close();
   });
 
   it("produce exactly the tables, indexes and constraints that schema.ts declares", async () => {
     const t = await createTestDb();
     const tables = Object.values(schema).filter((v) => is(v, PgTable)) as unknown as PgTable[];
-    expect(tables.length).toBe(8);
+    expect(tables.length).toBe(9);
     for (const tbl of tables) {
       const cfg = getTableConfig(tbl);
       const idx = await t.db.execute(sql`select indexname from pg_indexes where schemaname = 'public' and tablename = ${cfg.name}`);

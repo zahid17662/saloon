@@ -99,3 +99,23 @@ export const LogoutIcon =({ className }: P) => (
     <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9" />
   </svg>
 );
+
+export const CalendarIcon = ({ className }: P) => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden="true">
+    <rect x="3.5" y="5" width="17" height="15.5" rx="3" />
+    <path d="M3.5 10h17M8 3v4M16 3v4" />
+  </svg>
+);
+
+export const PhoneIcon = ({ className }: P) => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden="true">
+    <path d="M5 4h3.5l1.6 4.2-2.1 1.4a11 11 0 0 0 5.4 5.4l1.4-2.1L19 14.5V18a2 2 0 0 1-2 2A13 13 0 0 1 3 6a2 2 0 0 1 2-2Z" />
+  </svg>
+);
+
+export const PinIcon = ({ className }: P) => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden="true">
+    <path d="M12 21s7-5.6 7-11a7 7 0 1 0-14 0c0 5.4 7 11 7 11Z" />
+    <circle cx="12" cy="10" r="2.5" />
+  </svg>
+);

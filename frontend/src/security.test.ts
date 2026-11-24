@@ -19,7 +19,7 @@ describe("5. pages and receipts", () => {
     for (const p of pages(root)) {
       const rel = path.relative(root, p).replaceAll("\\", "/");
       const src = readFileSync(p, "utf8");
-      if (rel === "unlock/page.tsx" || rel === "admin/login/page.tsx") continue;
+      if (rel === "unlock/page.tsx" || rel === "admin/login/page.tsx" || rel === "page.tsx") continue; // public pages
       // The admin pages are data-free client shells (their data comes through admin-only actions,
       // proven in section 1). Any page that reads the database itself must call a guard.
       const readsData = /from "@\/lib\/backend"/.test(src);
@@ -32,6 +32,17 @@ describe("5. pages and receipts", () => {
   it("the customer receipt never shows the barber/owner split (FR-14)", () => {
     const src = readFileSync(path.join(process.cwd(), "src/components/receipt-view.tsx"), "utf8");
     expect(src).not.toMatch(/barberShare|ownerShare|commissionPct/);
+  });
+});
+
+describe("5b. customer landing page", () => {
+  it("only talks to public endpoints (no catalog, sales, payouts or admin data)", () => {
+    const src = readFileSync(path.join(process.cwd(), "src/lib/public-menu.ts"), "utf8");
+    const paths = [...src.matchAll(/["'`](\/[a-z][^"'`]*)["'`]/g)].map((m) => m[1]).filter((p) => /^\/(public|auth|catalog|sales|payouts|admin|appointments|barbers|services|settings)/.test(p));
+    expect(paths.length).toBeGreaterThan(0);
+    expect(paths.every((p) => p.startsWith("/public/"))).toBe(true);
+    const page = readFileSync(path.join(process.cwd(), "src/app/page.tsx"), "utf8");
+    expect(page).not.toMatch(/ensureShop|shopData|@\/lib\/backend"/);
   });
 });
 

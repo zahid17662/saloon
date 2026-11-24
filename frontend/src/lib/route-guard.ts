@@ -14,6 +14,7 @@ export function guardRoute({ pathname, search, hasShop, hasAdmin }: GuardInput):
   const path = pathname.length > 1 ? pathname.replace(/\/+$/, "") : pathname;
 
   if (path === "/unlock") return null;
+  if (path === "/") return null; // customer landing page: public
 
   if (isAdminPath(path)) {
     if (path === "/admin/login") return null;

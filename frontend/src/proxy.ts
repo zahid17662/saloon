@@ -7,6 +7,8 @@ import { guardRoute } from "@/lib/route-guard";
 const cookieName = (kind: "shop" | "admin") => `${process.env.NODE_ENV === "production" ? "__Host-" : ""}salon_${kind}`;
 
 export function proxy(request: NextRequest) {
+  // Preview mode (no backend, see lib/preview.ts): no cookies exist, so skip the login redirects.
+  if (process.env.PREVIEW_MODE === "1") return NextResponse.next();
   const decision = guardRoute({
     pathname: request.nextUrl.pathname,
     search: request.nextUrl.search,

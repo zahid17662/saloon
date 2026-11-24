@@ -1,0 +1,12 @@
+[build]
+  command = "npm run build"
+  publish = ".next"
+
+[build.environment]
+  NODE_VERSION = "22"
+  # Design preview: the app answers from sample data, no backend needed (see src/lib/preview.ts).
+  # Delete this line and set BACKEND_URL when the real API is ready.
+  PREVIEW_MODE = "1"
+
+[[plugins]]
+  package = "@netlify/plugin-nextjs"

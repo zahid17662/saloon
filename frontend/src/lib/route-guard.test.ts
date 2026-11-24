@@ -5,14 +5,19 @@ const none = { hasShop: false, hasAdmin: false };
 
 describe("guardRoute", () => {
   it("sends a device with no cookie to /unlock", () => {
-    expect(guardRoute({ pathname: "/", search: "", ...none })).toEqual({ redirect: "/unlock" });
+    expect(guardRoute({ pathname: "/staff", search: "", ...none })).toEqual({ redirect: "/unlock" });
     expect(guardRoute({ pathname: "/barber/3", search: "", ...none })).toEqual({ redirect: "/unlock" });
     expect(guardRoute({ pathname: "/receipt/9", search: "", ...none })).toEqual({ redirect: "/unlock" });
   });
 
   it("lets an unlocked device or an admin through", () => {
-    expect(guardRoute({ pathname: "/", search: "", hasShop: true, hasAdmin: false })).toBeNull();
-    expect(guardRoute({ pathname: "/", search: "", hasShop: false, hasAdmin: true })).toBeNull();
+    expect(guardRoute({ pathname: "/staff", search: "", hasShop: true, hasAdmin: false })).toBeNull();
+    expect(guardRoute({ pathname: "/staff", search: "", hasShop: false, hasAdmin: true })).toBeNull();
+  });
+
+  it("the customer landing page is public", () => {
+    expect(guardRoute({ pathname: "/", search: "", ...none })).toBeNull();
+    expect(guardRoute({ pathname: "/book", search: "", ...none })).toEqual({ redirect: "/unlock" });
   });
 
   it("always allows /unlock", () => {

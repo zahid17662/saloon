@@ -88,3 +88,26 @@ export const PAYMENT_LABELS: Record<PaymentMethod, string> = {
   NAGAD: "নগদ",
   OTHER: "অন্যান্য",
 };
+
+export type AppointmentStatus = "PENDING" | "CONFIRMED" | "CANCELLED" | "DONE";
+
+export interface Appointment {
+  id: number;
+  customerName: string;
+  phone: string;
+  barberId: number | null; // null = any barber
+  services: { serviceId: number; name: string; price: number }[];
+  total: number;
+  startsAt: string; // ISO (UTC)
+  note: string;
+  status: AppointmentStatus;
+  createdAt: string; // ISO (UTC)
+}
+
+/** What a customer may see (GET /api/public/menu): no commissions or other internals. */
+export interface PublicMenu {
+  shop: { name: string; address: string; phone: string };
+  categories: { id: number; name: string }[];
+  services: { id: number; categoryId: number; name: string; price: number }[];
+  barbers: { id: number; name: string }[];
+}

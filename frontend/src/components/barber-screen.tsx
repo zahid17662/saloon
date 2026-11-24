@@ -59,7 +59,7 @@ export function BarberScreen({ barberId, todaySales }: { barberId: number; today
     return (
       <main className="flex min-h-dvh flex-col items-center justify-center gap-4 p-6 text-center">
         <p className="text-muted">এই নাপিতকে পাওয়া যায়নি বা নিষ্ক্রিয় করা হয়েছে।</p>
-        <Link href="/" className="text-primary underline">
+        <Link href="/staff" className="text-primary underline">
           তালিকায় ফিরে যান
         </Link>
       </main>
@@ -127,7 +127,7 @@ export function BarberScreen({ barberId, todaySales }: { barberId: number; today
       <main className="p-4 pb-44 lg:p-0">
         {/* Header */}
         <header className="mb-4 flex items-center gap-3">
-          <Link href="/" aria-label="নাপিত তালিকা" className="rounded-xl p-2.5 text-muted hover:bg-surface-2 hover:text-fg">
+          <Link href="/staff" aria-label="নাপিত তালিকা" className="rounded-xl p-2.5 text-muted hover:bg-surface-2 hover:text-fg">
             <BackIcon className="h-6 w-6" />
           </Link>
           <div className="flex-1">

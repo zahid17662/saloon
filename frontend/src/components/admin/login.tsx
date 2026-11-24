@@ -54,7 +54,7 @@ export function AdminLogin({ shopName }: { shopName: string }) {
         <Button type="submit" size="lg" className="mt-4 w-full" disabled={!pin || pending}>
           লগইন
         </Button>
-        <Link href="/" className="mt-2 inline-block text-sm text-primary hover:underline">
+        <Link href="/staff" className="mt-2 inline-block text-sm text-primary hover:underline">
           নাপিতের স্ক্রিনে যান
         </Link>
       </form>

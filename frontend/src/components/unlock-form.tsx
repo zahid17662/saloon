@@ -17,7 +17,7 @@ export function UnlockForm({ shopName }: { shopName: string }) {
     e.preventDefault();
     startTransition(async () => {
       const r = await unlockShop({ code });
-      if (r.ok) router.replace("/");
+      if (r.ok) router.replace("/staff");
       else {
         setError(r.error);
         setCode("");

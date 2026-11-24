@@ -47,3 +47,5 @@ blob-report/
 
 # one-off refactor helpers
 .refactor-tmp/
+
+frontend/.netlify/

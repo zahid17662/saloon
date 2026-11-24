@@ -4,6 +4,7 @@ import {
   check,
   index,
   integer,
+  jsonb,
   pgEnum,
   pgTable,
   serial,
@@ -154,4 +155,33 @@ export const loginAttempts = pgTable(
     createdAt: tz("created_at").notNull().defaultNow(),
   },
   (t) => [index("login_attempts_lookup_idx").on(t.ip, t.kind, t.createdAt)],
+);
+
+export const appointmentStatus = pgEnum("appointment_status", ["PENDING", "CONFIRMED", "CANCELLED", "DONE"]);
+
+// Customer bookings (no customer account: name + phone). `services` is a snapshot of the picked
+// services and their prices at booking time. barber_id null = "any barber".
+export const appointments = pgTable(
+  "appointments",
+  {
+    id: serial("id").primaryKey(),
+    customerName: text("customer_name").notNull(),
+    phone: text("phone").notNull(),
+    barberId: integer("barber_id").references(() => barbers.id),
+    services: jsonb("services").$type<{ serviceId: number; name: string; price: number }[]>().notNull(),
+    total: integer("total").notNull(),
+    startsAt: tz("starts_at").notNull(),
+    note: text("note").notNull().default(""),
+    status: appointmentStatus("status").notNull().default("PENDING"),
+    createdAt: tz("created_at").notNull().defaultNow(),
+  },
+  (t) => [
+    index("appointments_starts_idx").on(t.startsAt),
+    index("appointments_phone_idx").on(t.phone),
+    // One open booking per barber per start time; "any barber" bookings are not constrained.
+    uniqueIndex("appointments_slot_uq")
+      .on(t.barberId, t.startsAt)
+      .where(sql`${t.barberId} is not null and ${t.status} in ('PENDING', 'CONFIRMED')`),
+    check("appointment_total_positive", sql`${t.total} > 0`),
+  ],
 );

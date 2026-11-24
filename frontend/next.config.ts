@@ -31,7 +31,10 @@ const securityHeaders = [
   { key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains" },
 ];
 
+// PREVIEW_MODE (lib/preview.ts) is baked in at build time so it also reaches the serverless runtime,
+// where netlify.toml variables are not available.
 const nextConfig: NextConfig = {
+  env: { PREVIEW_MODE: process.env.PREVIEW_MODE ?? "" },
   cacheComponents: true,
   partialPrefetching: true,
   async headers() {
