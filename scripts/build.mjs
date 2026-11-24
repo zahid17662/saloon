@@ -23,9 +23,9 @@ if (process.env.VERCEL_ENV === "production") {
     console.error("DIRECT_URL (preferred) or DATABASE_URL must be set for Production builds.");
     process.exit(1);
   }
-  run("drizzle-kit migrate (production)", "npx drizzle-kit migrate");
+  run("drizzle-kit migrate (production)", "npx drizzle-kit migrate --config Server/drizzle.config.ts");
 } else {
   console.log("Skipping migrations (only Vercel Production builds run them).");
 }
 
-run("next build", "npx next build");
+run("next build", "npx next build Client");

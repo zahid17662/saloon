@@ -1,47 +1,29 @@
 {
-  "name": "salon-app",
+  "name": "salon-software",
   "version": "0.1.0",
   "private": true,
+  "workspaces": [
+    "Client",
+    "Server"
+  ],
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev Client",
     "build": "node scripts/build.mjs",
-    "start": "next start",
+    "start": "next start Client",
     "lint": "eslint",
-    "test": "vitest run",
-    "typecheck": "tsc --noEmit",
-    "db:generate": "drizzle-kit generate",
-    "db:migrate": "drizzle-kit migrate",
-    "db:seed": "tsx src/db/seed.ts",
-    "db:studio": "drizzle-kit studio",
+    "test": "npm run test --workspace=Server",
+    "typecheck": "tsc --noEmit -p Client/tsconfig.json && tsc --noEmit -p Server/tsconfig.json",
+    "db:generate": "drizzle-kit generate --config Server/drizzle.config.ts",
+    "db:migrate": "drizzle-kit migrate --config Server/drizzle.config.ts",
+    "db:seed": "tsx Server/src/db/seed.ts",
+    "db:studio": "drizzle-kit studio --config Server/drizzle.config.ts",
     "test:e2e": "playwright test",
     "e2e:init": "node scripts/e2e-init.mjs",
     "admin:reset-pin": "node scripts/reset-admin-pin.mjs"
   },
-  "dependencies": {
-    "@neondatabase/serverless": "^1.2.1",
-    "bcryptjs": "^3.0.3",
-    "drizzle-orm": "^0.45.4",
-    "next": "16.4.6",
-    "react": "19.3.0",
-    "react-dom": "19.3.0",
-    "server-only": "^0.0.1",
-    "zod": "^4.6.7"
-  },
   "devDependencies": {
-    "@electric-sql/pglite": "^0.6.0",
     "@playwright/test": "^1.65.1",
-    "@tailwindcss/turbopack": "4.3.3",
-    "@types/node": "^24.19.2",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
-    "@vitest/coverage-v8": "^5.1.1",
-    "dotenv": "^18.0.10",
-    "drizzle-kit": "^0.31.11",
     "eslint": "^9",
-    "eslint-config-next": "16.4.6",
-    "tailwindcss": "4.3.3",
-    "tsx": "^4.23.15",
-    "typescript": "^5",
-    "vitest": "^5.1.1"
+    "eslint-config-next": "16.4.6"
   }
 }

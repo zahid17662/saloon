@@ -12,13 +12,21 @@
 
 # testing
 /coverage
+Server/coverage
 
 # next.js
 /.next/
 /out/
+Client/.next/
+Client/out/
 
 # production
 /build
+Client/build
+
+# workspaces (root node_modules is hoisted; these guard nested installs)
+Client/node_modules
+Server/node_modules
 
 # misc
 .DS_Store

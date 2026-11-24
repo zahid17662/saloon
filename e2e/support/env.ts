@@ -15,11 +15,11 @@ let loaded = false;
 
 export function loadE2eEnv(): void {
   if (loaded) return;
-  if (!existsSync(".env.test")) {
-    throw new Error("E2E: .env.test not found. Copy .env.test.example to .env.test and fill it in (see the comments inside).");
+  if (!existsSync("Client/.env.test")) {
+    throw new Error("E2E: Client/.env.test not found. Copy Client/.env.test.example to Client/.env.test and fill it in (see the comments inside).");
   }
-  const test = parse(readFileSync(".env.test"));
-  const local = existsSync(".env.local") ? parse(readFileSync(".env.local")) : {};
+  const test = parse(readFileSync("Client/.env.test"));
+  const local = existsSync("Client/.env.local") ? parse(readFileSync("Client/.env.local")) : {};
 
   const url = test.DATABASE_URL;
   const expected = test.E2E_ENDPOINT;

@@ -5,10 +5,10 @@
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { parse } from "dotenv";
 
-if (!existsSync(".env.test")) throw new Error(".env.test not found");
-const raw = readFileSync(".env.test", "utf8");
+if (!existsSync("Client/.env.test")) throw new Error("Client/.env.test not found");
+const raw = readFileSync("Client/.env.test", "utf8");
 const env = parse(raw);
-const local = existsSync(".env.local") ? parse(readFileSync(".env.local")) : {};
+const local = existsSync("Client/.env.local") ? parse(readFileSync("Client/.env.local")) : {};
 
 const endpoint = (url) => new URL(url).hostname.split(".")[0].replace(/-pooler$/, "");
 
@@ -21,7 +21,7 @@ for (const dev of [local.DATABASE_URL, local.DIRECT_URL]) {
 
 const set = (text, key, value) =>
   new RegExp(`^${key}=.*$`, "m").test(text) ? text.replace(new RegExp(`^${key}=.*$`, "m"), `${key}=${value}`) : `${text}\n${key}=${value}\n`;
-writeFileSync(".env.test", set(set(raw, "E2E_ENDPOINT", ep), "E2E_CONFIRM_RESET", ep));
+writeFileSync("Client/.env.test", set(set(raw, "E2E_ENDPOINT", ep), "E2E_CONFIRM_RESET", ep));
 
 console.log(`E2E endpoint: ${ep}`);
 console.log("Check that this id is your dedicated E2E branch in the Neon console (NOT main, NOT dev).");
