@@ -15,6 +15,7 @@ export function guardRoute({ pathname, search, hasShop, hasAdmin }: GuardInput):
 
   if (path === "/unlock") return null;
   if (path === "/") return null; // customer landing page: public
+  if (path === "/track") return null; // customer live tracker: public
 
   if (isAdminPath(path)) {
     if (path === "/admin/login") return null;

@@ -2,7 +2,9 @@ import Link from "next/link";
 import { bnDigits, taka } from "@/lib/money";
 import type { PublicMenu } from "@/lib/types";
 import { CalendarIcon, PhoneIcon, PinIcon, ScissorsIcon } from "../icons";
+import { Logo } from "../logo";
 import { BookingForm } from "./booking-form";
+import { QueueJoin } from "./queue-join";
 
 /** The customer-facing home page. No login; staff and admin have their own entrances in the footer. */
 export function Landing({ menu }: { menu: PublicMenu | null }) {
@@ -32,14 +34,12 @@ export function Landing({ menu }: { menu: PublicMenu | null }) {
       <header className="sticky top-0 z-20 border-b border-line bg-bg/90 backdrop-blur">
         <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3">
           <div className="flex items-center gap-2.5">
-            <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-primary text-white">
-              <ScissorsIcon className="h-5 w-5" />
-            </span>
+            <Logo size={40} />
             <span className="font-semibold text-fg">{name}</span>
           </div>
           <a
             href="#book"
-            className="inline-flex h-10 items-center gap-2 rounded-full bg-primary px-5 text-sm font-semibold text-white transition-colors hover:bg-primary-hover"
+            className="inline-flex h-10 items-center gap-2 rounded-full bg-primary px-5 text-sm font-semibold text-gold transition-colors hover:bg-primary-hover"
           >
             <CalendarIcon className="h-4 w-4" />
             বুক করুন
@@ -50,7 +50,7 @@ export function Landing({ menu }: { menu: PublicMenu | null }) {
       <main className="mx-auto max-w-5xl space-y-12 px-4 pb-16">
         <section className="pt-10 text-center sm:pt-16">
           <h1 className="text-3xl leading-tight font-bold text-fg sm:text-5xl">
-            ভালো কাট, <span className="text-primary">ভালো সময়</span>
+            Look Good, <span className="text-gold-ink">Feel Confident</span>
           </h1>
           <p className="mx-auto mt-4 max-w-xl text-base text-muted">
             আমাদের সেবা আর দাম দেখে নিন, পছন্দের barber আর সময় বেছে আগেই বুক করে রাখুন। লাইনে দাঁড়াতে হবে না।
@@ -58,7 +58,7 @@ export function Landing({ menu }: { menu: PublicMenu | null }) {
           <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
             <a
               href="#book"
-              className="inline-flex h-12 items-center rounded-full bg-primary px-7 font-semibold text-white shadow-[0_6px_18px_rgb(59_130_246/0.35)] transition-colors hover:bg-primary-hover"
+              className="inline-flex h-12 items-center rounded-full bg-primary px-7 font-semibold text-gold shadow-[0_6px_18px_rgb(11_31_75/0.3)] transition-colors hover:bg-primary-hover"
             >
               অ্যাপয়েন্টমেন্ট নিন
             </a>
@@ -116,11 +116,14 @@ export function Landing({ menu }: { menu: PublicMenu | null }) {
 
         <section id="book" aria-labelledby="book-h" className="scroll-mt-20">
           <h2 id="book-h" className="mb-1 text-xl font-bold text-fg">
-            অ্যাপয়েন্টমেন্ট বুক করুন
+            এখনই লাইনে যুক্ত হোন
           </h2>
           <p className="mb-4 text-sm text-muted">
-            নাম আর ফোন নম্বর দিলেই হবে, কোনো অ্যাকাউন্ট লাগবে না। দোকান আপনার বুকিং নিশ্চিত করবে।
+            পছন্দের কারিগর বেছে নিন। তিনি ফাঁকা থাকলে সরাসরি কাটবেন, না হলে তাঁর সারিতে সিরিয়াল পাবেন।
           </p>
+          <QueueJoin menu={menu} />
+          <h3 className="mt-10 mb-1 text-lg font-bold text-fg">আগাম সময় বেছে বুকিং</h3>
+          <p className="mb-4 text-sm text-muted">নির্দিষ্ট সময়ে আসতে চাইলে এখান থেকে বুক করুন। দোকান নিশ্চিত করবে।</p>
           <BookingForm menu={menu} />
         </section>
       </main>
