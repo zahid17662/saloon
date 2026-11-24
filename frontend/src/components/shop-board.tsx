@@ -16,131 +16,198 @@ const FALLBACK: Svc[] = [
   { id: 6, name: "গ্রুমিং প্যাকেজ", price: 550 },
 ];
 
-const SRC: Record<Source, { t: string; c: string }> = {
-  online: { t: "অনলাইন", c: "bg-success-soft text-success" },
-  walkin: { t: "ওয়াক-ইন", c: "bg-warning-soft text-warning" },
-  advance: { t: "আগাম", c: "bg-primary-soft text-primary" },
+const SRC: Record<Source, { t: string; dot: string }> = {
+  online: { t: "অনলাইন", dot: "bg-success" },
+  walkin: { t: "ওয়াক-ইন", dot: "bg-gold" },
+  advance: { t: "আগাম", dot: "bg-primary" },
 };
 
-/** Shared shop dashboard. Mobile: one barber at a time via tabs + a "new customer" button. Desktop: all three columns. */
+type View = "queue" | "money";
+
+/** Shop dashboard. Phone: app layout (top bar, barber switcher, one lane, bottom tab bar with a + button).
+ *  Desktop: three lanes side by side. */
 export function ShopBoard({ services }: { services: Svc[] }) {
   const q = useQueue();
   const svcs = services.length ? services : FALLBACK;
+  const [view, setView] = useState<View>("queue");
   const [tab, setTab] = useState<number>(1);
   const [sheet, setSheet] = useState<{ barberId?: number } | null>(null);
   const waiting = q.lanes.reduce((n, l) => n + l.waiting.length, 0);
-  const total = q.lanes.reduce((n, l) => n + l.earned, 0);
 
   return (
-    <div className="min-h-dvh bg-bg pb-28 text-fg lg:pb-10">
-      <header className="sticky top-0 z-30 bg-primary px-4 pt-[max(0.75rem,env(safe-area-inset-top))] pb-3 sm:px-8">
-        <div className="mx-auto flex max-w-6xl items-center gap-3">
-          <span className="flex h-10 w-10 flex-none items-center justify-center rounded-xl bg-white"><Logo size={30} /></span>
-          <div className="min-w-0 flex-1 leading-tight">
-            <div className="truncate font-bold text-white">দোকান ড্যাশবোর্ড</div>
-            <div className="truncate text-[11px] tracking-widest text-gold/80">NIR SMART GENTS PARLOUR</div>
+    <div className="min-h-dvh bg-bg text-fg">
+      <header className="sticky top-0 z-30 border-b border-line bg-surface/95 pt-[env(safe-area-inset-top)] backdrop-blur">
+        <div className="mx-auto flex h-14 max-w-6xl items-center gap-2.5 px-4 sm:px-8">
+          <Logo size={30} />
+          <div className="min-w-0 flex-1">
+            <h1 className="truncate text-[15px] leading-tight font-bold">নীড় স্মার্ট জেন্টস পার্লার</h1>
+            <p className="text-[11px] leading-tight text-muted">{bnDigits(waiting)} জন অপেক্ষায়</p>
           </div>
-          <span className="flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1.5 text-xs font-semibold text-white"><span className="h-2 w-2 rounded-full bg-green-400" />লাইভ</span>
-          <button onClick={() => setSheet({})} className="hidden h-11 rounded-xl bg-gold px-5 font-bold text-primary lg:block">+ নতুন কাস্টমার</button>
+          <span className="flex items-center gap-1.5 text-xs font-medium text-success"><span className="h-2 w-2 animate-pulse rounded-full bg-success" />লাইভ</span>
+          <nav className="ml-3 hidden gap-1 lg:flex" aria-label="বিভাগ">
+            <TabBtn on={view === "queue"} onClick={() => setView("queue")}>কিউ</TabBtn>
+            <TabBtn on={view === "money"} onClick={() => setView("money")}>আজকের হিসাব</TabBtn>
+          </nav>
+          <button onClick={() => setSheet({})} className="ml-2 hidden h-10 rounded-full bg-primary px-5 text-sm font-semibold text-white lg:block">+ নতুন কাস্টমার</button>
         </div>
       </header>
 
-      <main className="mx-auto max-w-6xl space-y-4 px-4 pt-4 sm:px-8">
-        <div className="grid grid-cols-3 gap-2.5">
-          <Stat label="অপেক্ষায়" value={`${bnDigits(waiting)} জন`} />
-          <Stat label="আজ আয়" value={taka(total)} />
-          <Stat label="মালিকের ভাগ" value={taka(Math.round(total / 2))} />
-        </div>
-
-        {/* Barber tabs: mobile only */}
-        <div role="tablist" aria-label="কারিগর" className="grid grid-cols-3 gap-2 lg:hidden">
-          {q.lanes.map((l) => (
-            <button key={l.id} role="tab" aria-selected={tab === l.id} onClick={() => setTab(l.id)}
-              className={cx("relative flex min-h-16 flex-col items-center justify-center gap-0.5 rounded-2xl border-2 px-1 py-2 text-center transition-colors", tab === l.id ? "border-primary bg-surface" : "border-transparent bg-surface/60")}>
-              <span className="flex items-center gap-1.5 text-sm font-bold"><span className={cx("h-2 w-2 rounded-full", isFree(l) ? "bg-success" : "bg-gold")} />{l.name}</span>
-              <span className="text-[11px] text-muted">{isFree(l) ? "ফাঁকা" : `লাইনে ${bnDigits(l.waiting.length)} জন`}</span>
-            </button>
-          ))}
-        </div>
-
-        <div className="grid items-start gap-4 lg:grid-cols-3">
-          {q.lanes.map((l) => (
-            <div key={l.id} className={cx(tab === l.id ? "block" : "hidden", "lg:block")}>
-              <LaneCard lane={l} onAdd={() => setSheet({ barberId: l.id })} />
+      <main className="mx-auto max-w-6xl px-4 pt-4 pb-28 sm:px-8 lg:pb-10">
+        {view === "queue" ? (
+          <>
+            {/* Phone: barber switcher */}
+            <div role="tablist" aria-label="কারিগর" className="-mx-4 mb-4 flex gap-2 overflow-x-auto px-4 pb-1 lg:hidden">
+              {q.lanes.map((l) => (
+                <button key={l.id} role="tab" aria-selected={tab === l.id} onClick={() => setTab(l.id)}
+                  className={cx("flex min-w-[8.5rem] flex-1 items-center gap-2.5 rounded-2xl border px-3 py-2.5 text-left transition-colors", tab === l.id ? "border-primary bg-surface shadow-card" : "border-line bg-surface/60")}>
+                  <Avatar l={l} size={36} />
+                  <span className="min-w-0">
+                    <span className="block truncate text-sm font-semibold">{l.name}</span>
+                    <span className={cx("block text-[11px] font-medium", isFree(l) ? "text-success" : "text-muted")}>{isFree(l) ? "ফাঁকা" : `${bnDigits(l.waiting.length)} জন অপেক্ষায়`}</span>
+                  </span>
+                </button>
+              ))}
             </div>
-          ))}
-        </div>
 
-        <button onClick={resetDemo} className="mx-auto block pt-2 text-xs text-muted underline">ডেমো ডেটা রিসেট</button>
+            <div className="grid items-start gap-4 lg:grid-cols-3">
+              {q.lanes.map((l) => (
+                <div key={l.id} className={cx(tab === l.id ? "block" : "hidden", "lg:block")}>
+                  <Lane lane={l} onAdd={() => setSheet({ barberId: l.id })} />
+                </div>
+              ))}
+            </div>
+          </>
+        ) : (
+          <Money lanes={q.lanes} />
+        )}
+        <button onClick={resetDemo} className="mx-auto mt-6 block text-xs text-muted underline">ডেমো ডেটা রিসেট</button>
       </main>
 
-      {/* Mobile bottom action bar */}
-      <div className="fixed inset-x-0 bottom-0 z-30 border-t border-line bg-surface/95 p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur lg:hidden">
-        <button onClick={() => setSheet({})} className="h-14 w-full rounded-2xl bg-primary text-base font-bold text-gold">+ নতুন কাস্টমার</button>
-      </div>
-
-      {sheet && <NewCustomer services={svcs} lanes={q.lanes} preset={sheet.barberId} onClose={() => setSheet(null)} onDone={(id) => { setTab(id); setSheet(null); }} />}
-    </div>
-  );
-}
-
-function Stat({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="rounded-2xl bg-surface p-3 text-center shadow-card">
-      <div className="truncate text-base font-bold sm:text-lg">{value}</div>
-      <div className="text-[11px] text-muted">{label}</div>
-    </div>
-  );
-}
-
-function LaneCard({ lane: l, onAdd }: { lane: Lane; onAdd: () => void }) {
-  return (
-    <section className="space-y-3.5 rounded-3xl border border-line bg-surface p-4 sm:p-5">
-      <header className="flex items-center gap-3">
-        <span className="flex h-12 w-12 flex-none items-center justify-center rounded-full bg-primary text-xl font-bold text-gold">{l.initial}</span>
-        <div className="min-w-0 flex-1">
-          <h2 className="truncate text-lg font-bold">{l.name}</h2>
-          <p className="text-xs text-muted">{l.current ? `এখন #${bnDigits(l.current.serial)} · ` : ""}শেষ সিরিয়াল #{bnDigits(l.lastSerial)}</p>
+      {/* Phone bottom tab bar */}
+      <nav className="fixed inset-x-0 bottom-0 z-30 border-t border-line bg-surface/95 pb-[env(safe-area-inset-bottom)] backdrop-blur lg:hidden" aria-label="বিভাগ">
+        <div className="mx-auto grid h-16 max-w-md grid-cols-3 items-center">
+          <BarBtn on={view === "queue"} onClick={() => setView("queue")} label="কিউ" icon="☰" />
+          <button onClick={() => setSheet({})} aria-label="নতুন কাস্টমার" className="mx-auto -mt-6 flex h-14 w-14 items-center justify-center rounded-full bg-gold text-3xl font-medium text-primary shadow-pop">+</button>
+          <BarBtn on={view === "money"} onClick={() => setView("money")} label="হিসাব" icon="৳" />
         </div>
-        <span className={cx("rounded-full px-3 py-1.5 text-xs font-bold", isFree(l) ? "bg-success-soft text-success" : "bg-warning-soft text-warning")}>{isFree(l) ? "ফাঁকা" : "ব্যস্ত"}</span>
+      </nav>
+
+      {sheet && <NewCustomer services={svcs} lanes={q.lanes} preset={sheet.barberId} onClose={() => setSheet(null)} onDone={(id) => { setTab(id); setView("queue"); setSheet(null); }} />}
+    </div>
+  );
+}
+
+function TabBtn({ on, onClick, children }: { on: boolean; onClick: () => void; children: React.ReactNode }) {
+  return <button onClick={onClick} className={cx("h-10 rounded-full px-4 text-sm font-semibold", on ? "bg-primary-soft text-primary" : "text-muted hover:bg-bg")}>{children}</button>;
+}
+function BarBtn({ on, onClick, label, icon }: { on: boolean; onClick: () => void; label: string; icon: string }) {
+  return (
+    <button onClick={onClick} aria-current={on} className={cx("flex h-full flex-col items-center justify-center gap-0.5 text-xs font-semibold", on ? "text-primary" : "text-muted")}>
+      <span className="text-lg leading-none">{icon}</span>{label}
+    </button>
+  );
+}
+function Avatar({ l, size }: { l: Lane; size: number }) {
+  return (
+    <span style={{ width: size, height: size }} className="relative flex flex-none items-center justify-center rounded-full bg-primary-soft font-bold text-primary">
+      {l.initial}
+      <span className={cx("absolute -right-0.5 -bottom-0.5 h-3 w-3 rounded-full border-2 border-surface", isFree(l) ? "bg-success" : "bg-gold")} />
+    </span>
+  );
+}
+
+function Lane({ lane: l, onAdd }: { lane: Lane; onAdd: () => void }) {
+  return (
+    <section className="overflow-hidden rounded-3xl border border-line bg-surface shadow-card">
+      <header className="flex items-center gap-3 px-4 pt-4">
+        <Avatar l={l} size={44} />
+        <div className="min-w-0 flex-1">
+          <h2 className="truncate font-bold">{l.name}</h2>
+          <p className="text-xs text-muted">শেষ সিরিয়াল #{bnDigits(l.lastSerial)} · আজ {bnDigits(l.doneToday)}টি সম্পন্ন</p>
+        </div>
+        <button onClick={onAdd} aria-label={`${l.name}-এর জন্য কাস্টমার যোগ`} className="flex h-10 w-10 items-center justify-center rounded-full bg-bg text-xl text-primary hover:bg-line">+</button>
       </header>
 
-      {l.current ? (
-        <div className="space-y-3 rounded-2xl bg-primary p-4 text-white">
-          <div className="flex items-baseline justify-between"><span className="text-3xl font-semibold text-gold">#{bnDigits(l.current.serial)}</span><span className="text-xs text-white/60">এখন চলছে</span></div>
-          <div>
-            <div className="font-semibold">{l.current.name}</div>
-            <div className="text-sm text-white/70">{l.current.service} · {taka(l.current.price)}</div>
-          </div>
-          <button onClick={() => finish(l.id)} className="h-14 w-full rounded-xl bg-gold text-base font-bold text-primary active:scale-[0.99]">শেষ করুন{l.waiting[0] ? ` · পরের #${bnDigits(l.waiting[0].serial)}` : ""}</button>
-        </div>
-      ) : (
-        <div className="rounded-2xl border-2 border-dashed border-line-strong p-6 text-center">
-          <div className="font-bold">এখন কেউ নেই</div>
-          <div className="mt-1 text-sm text-muted">নতুন কাস্টমার এলে সরাসরি এঁর কাছে বসবে</div>
-        </div>
-      )}
-
-      <button onClick={onAdd} className="h-12 w-full rounded-xl border border-line-strong text-sm font-semibold hover:bg-bg">+ {l.name}-এর জন্য কাস্টমার যোগ করুন</button>
-
-      {l.waiting.length > 0 && (
-        <div className="space-y-2">
-          <p className="text-xs font-semibold text-muted">অপেক্ষায় {bnDigits(l.waiting.length)} জন</p>
-          {l.waiting.map((w) => (
-            <div key={w.serial} className="flex items-center gap-3 rounded-xl bg-bg p-3">
-              <span className="min-w-9 font-semibold">#{bnDigits(w.serial)}</span>
-              <div className="min-w-0 flex-1"><div className="truncate text-sm font-semibold">{w.name}</div><div className="truncate text-xs text-muted">{w.service}</div></div>
-              <span className={cx("rounded-full px-2.5 py-1 text-[11px] font-bold", SRC[w.source].c)}>{SRC[w.source].t}</span>
+      <div className="p-4">
+        {l.current ? (
+          <div className="rounded-2xl border border-line bg-surface-2 p-4">
+            <div className="flex items-center justify-between">
+              <span className="rounded-full bg-gold/25 px-2.5 py-1 text-[11px] font-bold text-gold-ink">এখন চলছে</span>
+              <span className="text-2xl font-bold tabular-nums">#{bnDigits(l.current.serial)}</span>
             </div>
-          ))}
-        </div>
-      )}
+            <p className="mt-3 truncate text-base font-semibold">{l.current.name}</p>
+            <p className="truncate text-sm text-muted">{l.current.service}</p>
+            <p className="mt-1 text-lg font-bold">{taka(l.current.price)}</p>
+            <button onClick={() => finish(l.id)} className="mt-3 h-12 w-full rounded-xl bg-primary text-[15px] font-semibold text-white active:opacity-90">
+              ✓ সম্পন্ন{l.waiting[0] ? `, পরের জন #${bnDigits(l.waiting[0].serial)}` : ""}
+            </button>
+          </div>
+        ) : (
+          <div className="rounded-2xl border border-dashed border-line-strong p-5 text-center">
+            <p className="font-semibold text-success">কারিগর ফাঁকা আছেন</p>
+            <p className="mt-0.5 text-sm text-muted">নতুন কাস্টমার এলে সরাসরি বসবে</p>
+            <button onClick={onAdd} className="mt-3 h-11 rounded-xl bg-primary px-5 text-sm font-semibold text-white">+ কাস্টমার যোগ করুন</button>
+          </div>
+        )}
 
-      <footer className="flex justify-between border-t border-dashed border-line-strong pt-3 text-sm text-muted">
-        <span>আজ {bnDigits(l.doneToday)}টি · {taka(l.earned)}</span>
-        <span className="font-bold text-fg">ভাগ {taka(Math.round(l.earned / 2))}</span>
-      </footer>
+        <div className="mt-4 flex items-center justify-between">
+          <h3 className="text-sm font-semibold">অপেক্ষায়</h3>
+          <span className="text-xs text-muted">{bnDigits(l.waiting.length)} জন{l.waiting.length ? ` · প্রায় ${bnDigits(etaMin(l))} মিনিট` : ""}</span>
+        </div>
+        {l.waiting.length === 0 ? (
+          <p className="py-4 text-center text-sm text-muted">কেউ অপেক্ষায় নেই</p>
+        ) : (
+          <ul className="mt-1 divide-y divide-line">
+            {l.waiting.map((w) => (
+              <li key={w.serial} className="flex items-center gap-3 py-3">
+                <span className="flex h-9 w-9 flex-none items-center justify-center rounded-full bg-bg text-sm font-bold tabular-nums">{bnDigits(w.serial)}</span>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-semibold">{w.name}</p>
+                  <p className="truncate text-xs text-muted">{w.service} · {taka(w.price)}</p>
+                </div>
+                <span className="flex items-center gap-1.5 text-[11px] font-medium text-muted"><span className={cx("h-1.5 w-1.5 rounded-full", SRC[w.source].dot)} />{SRC[w.source].t}</span>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
     </section>
+  );
+}
+
+/** Today's money: each barber collects the cash, so the owner's 50% is what the barber owes the shop. */
+function Money({ lanes }: { lanes: Lane[] }) {
+  const total = lanes.reduce((n, l) => n + l.earned, 0);
+  const owner = Math.round(total / 2);
+  return (
+    <div className="mx-auto max-w-2xl space-y-4">
+      <section className="rounded-3xl bg-primary p-5 text-white">
+        <p className="text-sm text-white/70">আজকের মোট আয়</p>
+        <p className="mt-1 text-4xl font-bold tabular-nums">{taka(total)}</p>
+        <div className="mt-4 grid grid-cols-2 gap-3 border-t border-white/15 pt-4 text-sm">
+          <div><p className="text-white/60">মালিকের ভাগ (৫০%)</p><p className="text-lg font-bold text-gold">{taka(owner)}</p></div>
+          <div><p className="text-white/60">কারিগরদের ভাগ (৫০%)</p><p className="text-lg font-bold">{taka(total - owner)}</p></div>
+        </div>
+      </section>
+      <section className="rounded-3xl border border-line bg-surface p-2 shadow-card">
+        <h2 className="px-3 pt-3 pb-1 text-sm font-semibold text-muted">কারিগর অনুযায়ী</h2>
+        <ul className="divide-y divide-line">
+          {lanes.map((l) => (
+            <li key={l.id} className="flex items-center gap-3 p-3">
+              <Avatar l={l} size={40} />
+              <div className="min-w-0 flex-1">
+                <p className="truncate font-semibold">{l.name}</p>
+                <p className="text-xs text-muted">{bnDigits(l.doneToday)}টি সার্ভিস · আয় {taka(l.earned)}</p>
+              </div>
+              <div className="text-right">
+                <p className="text-[11px] text-muted">দোকানে জমা দেবেন</p>
+                <p className="font-bold tabular-nums">{taka(Math.round(l.earned / 2))}</p>
+              </div>
+            </li>
+          ))}
+        </ul>
+      </section>
+    </div>
   );
 }
 
