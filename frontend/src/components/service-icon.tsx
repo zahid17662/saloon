@@ -89,92 +89,132 @@ const Sparkle = ({ x, y }: { x: number; y: number }) => (
   <path d={`M${x - 3} ${y}h6M${x} ${y - 3}v6`} stroke={INK} strokeWidth="1.6" strokeLinecap="round" />
 );
 
+/** Customer bust: cape, neck, head, short black hair. Props add beard, moustache, foam or a different hair shape. */
+function Person({ beard, stache, foam, hair = "short", cape = BLUE }: { beard?: boolean; stache?: boolean; foam?: boolean; hair?: "short" | "none" | "foam"; cape?: string }) {
+  return (
+    <g>
+      <rect x="42" y="56" width="12" height="14" fill="#fff" {...sw} />
+      <path d="M14 96C15 76 30 68 48 68s33 8 34 28z" fill={cape} {...sw} />
+      <path d="M40 70c3 4 13 4 16 0" fill="none" stroke={INK} strokeWidth="2" strokeLinecap="round" />
+      <circle cx="33" cy="44" r="3.500" fill="#fff" {...sw} />
+      <circle cx="63" cy="44" r="3.500" fill="#fff" {...sw} />
+      <ellipse cx="48" cy="42" rx="15" ry="18" fill="#fff" {...sw} />
+      {hair === "short" && <path d="M32 40C30 22 41 14 49 14s19 8 16 26c-3-9-9-13-17-13s-14 4-16 13z" fill={INK} stroke={INK} strokeWidth="2" strokeLinejoin="round" />}
+      {hair === "foam" && (
+        <g fill="#fff" {...sw} strokeWidth="2">
+          <circle cx="38" cy="22" r="7" /><circle cx="49" cy="17" r="8" /><circle cx="60" cy="22" r="7" /><circle cx="44" cy="27" r="5" /><circle cx="55" cy="27" r="5" />
+        </g>
+      )}
+      {beard && <path d="M33 44c0 10 4 20 15 20s15-10 15-20c-3 7-8 9-15 9s-12-2-15-9z" fill={INK} stroke={INK} strokeWidth="2" strokeLinejoin="round" />}
+      {foam && (
+        <g fill="#fff" {...sw} strokeWidth="2">
+          <circle cx="38" cy="52" r="5" /><circle cx="45" cy="57" r="5" /><circle cx="58" cy="52" r="5" /><circle cx="51" cy="57" r="5" />
+        </g>
+      )}
+      <circle cx="42" cy="41" r="1.8" fill={INK} />
+      <circle cx="54" cy="41" r="1.8" fill={INK} />
+      {stache ? (
+        <path d="M48 48c-3-3-8-3-11-1 3 5 8 4 11 2 3 2 8 3 11-2-3-2-8-2-11 1z" fill={INK} stroke={INK} strokeWidth="1.5" strokeLinejoin="round" />
+      ) : (
+        !beard && !foam && <path d="M43 50q5 4 10 0" fill="none" stroke={INK} strokeWidth="2" strokeLinecap="round" />
+      )}
+    </g>
+  );
+}
+
 const ART: Record<Kind, ReactNode> = {
-  // scissors + comb
+  // haircut: scissors at the hair
   cut: (
     <>
-      <path d="M33 56 58 20M55 56 30 20" fill="none" {...sw} strokeWidth="7" />
-      <path d="M33 56 58 20M55 56 30 20" fill="none" stroke={SKY} strokeWidth="3" strokeLinecap="round" />
-      <circle cx="30" cy="66" r="8" fill={GOLD} {...sw} />
-      <circle cx="58" cy="66" r="8" fill={GOLD} {...sw} />
-      <circle cx="44" cy="40" r="2.4" fill={INK} />
+      <Person />
+      <g transform="translate(79 22) rotate(18) scale(.85)">
+        <path d="M-6 -14 L6 8 M6 -14 L-6 8" fill="none" stroke={INK} strokeWidth="5" strokeLinecap="round" />
+        <path d="M-6 -14 L6 8 M6 -14 L-6 8" fill="none" stroke={SKY} strokeWidth="2" strokeLinecap="round" />
+        <circle cx="-7" cy="14" r="5.500" fill={GOLD} {...sw} strokeWidth="2.200" />
+        <circle cx="7" cy="14" r="5.500" fill={GOLD} {...sw} strokeWidth="2.200" />
+      </g>
     </>
   ),
-  // straight razor
+  // beard trim: razor at the cheek
   beard: (
-    <g transform="translate(-2 4) rotate(-28 48 50) scale(1.1)">
-      <path d="M14 40h38a4 4 0 0 1 4 4v6H14z" fill="#fff" {...sw} />
-      <path d="M18 44h30" stroke={SKY} strokeWidth="2" strokeLinecap="round" />
-      <rect x="54" y="42" width="28" height="9" rx="4.5" fill={BLUE} {...sw} />
-      <circle cx="59" cy="46.5" r="2" fill={GOLD} stroke={INK} strokeWidth="1.5" />
-    </g>
+    <>
+      <Person beard />
+      <g transform="translate(70 54) rotate(-55)">
+        <path d="M-12 -3h18a2 2 0 0 1 2 2v5h-20z" fill="#fff" {...sw} strokeWidth="2" />
+        <rect x="8" y="-2" width="16" height="6" rx="3" fill={GOLD} {...sw} strokeWidth="2" />
+      </g>
+    </>
   ),
   // moustache
   mustache: (
     <>
-      <path d="M48 52C42 42 30 40 20 46c-4 2.600-4 7 0 9 8-4 17-2 23 6 2 2.800 8 2.800 10 0 6-8 15-10 23-6 4-2 4-6.400 0-9-10-6-22-4-28 6z" fill={INK} stroke={INK} strokeWidth="2" strokeLinejoin="round" />
-      <path d="M26 49c5-2 10-1 14 3M70 49c-5-2-10-1-14 3" stroke={SKY} strokeWidth="2" strokeLinecap="round" fill="none" />
+      <Person stache />
+      <Sparkle x={74} y={46} />
     </>
   ),
-  // hair clipper
+  // clipper on the side of the head
   clipper: (
     <>
-      <rect x="34" y="30" width="28" height="48" rx="10" fill={BLUE} {...sw} />
-      <rect x="31" y="16" width="34" height="16" rx="3" fill="#fff" {...sw} />
-      {[0, 1, 2, 3, 4].map((i) => (
-        <path key={i} d={`M${37 + i * 6} 16v9`} stroke={INK} strokeWidth="2" strokeLinecap="round" />
-      ))}
-      <rect x="43" y="40" width="10" height="16" rx="5" fill={SKY} {...sw} />
-      <circle cx="48" cy="67" r="3.500" fill={GOLD} stroke={INK} strokeWidth="2" />
+      <Person />
+      <g transform="translate(70 30) rotate(25)">
+        <rect x="-7" y="-4" width="14" height="30" rx="6" fill={BLUE} {...sw} strokeWidth="2.200" />
+        <rect x="-8" y="-12" width="16" height="9" rx="2" fill="#fff" {...sw} strokeWidth="2.200" />
+        <circle cx="0" cy="16" r="2.200" fill={GOLD} />
+      </g>
     </>
   ),
-  // comb + spray bottle
+  // styling: comb in the hair and a spray bottle
   style: (
     <>
-      <g transform="translate(6 0) rotate(-14 44 52) scale(.92)">
-        <rect x="14" y="36" width="62" height="14" rx="5" fill={SKY} {...sw} />
-        {[0, 1, 2, 3, 4, 5, 6, 7].map((i) => (
-          <path key={i} d={`M${20 + i * 7.5} 50v16`} stroke={INK} strokeWidth="3" strokeLinecap="round" />
-        ))}
+      <Person />
+      <g transform="translate(60 17) rotate(-20)">
+        <rect x="-14" y="-4" width="28" height="7" rx="2.500" fill={SKY} {...sw} strokeWidth="2" />
+        {[0, 1, 2, 3, 4].map((i) => <path key={i} d={`M${-10 + i * 5} 3v6`} stroke={INK} strokeWidth="1.800" strokeLinecap="round" />)}
       </g>
-      <rect x="66" y="40" width="16" height="30" rx="5" fill={BLUE} {...sw} />
-      <path d="M68 40v-6h10l4 3" fill="none" {...sw} />
-      <circle cx="74" cy="56" r="3" fill={GOLD} stroke={INK} strokeWidth="1.5" />
+      <g transform="translate(78 62)">
+        <rect x="-6" y="0" width="12" height="20" rx="4" fill={BLUE} {...sw} strokeWidth="2" />
+        <path d="M-5 0v-5h9l3 2" fill="none" {...sw} strokeWidth="2" />
+      </g>
     </>
   ),
-  // shaving brush
+  // facial: foam on the cheeks and a brush
   facial: (
     <>
-      <path d="M34 50C29 32 37 18 48 18s19 14 14 32z" fill="#fff" {...sw} />
-      <path d="M42 26c-2 6-2 13-1 20M50 22v26M56 28c1 6 1 12 0 18" stroke={SKY} strokeWidth="2" strokeLinecap="round" fill="none" />
-      <rect x="32" y="49" width="32" height="9" rx="3" fill={GOLD} {...sw} />
-      <path d="M38 58h20l-3 20H41z" fill={BLUE} {...sw} />
+      <Person foam hair="short" />
+      <g transform="translate(72 50) rotate(-35)">
+        <path d="M-5 0C-6-9 0-14 5-14s9 5 8 14z" fill="#fff" {...sw} strokeWidth="2" />
+        <rect x="-5" y="0" width="13" height="5" rx="2" fill={GOLD} {...sw} strokeWidth="2" />
+        <path d="M-2 5h8l-1.500 13h-5z" fill={BLUE} {...sw} strokeWidth="2" />
+      </g>
     </>
   ),
-  // shampoo bottle
+  // hair wash: foam on the head and water drops
   wash: (
     <>
-      <rect x="31" y="38" width="34" height="42" rx="11" fill={BLUE} {...sw} />
-      <rect x="38" y="26" width="20" height="13" rx="3" fill="#fff" {...sw} />
-      <path d="M42 26v-8h14l3 5" fill="none" {...sw} />
-      <rect x="37" y="50" width="22" height="18" rx="5" fill="#fff" {...sw} />
-      <path d="M48 53s5 5 5 8a5 5 0 0 1-10 0c0-3 5-8 5-8z" fill={GOLD} stroke={INK} strokeWidth="1.8" strokeLinejoin="round" />
+      <Person hair="foam" />
+      <path d="M76 30s4 4 4 7a4 4 0 0 1-8 0c0-3 4-7 4-7z" fill={SKY} stroke={INK} strokeWidth="1.8" strokeLinejoin="round" />
+      <path d="M20 34s3 3 3 5.500a3 3 0 0 1-6 0c0-2.500 3-5.500 3-5.500z" fill={SKY} stroke={INK} strokeWidth="1.8" strokeLinejoin="round" />
     </>
   ),
-  // barber pole
+  // grooming package: barber in an apron next to a pole
   package: (
     <>
       <clipPath id="poleClip">
-        <rect x="36" y="26" width="24" height="46" rx="7" />
+        <rect x="62" y="22" width="16" height="46" rx="5" />
       </clipPath>
-      <rect x="36" y="26" width="24" height="46" rx="7" fill="#fff" />
+      <rect x="62" y="22" width="16" height="46" rx="5" fill="#fff" />
       <g clipPath="url(#poleClip)">
-        <path d="M30 28l36 14v10L30 38zM30 50l36 14v10L30 60z" fill={BLUE} />
-        <path d="M30 38l36 14v5L30 43zM30 60l36 14v5L30 65z" fill={GOLD} />
+        <path d="M58 26l24 10v8L58 34zM58 46l24 10v8L58 54z" fill={BLUE} />
+        <path d="M58 36l24 10v4L58 40zM58 56l24 10v4L58 60z" fill={GOLD} />
       </g>
-      <rect x="36" y="26" width="24" height="46" rx="7" fill="none" {...sw} />
-      <rect x="32" y="17" width="32" height="10" rx="3.500" fill={SKY} {...sw} />
-      <rect x="32" y="71" width="32" height="10" rx="3.500" fill={SKY} {...sw} />
+      <rect x="62" y="22" width="16" height="46" rx="5" fill="none" {...sw} strokeWidth="2.200" />
+      <rect x="60" y="16" width="20" height="8" rx="3" fill={SKY} {...sw} strokeWidth="2.200" />
+      <rect x="60" y="66" width="20" height="8" rx="3" fill={SKY} {...sw} strokeWidth="2.200" />
+      <g transform="translate(-12 0)">
+        <Person cape="#fff" />
+        <path d="M32 96V74l16 6 16-6v22z" fill={INK} />
+        <path d="M44 62l4 8 4-8z" fill={GOLD} stroke={INK} strokeWidth="1.500" strokeLinejoin="round" />
+      </g>
     </>
   ),
 };
