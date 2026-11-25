@@ -5,23 +5,23 @@
  */
 @theme {
   /* Surfaces: light neutral canvas, white cards, grey lines */
-  --color-bg: #f4f7ff;
+  --color-bg: #f5f8ff;
   --color-surface: #ffffff;
-  --color-surface-2: #f9fbff;
-  --color-line: #dde5fa;
-  --color-line-strong: #bccaf2;
+  --color-surface-2: #f8faff;
+  --color-line: #e2e9f8;
+  --color-line-strong: #c3d2f2;
 
   /* Text: ink */
-  --color-fg: #0b0f1a;
-  --color-muted: #505a78;
-  --color-subtle: #7b86a6;
+  --color-fg: #0f1222;
+  --color-muted: #555f7e;
+  --color-subtle: #828cab;
 
   /* Accent: royal blue with ink */
-  --color-primary: #4a6cf0;
+  --color-primary: #4a62e8;
   --color-gold: #9ab5ff;
   --color-gold-ink: #3552d6;
-  --color-primary-hover: #3552d6;
-  --color-primary-soft: #e6edff;
+  --color-primary-hover: #3a50d4;
+  --color-primary-soft: #e8edfd;
 
   /* Status */
   --color-success: #2f6b4a;
@@ -40,8 +40,8 @@
   --font-sans: var(--font-latin), var(--font-bn), ui-sans-serif, system-ui, sans-serif;
   --font-display: var(--font-display-latin), var(--font-bn), Georgia, serif;
 
-  --shadow-card: 0 1px 2px rgb(74 108 240 / 0.05), 0 6px 20px rgb(74 108 240 / 0.05);
-  --shadow-pop: 0 12px 40px rgb(74 108 240 / 0.18);
+  --shadow-card: 0 1px 2px rgb(74 98 232 / 0.05), 0 6px 20px rgb(74 98 232 / 0.05);
+  --shadow-pop: 0 12px 40px rgb(74 98 232 / 0.18);
 }
 
 html {
@@ -101,14 +101,14 @@ input[type="number"] {
 
 /* Barbershop theme: barber-pole stripe and a faint diagonal texture. */
 .pole-bar {
-  height: 5px;
-  background: repeating-linear-gradient(-45deg, #4a6cf0 0 10px, #ffffff 10px 20px, #0b0f1a 20px 30px);
+  height: 3px;
+  background: var(--color-primary);
 }
 .bg-barber {
-  background-color: #0b0f1a;
+  background-color: #0f1222;
   background-image:
     repeating-linear-gradient(135deg, rgb(255 255 255 / 0.03) 0 2px, transparent 2px 14px),
-    linear-gradient(160deg, #1c2a5c 0%, #232b3b 55%, #060912 100%);
+    linear-gradient(160deg, #1b2552 0%, #232b3b 55%, #070a16 100%);
 }
 
 /* Admin tables become one card per row on phones. Cells carry data-label (set by TableWrap). */

@@ -41,7 +41,7 @@ export function Landing({ menu }: { menu: PublicMenu | null }) {
           </div>
           <a
             href="#book"
-            className="inline-flex h-10 items-center gap-2 rounded-full bg-primary px-5 text-sm font-semibold text-gold transition-colors hover:bg-primary-hover"
+            className="inline-flex h-10 items-center gap-2 rounded-full bg-primary px-5 text-sm font-semibold text-white transition-colors hover:bg-primary-hover"
           >
             <CalendarIcon className="h-4 w-4" />
             বুক করুন
@@ -51,29 +51,29 @@ export function Landing({ menu }: { menu: PublicMenu | null }) {
       <div className="pole-bar" aria-hidden="true" />
 
       <main className="mx-auto max-w-5xl space-y-12 px-4 pb-16">
-        <section className="bg-barber -mx-4 rounded-b-[2rem] px-4 pt-12 pb-12 text-center sm:pt-20 sm:pb-16">
-          <p className="text-xs font-bold tracking-[0.3em] text-gold uppercase">Gents Parlour</p>
-          <h1 className="font-display mt-3 text-4xl leading-snug font-extrabold tracking-tight text-white sm:text-6xl">
-            Look Good, <span className="text-gold">Feel Confident</span>
+        <section className="-mx-4 rounded-b-[2.5rem] bg-primary-soft px-4 pt-12 pb-12 text-center sm:pt-20 sm:pb-16">
+          <p className="text-xs font-bold tracking-[0.3em] text-primary uppercase">Gents Parlour</p>
+          <h1 className="font-display mt-3 text-4xl leading-snug font-extrabold tracking-tight text-fg sm:text-6xl">
+            Look Good, <span className="text-primary">Feel Confident</span>
           </h1>
-          <p className="mx-auto mt-4 max-w-xl text-base text-white/75">
+          <p className="mx-auto mt-4 max-w-xl text-base text-muted">
             আমাদের সেবা আর দাম দেখে নিন, পছন্দের barber আর সময় বেছে আগেই বুক করে রাখুন। লাইনে দাঁড়াতে হবে না।
           </p>
           <div className="mt-7 flex flex-wrap items-center justify-center gap-3">
             <a
               href="#book"
-              className="inline-flex h-12 items-center rounded-full bg-gold px-7 font-bold text-primary shadow-[0_6px_18px_rgb(0_0_0/0.35)] transition-opacity hover:opacity-90"
+              className="inline-flex h-12 items-center rounded-full bg-primary px-7 font-bold text-white shadow-[0_8px_20px_rgb(74_98_232/0.30)] transition-colors hover:bg-primary-hover"
             >
               অ্যাপয়েন্টমেন্ট নিন
             </a>
             <a
               href="#services"
-              className="inline-flex h-12 items-center rounded-full border border-white/30 px-7 font-medium text-white transition-colors hover:bg-white/10"
+              className="inline-flex h-12 items-center rounded-full border border-line-strong bg-surface px-7 font-medium text-fg transition-colors hover:border-primary hover:text-primary"
             >
               সেবা ও দাম
             </a>
           </div>
-          <BarbershopScene className="mx-auto mt-9 w-full max-w-xl rounded-3xl shadow-[0_18px_50px_rgb(0_0_0/0.35)]" />
+          <BarbershopScene className="mx-auto mt-8 w-full max-w-xl" />
         </section>
 
         <section id="services" aria-labelledby="services-h" className="scroll-mt-20">
