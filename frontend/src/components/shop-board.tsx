@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Logo } from "./logo";
 import { bnDigits, taka } from "@/lib/money";
 import { aheadOf, etaMin, finish, isFree, join, resetDemo, useQueue, type Lane, type Source } from "@/lib/queue";
@@ -177,11 +177,123 @@ function Lane({ lane: l, onAdd }: { lane: Lane; onAdd: () => void }) {
 }
 
 /** Today's money: each barber collects the cash, so the owner's 50% is what the barber owes the shop. */
+/** Demo history until the backend exists: [income, services done, same day last week]. Oldest first, today is added live. */
+const HISTORY: [number, number, number][] = [
+  [2900, 11, 2600],
+  [3450, 13, 3300],
+  [2100, 8, 2500],
+  [4100, 15, 3700],
+  [3800, 14, 3600],
+  [2650, 10, 3000],
+];
+
+function dayLabel(back: number) {
+  const d = new Date(Date.now() - back * 86400000);
+  const f = (o: Intl.DateTimeFormatOptions) => new Intl.DateTimeFormat("bn-BD", { timeZone: "Asia/Dhaka", ...o }).format(d);
+  return { week: back === 0 ? "আজ" : back === 1 ? "গতকাল" : f({ weekday: "long" }), date: f({ day: "numeric", month: "long" }) };
+}
+
+/** Swipeable day cards (today on the right), with dots. */
+function DayCards({ todayTotal, todayDone }: { todayTotal: number; todayDone: number }) {
+  const days = [...HISTORY, [todayTotal, todayDone, 3100] as [number, number, number]];
+  const box = useRef<HTMLDivElement>(null);
+  const [at, setAt] = useState(days.length - 1);
+  useEffect(() => {
+    const el = box.current;
+    if (el) el.scrollLeft = el.scrollWidth;
+  }, []);
+  function onScroll() {
+    const el = box.current;
+    if (!el) return;
+    const card = el.firstElementChild as HTMLElement | null;
+    if (!card) return;
+    setAt(Math.max(0, Math.min(days.length - 1, Math.round(el.scrollLeft / (card.offsetWidth + 12)))));
+  }
+  function go(i: number) {
+    const el = box.current;
+    const card = el?.firstElementChild as HTMLElement | null;
+    if (el && card) el.scrollTo({ left: i * (card.offsetWidth + 12), behavior: "smooth" });
+  }
+  return (
+    <section aria-label="দিন অনুযায়ী আয়">
+      <div className="mb-2 flex items-center justify-between px-1">
+        <h2 className="text-sm font-semibold text-muted">দিনের হিসাব</h2>
+        <div className="flex gap-2">
+          <button aria-label="আগের দিন" disabled={at === 0} onClick={() => go(at - 1)} className="flex h-9 w-9 items-center justify-center rounded-full border border-line-strong bg-surface text-primary disabled:opacity-40">‹</button>
+          <button aria-label="পরের দিন" disabled={at === days.length - 1} onClick={() => go(at + 1)} className="flex h-9 w-9 items-center justify-center rounded-full border border-line-strong bg-surface text-primary disabled:opacity-40">›</button>
+        </div>
+      </div>
+      <div ref={box} onScroll={onScroll} className="-mx-4 flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        {days.map(([inc, done, prev], i) => {
+          const back = days.length - 1 - i;
+          const l = dayLabel(back);
+          const pct = prev ? Math.min(100, Math.round((inc / prev) * 100)) : 0;
+          const diff = inc - prev;
+          const today = back === 0;
+          return (
+            <article key={i} className={cx("w-[84%] flex-none snap-center rounded-3xl p-5 sm:w-80", today ? "bg-barber text-white" : "border border-line bg-surface")}>
+              <div className="flex items-baseline gap-2">
+                <h3 className="text-lg font-bold">{l.week}</h3>
+                <span className={cx("text-sm", today ? "text-white/65" : "text-muted")}>· {l.date}</span>
+              </div>
+              <p className={cx("mt-3 text-xs", today ? "text-white/65" : "text-muted")}>আয়</p>
+              <p className={cx("text-4xl font-bold tabular-nums", today && "text-gold")}>{taka(inc)}</p>
+              <div className={cx("mt-3 h-2 overflow-hidden rounded-full", today ? "bg-white/15" : "bg-bg")} role="progressbar" aria-valuenow={pct} aria-valuemin={0} aria-valuemax={100} aria-label="গত সপ্তাহের একই দিনের তুলনায়">
+                <div className={cx("h-full rounded-full", today ? "bg-gold" : "bg-primary")} style={{ width: `${pct}%` }} />
+              </div>
+              <div className={cx("mt-3 flex items-center justify-between gap-2 text-sm", today ? "text-white/80" : "text-muted")}>
+                <span>{bnDigits(done)}টি সার্ভিস সম্পন্ন</span>
+                <span className={cx("font-semibold", diff >= 0 ? (today ? "text-gold" : "text-success") : today ? "text-white" : "text-warning")}>
+                  {diff >= 0 ? "▲" : "▼"} {taka(Math.abs(diff))}
+                </span>
+              </div>
+              <p className={cx("mt-1 text-xs", today ? "text-white/50" : "text-subtle")}>গত সপ্তাহের একই দিনের তুলনায়</p>
+            </article>
+          );
+        })}
+      </div>
+      <div className="mt-3 flex justify-center gap-1.5" aria-hidden="true">
+        {days.map((_, i) => (
+          <span key={i} className={cx("h-1.5 rounded-full transition-all", i === at ? "w-5 bg-primary" : "w-1.5 bg-line-strong")} />
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function WeekStats({ total, done, lanes }: { total: number; done: number; lanes: Lane[] }) {
+  const week = HISTORY.slice(1).reduce((n, h) => n + h[0], 0) + total;
+  const weekDone = HISTORY.slice(1).reduce((n, h) => n + h[1], 0) + done;
+  const top = [...lanes].sort((a, b) => b.earned - a.earned)[0];
+  const cells: [string, string, string][] = [
+    ["এই সপ্তাহের আয়", taka(week), `${bnDigits(weekDone)}টি সার্ভিস`],
+    ["গড় প্রতিদিন", taka(Math.round(week / 7)), "গত ৭ দিন"],
+    ["সেরা সার্ভিস", "হেয়ার কাট", "সবচেয়ে বেশি হয়েছে"],
+    ["সেরা কারিগর", top ? top.name : "-", top ? `আজ ${taka(top.earned)}` : ""],
+  ];
+  return (
+    <section className="rounded-3xl border border-line bg-surface p-4 shadow-card">
+      <h2 className="mb-3 text-sm font-semibold text-muted">সপ্তাহ</h2>
+      <div className="grid grid-cols-2 gap-3">
+        {cells.map(([k, v, sub]) => (
+          <div key={k} className="min-w-0 rounded-2xl bg-surface-2 p-3">
+            <p className="text-xs text-muted">{k}</p>
+            <p className="mt-1 truncate text-lg font-bold">{v}</p>
+            <p className="truncate text-xs text-subtle">{sub}</p>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
 function Money({ lanes }: { lanes: Lane[] }) {
   const total = lanes.reduce((n, l) => n + l.earned, 0);
   const owner = Math.round(total / 2);
+  const done = lanes.reduce((n, l) => n + l.doneToday, 0);
   return (
     <div className="mx-auto max-w-2xl space-y-4">
+      <DayCards todayTotal={total} todayDone={done} />
       <section className="rounded-3xl bg-primary p-5 text-white">
         <p className="text-sm text-white/70">আজকের মোট আয়</p>
         <p className="mt-1 text-4xl font-bold tabular-nums">{taka(total)}</p>
@@ -190,6 +302,7 @@ function Money({ lanes }: { lanes: Lane[] }) {
           <div><p className="text-white/60">কারিগরদের ভাগ (৫০%)</p><p className="text-lg font-bold">{taka(total - owner)}</p></div>
         </div>
       </section>
+      <WeekStats total={total} done={done} lanes={lanes} />
       <section className="rounded-3xl border border-line bg-surface p-2 shadow-card">
         <h2 className="px-3 pt-3 pb-1 text-sm font-semibold text-muted">কারিগর অনুযায়ী</h2>
         <ul className="divide-y divide-line">
