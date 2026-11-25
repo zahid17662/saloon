@@ -91,3 +91,15 @@ input[type="number"] {
     border-radius: 0 !important;
   }
 }
+
+/* Barbershop theme: barber-pole stripe and a faint diagonal texture. */
+.pole-bar {
+  height: 5px;
+  background: repeating-linear-gradient(-45deg, #f5c518 0 10px, #f4f2ea 10px 20px, #0b1f4b 20px 30px);
+}
+.bg-barber {
+  background-color: #0b1f4b;
+  background-image:
+    repeating-linear-gradient(135deg, rgb(255 255 255 / 0.035) 0 2px, transparent 2px 14px),
+    linear-gradient(160deg, #16347f 0%, #0b1f4b 55%, #060f2b 100%);
+}

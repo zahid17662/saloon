@@ -47,25 +47,27 @@ export function Landing({ menu }: { menu: PublicMenu | null }) {
           </a>
         </div>
       </header>
+      <div className="pole-bar" aria-hidden="true" />
 
       <main className="mx-auto max-w-5xl space-y-12 px-4 pb-16">
-        <section className="pt-10 text-center sm:pt-16">
-          <h1 className="text-3xl leading-tight font-bold text-fg sm:text-5xl">
-            Look Good, <span className="text-gold-ink">Feel Confident</span>
+        <section className="bg-barber -mx-4 rounded-b-[2rem] px-4 pt-12 pb-12 text-center sm:pt-20 sm:pb-16">
+          <p className="text-xs font-bold tracking-[0.3em] text-gold uppercase">Gents Parlour</p>
+          <h1 className="mt-3 text-4xl leading-tight font-extrabold tracking-tight text-white sm:text-6xl">
+            Look Good, <span className="text-gold">Feel Confident</span>
           </h1>
-          <p className="mx-auto mt-4 max-w-xl text-base text-muted">
+          <p className="mx-auto mt-4 max-w-xl text-base text-white/75">
             আমাদের সেবা আর দাম দেখে নিন, পছন্দের barber আর সময় বেছে আগেই বুক করে রাখুন। লাইনে দাঁড়াতে হবে না।
           </p>
-          <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
+          <div className="mt-7 flex flex-wrap items-center justify-center gap-3">
             <a
               href="#book"
-              className="inline-flex h-12 items-center rounded-full bg-primary px-7 font-semibold text-gold shadow-[0_6px_18px_rgb(11_31_75/0.3)] transition-colors hover:bg-primary-hover"
+              className="inline-flex h-12 items-center rounded-full bg-gold px-7 font-bold text-primary shadow-[0_6px_18px_rgb(0_0_0/0.35)] transition-opacity hover:opacity-90"
             >
               অ্যাপয়েন্টমেন্ট নিন
             </a>
             <a
               href="#services"
-              className="inline-flex h-12 items-center rounded-full border border-line-strong bg-surface px-7 font-medium text-fg transition-colors hover:bg-surface-2"
+              className="inline-flex h-12 items-center rounded-full border border-white/30 px-7 font-medium text-white transition-colors hover:bg-white/10"
             >
               সেবা ও দাম
             </a>

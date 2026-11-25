@@ -1,13 +1,15 @@
 import type { ReactNode } from "react";
 
-type Kind = "cut" | "beard" | "style" | "facial" | "wash" | "package";
+type Kind = "cut" | "beard" | "mustache" | "clipper" | "style" | "facial" | "wash" | "package";
 
 /** Pick an icon from the Bangla service name, so new services get a sensible icon without extra data. */
 export function serviceKind(name: string): Kind {
   if (/গ্রুমিং|প্যাকেজ|কম্বো/.test(name)) return "package";
   if (/ফেসিয়াল|ফেস|স্কিন|ক্লিন/.test(name)) return "facial";
   if (/ওয়াশ|শ্যাম্পু|ধোয়া/.test(name)) return "wash";
-  if (/দাড়ি|শেভ|গোঁফ/.test(name)) return "beard";
+  if (/গোঁফ/.test(name)) return "mustache";
+  if (/ট্রিমার|ক্লিপার|মেশিন|বাজ/.test(name)) return "clipper";
+  if (/দাড়ি|শেভ|রেজর/.test(name)) return "beard";
   if (/স্টাইল|রং|কালার|ড্রাই/.test(name)) return "style";
   return "cut";
 }
@@ -36,27 +38,33 @@ const PATHS: Record<Kind, ReactNode> = {
       <path d="M6 12v5M9.5 12v5M13 12v5M16.5 12v5" />
     </>
   ),
-  // sparkle on a face
+  // mustache
+  mustache: <path d="M12 11c-2-2.4-6-2.6-8.5-.8-1 .8-1 2 0 2.6 2.4-1.4 5-.8 7 1.8.6.8 1.4.8 2 0 2-2.6 4.6-3.2 7-1.8 1-.6 1-1.8 0-2.6C18 8.4 14 8.6 12 11z" />,
+  // clipper
+  clipper: (
+    <>
+      <rect x="8" y="7" width="8" height="15" rx="2.5" />
+      <path d="M8.5 7V3.5h7V7M10.5 3.5v3M13.5 3.5v3M12 14v2" />
+    </>
+  ),
+  // shaving brush
   facial: (
     <>
-      <circle cx="12" cy="12" r="8" />
-      <path d="M9 10.5h.01M15 10.5h.01" />
-      <path d="M9 15c1 1 2 1.4 3 1.4s2-.4 3-1.4" />
-      <path d="M19 3v3M17.5 4.5h3" />
+      <path d="M7 11C6 6 9 3 12 3s6 3 5 8zM8 11h8v2.5H8zM9.5 13.5 10.5 21h3l1-7.5" />
     </>
   ),
-  // water drops
+  // shampoo bottle
   wash: (
     <>
-      <path d="M12 3s5 5.3 5 9a5 5 0 0 1-10 0c0-3.7 5-9 5-9z" />
-      <path d="M10 13.5a2.2 2.2 0 0 0 2 2" />
+      <rect x="7" y="9" width="10" height="12" rx="3" />
+      <path d="M10 9V6h4v3M10 3.5h5v2.5" />
     </>
   ),
-  // premium crown
+  // barber pole
   package: (
     <>
-      <path d="M4 17 3 7l5 4 4-6 4 6 5-4-1 10z" />
-      <path d="M4 20h16" />
+      <rect x="8" y="5" width="8" height="14" rx="2" />
+      <path d="M8 9l8 3M8 13l8 3M9 3h6M9 21h6" />
     </>
   ),
 };
@@ -69,92 +77,104 @@ export function ServiceIcon({ name, className = "h-5 w-5" }: { name: string; cla
   );
 }
 
-const TINT: Record<Kind, string> = {
-  cut: "#FFF1BF",
-  beard: "#DDF3E6",
-  style: "#E6ECFA",
-  facial: "#FDE6DF",
-  wash: "#DDEEFC",
-  package: "#EBE4FA",
-};
+const G = "#F5C518";
+const W = "#F4F2EA";
 
 const ART: Record<Kind, ReactNode> = {
+  // scissors
   cut: (
     <>
-      <path d="M66 22 42 58M30 22l24 36" stroke="#9FABC9" strokeWidth="8" strokeLinecap="round" />
-      <path d="M66 22 42 58M30 22l24 36" stroke="#E3E8F4" strokeWidth="4.5" strokeLinecap="round" />
-      <circle cx="38" cy="67" r="8" fill="none" stroke="#F5C518" strokeWidth="5" />
-      <circle cx="58" cy="67" r="8" fill="none" stroke="#F5C518" strokeWidth="5" />
-      <circle cx="48" cy="49" r="3.2" fill="#0B1F4B" />
+      <path d="M37 56 61 22M59 56 35 22" stroke={G} strokeWidth="7" strokeLinecap="round" />
+      <circle cx="35" cy="68" r="8.5" fill="none" stroke={G} strokeWidth="6" />
+      <circle cx="61" cy="68" r="8.5" fill="none" stroke={G} strokeWidth="6" />
+      <circle cx="48" cy="40" r="3.2" fill="#0B1F4B" />
     </>
   ),
+  // straight razor
   beard: (
-    <>
-      <circle cx="30" cy="68" r="8" fill="#fff" stroke="#CBD3E4" strokeWidth="1.5" />
-      <circle cx="42" cy="73" r="6" fill="#fff" stroke="#CBD3E4" strokeWidth="1.5" />
-      <circle cx="22" cy="76" r="5" fill="#fff" stroke="#CBD3E4" strokeWidth="1.5" />
-      <g transform="translate(-2 2) rotate(-28 48 46)">
-        <rect x="22" y="40" width="32" height="12" rx="3" fill="#E3E8F4" stroke="#9FABC9" strokeWidth="1.8" />
-        <rect x="27" y="44" width="21" height="2.6" rx="1.3" fill="#fff" />
-        <rect x="52" y="42" width="24" height="8" rx="4" fill="#0B1F4B" />
-        <circle cx="54" cy="46" r="3" fill="#F5C518" />
-      </g>
-    </>
-  ),
-  style: (
-    <g transform="rotate(-14 48 50)">
-      <rect x="20" y="36" width="56" height="14" rx="4.5" fill="#F5C518" />
-      {[0, 1, 2, 3, 4, 5, 6, 7].map((i) => (
-        <rect key={i} x={23.5 + i * 6.4} y="50" width="3.6" height="15" rx="1.8" fill="#0B1F4B" />
-      ))}
-      <rect x="26" y="40" width="30" height="3" rx="1.5" fill="#fff" opacity=".55" />
+    <g transform="rotate(-32 48 48)">
+      <path d="M12 38h40a4 4 0 0 1 4 4v8H12z" fill={W} />
+      <rect x="12" y="38" width="44" height="4" rx="2" fill={G} />
+      <rect x="54" y="42" width="30" height="9" rx="4.5" fill={G} />
+      <circle cx="58" cy="46.5" r="2.6" fill="#0B1F4B" />
     </g>
   ),
+  mustache: (
+    <path
+      d="M48 50C42 41 30 39 20 45c-4 2.600-4 7 0 9 8-4 17-2 23 6 2 2.800 8 2.800 10 0 6-8 15-10 23-6 4-2 4-6.400 0-9-10-6-22-4-28 5z"
+      fill={G}
+    />
+  ),
+  clipper: (
+    <>
+      <rect x="35" y="30" width="26" height="46" rx="9" fill={G} />
+      <rect x="32" y="18" width="32" height="14" rx="3" fill={W} />
+      {[0, 1, 2, 3, 4, 5].map((i) => (
+        <rect key={i} x={35 + i * 5} y="18" width="2.6" height="9" rx="1" fill="#0B1F4B" />
+      ))}
+      <rect x="44" y="40" width="8" height="14" rx="4" fill="#0B1F4B" />
+      <circle cx="48" cy="66" r="3" fill="#0B1F4B" />
+    </>
+  ),
+  // comb
+  style: (
+    <g transform="rotate(-12 48 50)">
+      <rect x="16" y="32" width="64" height="16" rx="6" fill={G} />
+      {[0, 1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+        <rect key={i} x={19 + i * 6.6} y="48" width="3.8" height="20" rx="1.9" fill={G} />
+      ))}
+      <rect x="22" y="37" width="30" height="3" rx="1.5" fill="#0B1F4B" opacity=".25" />
+    </g>
+  ),
+  // shaving brush
   facial: (
     <>
-      <circle cx="48" cy="52" r="22" fill="#F3C9A5" />
-      <path d="M26 47C28 28 68 28 70 47L70 40C67 22 29 22 26 40Z" fill="#1E8E4E" />
-      <path d="M38 53q4 3.2 8 0M50 53q4 3.2 8 0" fill="none" stroke="#0B1F4B" strokeWidth="2.6" strokeLinecap="round" />
-      <path d="M42 63q6 5 12 0" fill="none" stroke="#0B1F4B" strokeWidth="2.6" strokeLinecap="round" />
-      <circle cx="34.5" cy="60" r="3.4" fill="#F29B93" opacity=".6" />
-      <circle cx="61.5" cy="60" r="3.4" fill="#F29B93" opacity=".6" />
-      <path d="M74 20l2.2 6.3L82.5 28.5 76.2 30.7 74 37l-2.2-6.3-6.3-2.2 6.3-2.2z" fill="#F5C518" />
+      <path d="M35 52C30 33 38 20 48 20s18 13 13 32z" fill={W} />
+      <path d="M41 28c-2 7-2 14-1 22M48 24v26M55 28c2 7 2 14 1 22" stroke="#0B1F4B" strokeWidth="1.6" opacity=".18" fill="none" />
+      <rect x="33" y="51" width="30" height="9" rx="3" fill={G} />
+      <path d="M39 60h18l-3 18H42z" fill={G} />
     </>
   ),
+  // shampoo bottle
   wash: (
     <>
-      <rect x="35" y="41" width="22" height="31" rx="7" fill="#0B1F4B" />
-      <rect x="39" y="32" width="14" height="10" rx="2.5" fill="#F5C518" />
-      <rect x="42" y="27" width="14" height="5" rx="2.5" fill="#F5C518" />
-      <rect x="39.5" y="52" width="13" height="11" rx="3" fill="#fff" opacity=".92" />
-      <path d="M70 38c0 0 9 10 9 16a9 9 0 0 1-18 0c0-6 9-16 9-16z" fill="#5B9BE8" />
-      <path d="M66 55a4 4 0 0 0 3.5 3.5" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" opacity=".7" />
-      <circle cx="26" cy="46" r="4.5" fill="#fff" stroke="#5B9BE8" strokeWidth="1.8" />
-      <circle cx="22" cy="60" r="3" fill="#fff" stroke="#5B9BE8" strokeWidth="1.8" />
+      <rect x="32" y="38" width="32" height="40" rx="10" fill={G} />
+      <rect x="38" y="26" width="20" height="14" rx="3" fill={W} />
+      <rect x="42" y="18" width="20" height="8" rx="3" fill={W} />
+      <rect x="38" y="50" width="20" height="16" rx="4" fill="#0B1F4B" opacity=".85" />
+      <path d="M48 53s5 5 5 8a5 5 0 0 1-10 0c0-3 5-8 5-8z" fill={G} />
     </>
   ),
+  // barber pole
   package: (
     <>
-      <path d="M23 66 21 40l14 12 13-19 13 19 14-12-2 26z" fill="#F5C518" stroke="#C99A00" strokeWidth="2" strokeLinejoin="round" />
-      <rect x="23" y="66" width="50" height="9" rx="3.5" fill="#0B1F4B" />
-      <circle cx="48" cy="57" r="4.2" fill="#1E8E4E" />
-      <circle cx="34" cy="61" r="3" fill="#fff" />
-      <circle cx="62" cy="61" r="3" fill="#fff" />
-      <circle cx="21" cy="37" r="3.4" fill="#F5C518" />
-      <circle cx="48" cy="30" r="3.4" fill="#F5C518" />
-      <circle cx="75" cy="37" r="3.4" fill="#F5C518" />
+      <clipPath id="poleClip">
+        <rect x="37" y="26" width="22" height="46" rx="6" />
+      </clipPath>
+      <rect x="37" y="26" width="22" height="46" rx="6" fill={W} />
+      <g clipPath="url(#poleClip)">
+        <path d="M30 28l36 14v10L30 38zM30 48l36 14v10L30 58z" fill={G} />
+        <path d="M30 38l36 14v6L30 44zM30 58l36 14v6L30 64z" fill="#5B9BE8" />
+      </g>
+      <rect x="33" y="19" width="30" height="9" rx="3.500" fill={G} />
+      <rect x="33" y="70" width="30" height="9" rx="3.500" fill={G} />
     </>
   ),
 };
 
-/** Flat illustrated "avatar" for a service: soft coloured backdrop, ground shadow and a two-tone drawing. */
+/** Solid barbershop glyph: gold on a dark navy tile with a thin gold keyline. */
 export function ServiceArt({ name, size = 72, className = "" }: { name: string; size?: number; className?: string }) {
   const kind = serviceKind(name);
   return (
     <svg width={size} height={size} viewBox="0 0 96 96" aria-hidden="true" className={className}>
-      <circle cx="48" cy="50" r="39" fill={TINT[kind]} />
-      <circle cx="70" cy="24" r="9" fill="#fff" opacity=".55" />
-      <ellipse cx="48" cy="82" rx="22" ry="4" fill="#0B1F4B" opacity=".1" />
+      <defs>
+        <linearGradient id="tileBg" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stopColor="#16347F" />
+          <stop offset="1" stopColor="#081638" />
+        </linearGradient>
+      </defs>
+      <rect x="4" y="4" width="88" height="88" rx="22" fill="url(#tileBg)" />
+      <rect x="9" y="9" width="78" height="78" rx="18" fill="none" stroke={G} strokeOpacity=".35" strokeWidth="1.5" />
       {ART[kind]}
     </svg>
   );

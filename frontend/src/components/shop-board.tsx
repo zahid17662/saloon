@@ -57,6 +57,7 @@ export function ShopBoard({ services }: { services: Svc[] }) {
           </nav>
         </div>
       </header>
+      <div className="pole-bar" aria-hidden="true" />
 
       <main className="mx-auto max-w-6xl px-4 pt-5 pb-40 sm:px-8 lg:pb-10">
         {view === "new" && (
