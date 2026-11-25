@@ -2,11 +2,12 @@
  * Flat line-art scene drawn for this project: a barber with scissors behind a seated customer,
  * a round mirror and a tool shelf. Ink outlines, white fills, one blue, soft blue blobs.
  */
-const INK = "#0F1222";
-const BLUE = "#4A62E8";
-const SKY = "#9AB5FF";
-const PALE = "#D7E3FB";
-const DEEP = "#BBCFF7";
+const INK = "#0B1F4B";
+const BLUE = "#15336E";
+const SKY = "#B9C7E6";
+const PALE = "#E9EDF8";
+const DEEP = "#D7DFF1";
+const GOLD = "#F5C518";
 
 const line = { fill: "none", stroke: INK, strokeWidth: 3, strokeLinecap: "round", strokeLinejoin: "round" } as const;
 const solid = { fill: "#fff", stroke: INK, strokeWidth: 3, strokeLinejoin: "round" } as const;
@@ -21,12 +22,12 @@ export function BarbershopScene({ className = "" }: { className?: string }) {
       {/* tools above the mirror */}
       <g transform="translate(58 18)">
         <g transform="rotate(-16)" {...line} strokeWidth="2.600">
-          <path d="M0 6 18 34M18 6 0 34" stroke={BLUE} />
-          <circle cx="-2" cy="40" r="6" stroke={BLUE} />
-          <circle cx="20" cy="40" r="6" stroke={BLUE} />
+          <path d="M0 6 18 34M18 6 0 34" stroke={INK} />
+          <circle cx="-2" cy="40" r="6" stroke={GOLD} strokeWidth="3.400" />
+          <circle cx="20" cy="40" r="6" stroke={GOLD} strokeWidth="3.400" />
         </g>
         <g transform="translate(36 0)">
-          <rect x="0" y="4" width="13" height="42" rx="2.500" fill={BLUE} />
+          <rect x="0" y="4" width="13" height="42" rx="2.500" fill={GOLD} />
           {[10, 17, 24, 31, 38].map((y) => <path key={y} d={`M4 ${y}h9`} stroke="#fff" strokeWidth="2.200" strokeLinecap="round" />)}
         </g>
         <g transform="translate(60 2)">
@@ -40,14 +41,14 @@ export function BarbershopScene({ className = "" }: { className?: string }) {
       <path d="M96 84l26-22M108 96l16-14" stroke={SKY} strokeWidth="4" strokeLinecap="round" fill="none" />
 
       {/* decorative marks */}
-      <path d="M236 42c22-14 44-8 52 10" stroke={BLUE} strokeWidth="2.400" strokeDasharray="5 7" strokeLinecap="round" fill="none" />
+      <path d="M236 42c22-14 44-8 52 10" stroke={INK} strokeOpacity=".45" strokeWidth="2.400" strokeDasharray="5 7" strokeLinecap="round" fill="none" />
       <path d="M46 196l10 10M56 196l-10 10" stroke={INK} strokeWidth="2.400" strokeLinecap="round" />
-      <circle cx="228" cy="26" r="4" fill={BLUE} />
+      <circle cx="228" cy="26" r="4" fill={GOLD} />
       <circle cx="40" cy="146" r="4" fill={SKY} />
 
       {/* customer */}
       <path d="M112 258c0-54 18-86 58-86s58 32 58 86z" fill={BLUE} stroke={INK} strokeWidth="3" strokeLinejoin="round" />
-      <path d="M152 254c-4-34 1-56 11-68M194 254c4-32-1-54-9-66" stroke="#93AAF5" strokeWidth="3.500" strokeLinecap="round" fill="none" />
+      <path d="M152 254c-4-34 1-56 11-68M194 254c4-32-1-54-9-66" stroke="#4D6AA8" strokeWidth="3.500" strokeLinecap="round" fill="none" />
       <path d="M160 152h20v22h-20z" {...solid} />
       <ellipse cx="171" cy="130" rx="26" ry="30" {...solid} />
       <path d="M145 126c-4-28 10-40 28-40s30 12 26 40c-5-15-13-21-27-21s-23 6-27 21z" fill={INK} stroke={INK} strokeWidth="3" strokeLinejoin="round" />
@@ -73,12 +74,12 @@ export function BarbershopScene({ className = "" }: { className?: string }) {
       <circle cx="256" cy="158" r="11" {...solid} strokeWidth="2.800" />
       <g transform="translate(189 74)">
         <path d="M0 14 14 40M14 14 0 40" stroke={INK} strokeWidth="3.500" strokeLinecap="round" fill="none" />
-        <circle cx="-1" cy="9" r="6" fill={BLUE} stroke={INK} strokeWidth="2.600" />
-        <circle cx="15" cy="9" r="6" fill={BLUE} stroke={INK} strokeWidth="2.600" />
+        <circle cx="-1" cy="9" r="6" fill={GOLD} stroke={INK} strokeWidth="2.600" />
+        <circle cx="15" cy="9" r="6" fill={GOLD} stroke={INK} strokeWidth="2.600" />
       </g>
       <g transform="translate(232 148) rotate(-16)">
-        <rect x="0" y="0" width="30" height="11" rx="2.500" fill={BLUE} stroke={INK} strokeWidth="2.600" />
-        {[6, 12, 18, 24].map((x) => <path key={x} d={`M${x} 3v5`} stroke="#fff" strokeWidth="2.200" strokeLinecap="round" />)}
+        <rect x="0" y="0" width="30" height="11" rx="2.500" fill={GOLD} stroke={INK} strokeWidth="2.600" />
+        {[6, 12, 18, 24].map((x) => <path key={x} d={`M${x} 3v5`} stroke={INK} strokeWidth="2.200" strokeLinecap="round" />)}
       </g>
       {/* head */}
       <path d="M292 72h18v26h-18z" {...solid} />

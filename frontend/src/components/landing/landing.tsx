@@ -41,7 +41,7 @@ export function Landing({ menu }: { menu: PublicMenu | null }) {
           </div>
           <a
             href="#book"
-            className="inline-flex h-10 items-center gap-2 rounded-full bg-primary px-5 text-sm font-semibold text-white transition-colors hover:bg-primary-hover"
+            className="inline-flex h-10 items-center gap-2 rounded-full bg-primary px-5 text-sm font-semibold text-gold transition-colors hover:bg-primary-hover"
           >
             <CalendarIcon className="h-4 w-4" />
             বুক করুন
@@ -54,7 +54,7 @@ export function Landing({ menu }: { menu: PublicMenu | null }) {
         <section className="-mx-4 rounded-b-[2.5rem] bg-primary-soft px-4 pt-12 pb-12 text-center sm:pt-20 sm:pb-16">
           <p className="text-xs font-bold tracking-[0.3em] text-primary uppercase">Gents Parlour</p>
           <h1 className="font-display mt-3 text-4xl leading-snug font-extrabold tracking-tight text-fg sm:text-6xl">
-            Look Good, <span className="text-primary">Feel Confident</span>
+            Look Good, <span className="text-gold-ink">Feel Confident</span>
           </h1>
           <p className="mx-auto mt-4 max-w-xl text-base text-muted">
             আমাদের সেবা আর দাম দেখে নিন, পছন্দের barber আর সময় বেছে আগেই বুক করে রাখুন। লাইনে দাঁড়াতে হবে না।
@@ -62,7 +62,7 @@ export function Landing({ menu }: { menu: PublicMenu | null }) {
           <div className="mt-7 flex flex-wrap items-center justify-center gap-3">
             <a
               href="#book"
-              className="inline-flex h-12 items-center rounded-full bg-primary px-7 font-bold text-white shadow-[0_8px_20px_rgb(74_98_232/0.30)] transition-colors hover:bg-primary-hover"
+              className="inline-flex h-12 items-center rounded-full bg-primary px-7 font-bold text-gold shadow-[0_8px_20px_rgb(11_31_75/0.25)] transition-colors hover:bg-primary-hover"
             >
               অ্যাপয়েন্টমেন্ট নিন
             </a>
