@@ -31,7 +31,7 @@ export function RangeFilter({ state }: { state: ReturnType<typeof useDateRange> 
             className={cx(
               "rounded-full border px-4 py-2 text-sm transition-colors",
               preset === p.id
-                ? "border-primary bg-primary font-semibold text-white shadow-[0_4px_14px_rgb(42_29_21/0.25)]"
+                ? "border-primary bg-primary font-semibold text-white shadow-[0_4px_14px_rgb(35_43_59/0.25)]"
                 : "border-line bg-surface text-muted hover:text-fg",
             )}
           >

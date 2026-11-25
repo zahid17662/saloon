@@ -2,18 +2,18 @@ import type { ReactNode } from "react";
 
 type Kind = "cut" | "beard" | "mustache" | "clipper" | "style" | "facial" | "wash" | "package" | "color" | "treatment" | "massage";
 
-/** Pick an icon from the Bangla service name, so new services get a sensible icon without extra data. */
+/** Pick an icon from the service name (English or Bangla), so new services get a sensible icon without extra data. */
 export function serviceKind(name: string): Kind {
-  if (/গ্রুমিং|প্যাকেজ|কম্বো/.test(name)) return "package";
-  if (/ম্যাসাজ/.test(name)) return "massage";
-  if (/কালার|শাইনিং|হাইলাইট|রং/.test(name)) return "color";
-  if (/ট্রিটমেন্ট|স্পা|স্ট্রেট|রিবন্ডিং/.test(name)) return "treatment";
-  if (/ফেসিয়াল|ফেস|স্কিন|ক্লিন/.test(name)) return "facial";
-  if (/ওয়াশ|শ্যাম্পু|ধোয়া/.test(name)) return "wash";
-  if (/গোঁফ/.test(name)) return "mustache";
-  if (/ট্রিমার|ক্লিপার|মেশিন|বাজ/.test(name)) return "clipper";
-  if (/দাড়ি|শেভ|রেজর/.test(name)) return "beard";
-  if (/স্টাইল|সেটআপ|ড্রাই/.test(name)) return "style";
+  if (/grooming|package|combo|গ্রুমিং|প্যাকেজ|কম্বো/i.test(name)) return "package";
+  if (/massage|ম্যাসাজ/i.test(name)) return "massage";
+  if (/color|colour|shining|highlight|কালার|শাইনিং|হাইলাইট|রং/i.test(name)) return "color";
+  if (/treatment|spa|straight|stret|rebonding|ট্রিটমেন্ট|স্পা|স্ট্রেট|রিবন্ডিং/i.test(name)) return "treatment";
+  if (/facial|face|skin|clean|ফেসিয়াল|ফেস|স্কিন|ক্লিন/i.test(name)) return "facial";
+  if (/wash|shampoo|ওয়াশ|শ্যাম্পু|ধোয়া/i.test(name)) return "wash";
+  if (/mustache|moustache|গোঁফ/i.test(name)) return "mustache";
+  if (/trimmer|clipper|machine|ট্রিমার|ক্লিপার|মেশিন|বাজ/i.test(name) && !/beard/i.test(name)) return "clipper";
+  if (/beard|shave|razor|দাড়ি|শেভ|রেজর/i.test(name)) return "beard";
+  if (/style|setup|dry|স্টাইল|সেটআপ|ড্রাই/i.test(name)) return "style";
   return "cut";
 }
 
@@ -86,11 +86,11 @@ export function ServiceIcon({ name, className = "h-5 w-5" }: { name: string; cla
   );
 }
 
-const INK = "#1B1612";
-const GOLD = "#C6A15B"; // brass accent
-const BLUE = "#7A5236"; // leather brown
-const SKY = "#D2B48C"; // tan
-const MIST = "#EFE5D3";
+const INK = "#171D29";
+const GOLD = "#E0A526"; // brass accent
+const BLUE = "#3F4C66"; // leather brown
+const SKY = "#B9C0CF"; // tan
+const MIST = "#E6E8EE";
 const sw = { stroke: INK, strokeWidth: 2.5, strokeLinejoin: "round", strokeLinecap: "round" } as const;
 
 /** Flat illustration pieces: soft blob, outlined objects, small sparkles. */

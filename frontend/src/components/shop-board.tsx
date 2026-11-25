@@ -11,12 +11,12 @@ import { BarberFace, squarePhoto } from "./barber-face";
 type Svc = { id: number; name: string; price: number; categoryId?: number };
 type Cat = { id: number; name: string };
 const FALLBACK: Svc[] = [
-  { id: 1, name: "হেয়ার কাট", price: 150, categoryId: 1 },
-  { id: 2, name: "হেয়ার ওয়াশ", price: 50, categoryId: 1 },
-  { id: 3, name: "দাড়ি ট্রিম", price: 100, categoryId: 1 },
-  { id: 4, name: "হেয়ার সেটআপ", price: 100, categoryId: 1 },
-  { id: 10, name: "ব্রাইটেনিং ফেসিয়াল", price: 300, categoryId: 3 },
-  { id: 20, name: "হেয়ার স্পা", price: 600, categoryId: 4 },
+  { id: 1, name: "Hair Cutting", price: 150, categoryId: 1 },
+  { id: 2, name: "Hair Wash", price: 50, categoryId: 1 },
+  { id: 3, name: "Beard Trimming", price: 100, categoryId: 1 },
+  { id: 4, name: "Hair Setup", price: 100, categoryId: 1 },
+  { id: 10, name: "Brightening Facial", price: 300, categoryId: 3 },
+  { id: 20, name: "Hair Spa", price: 600, categoryId: 4 },
 ];
 
 const SRC: Record<Source, { t: string; dot: string }> = {
