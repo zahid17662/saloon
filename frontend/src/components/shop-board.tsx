@@ -208,6 +208,18 @@ function Money({ lanes }: { lanes: Lane[] }) {
   );
 }
 
+function StepHead({ n, title, hint }: { n: string; title: string; hint?: string }) {
+  return (
+    <div className="mb-4 flex items-center gap-3">
+      <span className="flex h-9 w-9 flex-none items-center justify-center rounded-full bg-primary text-sm font-bold text-gold shadow-card">{n}</span>
+      <div className="min-w-0">
+        <h2 className="text-xl leading-tight font-bold">{title}</h2>
+        {hint && <p className="text-xs text-muted">{hint}</p>}
+      </div>
+    </div>
+  );
+}
+
 /** Step 1: all services (always visible). Step 2: barbers with details, shown once a service is picked. Step 3: name + confirm. */
 function NewSerial({ services, lanes, preset, onSeeQueue }: { services: Svc[]; lanes: Lane[]; preset?: number; onSeeQueue: (barberId?: number) => void }) {
   const [picked, setPicked] = useState<number[]>([]);
@@ -247,12 +259,9 @@ function NewSerial({ services, lanes, preset, onSeeQueue }: { services: Svc[]; l
   return (
     <div className="space-y-7">
       <section aria-labelledby="svc-h">
-        <div className="mb-3 flex items-end justify-between gap-3">
-          <div>
-            <p className="text-xs font-semibold text-gold-ink">ধাপ ১</p>
-            <h2 id="svc-h" className="text-xl font-bold">কী সার্ভিস নেবেন?</h2>
-          </div>
-          {chosen.length > 0 && <button onClick={() => { setPicked([]); setBarber(null); }} className="text-sm font-medium text-muted underline">মুছে ফেলুন</button>}
+        <div className="flex items-start justify-between gap-3">
+          <StepHead n="১" title="কী সার্ভিস নেবেন?" hint="এক বা একাধিক সার্ভিস বেছে নিন" />
+          {chosen.length > 0 && <button onClick={() => { setPicked([]); setBarber(null); }} className="mt-1.5 rounded-full border border-line-strong px-3 py-1 text-xs font-medium text-muted">মুছে ফেলুন</button>}
         </div>
         <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 lg:grid-cols-4">
           {services.map((s) => {
@@ -277,56 +286,90 @@ function NewSerial({ services, lanes, preset, onSeeQueue }: { services: Svc[]; l
 
       {chosen.length > 0 && (
         <section id="bar" aria-labelledby="bar-h" className="scroll-mt-20">
-          <p className="text-xs font-semibold text-gold-ink">ধাপ ২</p>
-          <h2 id="bar-h" className="mb-3 text-xl font-bold">কোন কারিগর?</h2>
-          <div className="grid gap-3 lg:grid-cols-3">
+          <StepHead n="২" title="কোন কারিগর?" hint="কার সিরিয়াল কতদূর, দেখে বেছে নিন" />
+          <div className="grid gap-4 lg:grid-cols-3">
             {lanes.map((l) => {
               const on = barber === l.id;
               const free = isFree(l);
+              const line = [l.current, ...l.waiting].filter((t): t is NonNullable<typeof t> => !!t);
+              const shown = line.slice(0, 4);
               return (
                 <button key={l.id} aria-pressed={on} onClick={() => setBarber(l.id)}
-                  className={cx("rounded-3xl border-2 bg-surface p-4 text-left transition-colors", on ? "border-primary shadow-card" : "border-transparent hover:border-line-strong")}>
-                  <div className="flex items-center gap-3">
-                    <Avatar l={l} size={48} />
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate text-base font-bold">{l.name}</p>
-                      <p className={cx("text-xs font-semibold", free ? "text-success" : "text-warning")}>{free ? "ফাঁকা, এখনই শুরু করতে পারবেন" : "এখন ব্যস্ত"}</p>
-                    </div>
-                    <span className={cx("flex h-6 w-6 items-center justify-center rounded-full border-2 text-xs", on ? "border-primary bg-primary text-white" : "border-line-strong text-transparent")}>✓</span>
-                  </div>
+                  className={cx("group relative flex flex-col overflow-hidden rounded-[28px] bg-surface text-left ring-1 transition-all", on ? "-translate-y-0.5 shadow-[0_18px_40px_-14px_rgb(11_31_75/0.45)] ring-2 ring-primary" : "ring-line shadow-card hover:ring-line-strong")}>
+                  {/* navy header */}
+                  <span className="relative flex items-center gap-3 overflow-hidden bg-[linear-gradient(135deg,#0B1F4B_0%,#17347a_100%)] px-4 py-4">
+                    <svg aria-hidden="true" viewBox="0 0 120 120" className="pointer-events-none absolute -top-10 -right-8 h-36 w-36 text-gold opacity-[0.16]"><circle cx="60" cy="60" r="56" fill="none" stroke="currentColor" strokeWidth="2" /><circle cx="60" cy="60" r="38" fill="none" stroke="currentColor" strokeWidth="2" /><circle cx="60" cy="60" r="20" fill="currentColor" /></svg>
+                    <span className="relative flex h-14 w-14 flex-none items-center justify-center rounded-full bg-white/10 text-2xl font-bold text-gold ring-2 ring-gold/70">{l.initial}</span>
+                    <span className="relative min-w-0 flex-1">
+                      <span className="block truncate text-lg leading-tight font-bold text-white">{l.name}</span>
+                      <span className="mt-0.5 block text-xs text-white/65">আজ {bnDigits(l.doneToday)}টি সম্পন্ন · শেষ সিরিয়াল #{bnDigits(l.lastSerial)}</span>
+                    </span>
+                    <span className={cx("relative flex flex-none items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold", free ? "bg-success/90 text-white" : "bg-gold text-primary")}>
+                      <span className={cx("h-1.5 w-1.5 rounded-full", free ? "bg-white" : "bg-primary")} />{free ? "ফাঁকা" : "ব্যস্ত"}
+                    </span>
+                  </span>
 
-                  <dl className="mt-4 grid grid-cols-3 gap-2 text-center">
-                    <div className="rounded-xl bg-bg px-1 py-2"><dd className="text-sm font-bold tabular-nums sm:text-base">{l.current ? `#${bnDigits(l.current.serial)}` : "—"}</dd><dt className="text-[10px] text-muted sm:text-[11px]">এখন চলছে</dt></div>
-                    <div className="rounded-xl bg-bg px-1 py-2"><dd className="text-sm font-bold tabular-nums sm:text-base">{bnDigits(aheadOf(l))} জন</dd><dt className="text-[10px] text-muted sm:text-[11px]">সামনে</dt></div>
-                    <div className="rounded-xl bg-bg px-1 py-2"><dd className="text-sm font-bold tabular-nums sm:text-base">{free ? "এখনই" : `~${bnDigits(etaMin(l))} মি.`}</dd><dt className="text-[10px] text-muted sm:text-[11px]">অপেক্ষা</dt></div>
-                  </dl>
+                  {/* body */}
+                  <span className="flex flex-1 flex-col gap-4 p-4">
+                    <span>
+                      <span className="mb-2 block text-[11px] font-semibold tracking-wide text-muted">সিরিয়ালের অবস্থা</span>
+                      <span className="flex flex-wrap items-center gap-1.5">
+                        {free ? (
+                          <span className="rounded-full bg-bg px-3 py-1.5 text-xs font-medium text-muted">চেয়ার ফাঁকা, কেউ অপেক্ষায় নেই</span>
+                        ) : (
+                          shown.map((t, i) => (
+                            <span key={t.serial} className={cx("rounded-full px-2.5 py-1.5 text-xs font-bold tabular-nums", i === 0 ? "bg-gold text-primary ring-4 ring-gold/25" : "bg-bg text-muted")}>#{bnDigits(t.serial)}</span>
+                          ))
+                        )}
+                        {line.length > shown.length && <span className="text-xs font-medium text-muted">+{bnDigits(line.length - shown.length)}</span>}
+                        <span aria-hidden="true" className="px-0.5 text-muted">›</span>
+                        <span className={cx("rounded-full px-3 py-1.5 text-xs font-bold tabular-nums", on ? "bg-primary text-gold" : "border border-dashed border-primary/50 text-primary")}>আপনি #{bnDigits(l.lastSerial + 1)}</span>
+                      </span>
+                    </span>
 
-                  <ul className="mt-3 space-y-1 text-xs text-muted">
-                    {l.current && <li>চলছে: <span className="font-medium text-fg">{l.current.service}</span></li>}
-                    <li>শেষ সিরিয়াল #{bnDigits(l.lastSerial)} · আজ {bnDigits(l.doneToday)}টি সম্পন্ন</li>
-                  </ul>
-                  <p className={cx("mt-3 rounded-xl px-3 py-2 text-sm font-semibold", free ? "bg-success-soft text-success" : "bg-warning-soft text-warning")}>
-                    {free ? `সরাসরি শুরু, সিরিয়াল #${bnDigits(l.lastSerial + 1)}` : `লাইনে যুক্ত হবে, সিরিয়াল #${bnDigits(l.lastSerial + 1)}`}
-                  </p>
+                    <span className="grid grid-cols-2 divide-x divide-line rounded-2xl bg-[#F8F6EE] py-3">
+                      <span className="px-4">
+                        <span className="block text-[11px] text-muted">সামনে আছেন</span>
+                        <span className="block text-2xl leading-tight font-bold tabular-nums">{bnDigits(aheadOf(l))}<span className="ml-1 text-sm font-semibold text-muted">জন</span></span>
+                      </span>
+                      <span className="px-4">
+                        <span className="block text-[11px] text-muted">আনুমানিক অপেক্ষা</span>
+                        <span className="block text-2xl leading-tight font-bold tabular-nums">{free ? "এখনই" : <>~{bnDigits(etaMin(l))}<span className="ml-1 text-sm font-semibold text-muted">মিনিট</span></>}</span>
+                      </span>
+                    </span>
+
+                    {l.current && (
+                      <span className="flex items-center gap-2.5 text-xs text-muted">
+                        <ServiceIcon name={l.current.service} className="h-4 w-4 flex-none text-gold-ink" />
+                        <span className="min-w-0 truncate">এখন করছেন: <b className="font-semibold text-fg">{l.current.service}</b></span>
+                      </span>
+                    )}
+                  </span>
+
+                  {/* footer */}
+                  <span className={cx("flex items-center justify-between gap-3 px-4 py-3.5 text-sm font-bold transition-colors", on ? "bg-primary text-gold" : free ? "bg-success-soft text-success" : "bg-warning-soft text-warning")}>
+                    <span>{free ? "সরাসরি শুরু" : "লাইনে যুক্ত হবে"} · সিরিয়াল #{bnDigits(l.lastSerial + 1)}</span>
+                    <span className={cx("flex h-6 min-w-6 items-center justify-center rounded-full px-1.5 text-xs", on ? "bg-gold text-primary" : "border border-current/40")}>{on ? "✓" : ""}</span>
+                  </span>
                 </button>
               );
             })}
           </div>
           <button aria-pressed={barber === "any"} onClick={() => setBarber("any")}
-            className={cx("mt-3 flex w-full items-center gap-3 rounded-2xl border-2 border-dashed p-3.5 text-left", barber === "any" ? "border-primary bg-surface" : "border-line-strong")}>
+            className={cx("mt-4 flex w-full items-center gap-3 rounded-2xl border-2 border-dashed bg-surface p-4 text-left transition-colors", barber === "any" ? "border-primary shadow-card" : "border-line-strong")}>
+            <span className="flex h-11 w-11 flex-none items-center justify-center rounded-full bg-primary-soft text-lg text-primary">⇄</span>
             <span className="min-w-0 flex-1">
-              <span className="block font-semibold">যে কেউ, যিনি আগে ফাঁকা হবেন</span>
+              <span className="block font-bold">যে কেউ, যিনি আগে ফাঁকা হবেন</span>
               <span className="block text-xs text-muted">এখন সবচেয়ে কম অপেক্ষা: {shortest.name} ({isFree(shortest) ? "ফাঁকা" : `~${bnDigits(etaMin(shortest))} মিনিট`})</span>
             </span>
-            <span className={cx("flex h-6 w-6 flex-none items-center justify-center rounded-full border-2 text-xs", barber === "any" ? "border-primary bg-primary text-white" : "border-line-strong text-transparent")}>✓</span>
+            <span className={cx("flex h-7 w-7 flex-none items-center justify-center rounded-full border-2 text-xs", barber === "any" ? "border-primary bg-primary text-gold" : "border-line-strong text-transparent")}>✓</span>
           </button>
         </section>
       )}
 
       {chosen.length > 0 && target && (
-        <section id="ok" aria-labelledby="ok-h" className="scroll-mt-20 rounded-3xl border border-line bg-surface p-4 sm:p-5">
-          <p className="text-xs font-semibold text-gold-ink">ধাপ ৩</p>
-          <h2 id="ok-h" className="mb-3 text-xl font-bold">নিশ্চিত করুন</h2>
+        <section id="ok" aria-labelledby="ok-h" className="scroll-mt-20 rounded-[28px] border border-line bg-surface p-4 shadow-card sm:p-5">
+          <StepHead n="৩" title="নিশ্চিত করুন" hint="নাম না দিলেও চলবে" />
           <label className="grid gap-1 text-sm font-medium">কাস্টমারের নাম (ঐচ্ছিক)
             <input value={name} onChange={(e) => setName(e.target.value)} maxLength={60} className="h-12 rounded-xl border border-line-strong px-3 text-base" />
           </label>
