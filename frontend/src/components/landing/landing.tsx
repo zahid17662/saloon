@@ -1,3 +1,4 @@
+import { BarbershopScene } from "./barbershop-scene";
 import Link from "next/link";
 import { bnDigits, taka } from "@/lib/money";
 import type { PublicMenu } from "@/lib/types";
@@ -72,6 +73,7 @@ export function Landing({ menu }: { menu: PublicMenu | null }) {
               সেবা ও দাম
             </a>
           </div>
+          <BarbershopScene className="mx-auto mt-9 w-full max-w-xl rounded-3xl shadow-[0_18px_50px_rgb(0_0_0/0.35)]" />
         </section>
 
         <section id="services" aria-labelledby="services-h" className="scroll-mt-20">
