@@ -66,18 +66,6 @@ export function ShopBoard({ services }: { services: Svc[] }) {
 
         {view === "queue" && (
           <>
-            <div className="mb-4 grid grid-cols-3 gap-2 text-center">
-              {[
-                ["অপেক্ষায়", bnDigits(waiting), "text-primary"],
-                ["চলছে", bnDigits(q.lanes.filter((l) => l.current).length), "text-gold-ink"],
-                ["ফাঁকা কারিগর", bnDigits(q.lanes.filter(isFree).length), "text-success"],
-              ].map(([k, v, c]) => (
-                <div key={k} className="rounded-2xl border border-line bg-surface px-2 py-2.5">
-                  <p className={cx("text-2xl leading-none font-extrabold tabular-nums", c)}>{v}</p>
-                  <p className="mt-1 text-[11px] font-medium text-muted">{k}</p>
-                </div>
-              ))}
-            </div>
             <div role="tablist" aria-label="কারিগর" className="mb-4 grid grid-cols-3 gap-2 lg:hidden">
               {q.lanes.map((l) => (
                 <button key={l.id} role="tab" aria-selected={tab === l.id} onClick={() => setTab(l.id)}
@@ -141,11 +129,9 @@ function Lane({ lane: l, onAdd }: { lane: Lane; onAdd: () => void }) {
         <div className="bg-barber overflow-hidden rounded-3xl p-5 text-white shadow-card">
           <div className="flex items-center justify-between">
             <span className="inline-flex items-center gap-1.5 rounded-full bg-gold px-3 py-1 text-xs font-bold text-primary"><span className="h-1.5 w-1.5 animate-pulse rounded-full bg-primary" />এখন চলছে</span>
-            <span className="text-xs text-white/60">আজ {bnDigits(l.doneToday)}টি সম্পন্ন</span>
           </div>
           <div className="mt-4 flex items-end gap-4">
             <div>
-              <p className="text-[11px] text-white/60">সিরিয়াল</p>
               <p className="text-6xl leading-none font-extrabold text-gold tabular-nums">{bnDigits(cur.serial)}</p>
             </div>
             <div className="min-w-0 flex-1 pb-1">
@@ -178,7 +164,6 @@ function Lane({ lane: l, onAdd }: { lane: Lane; onAdd: () => void }) {
       <div className="rounded-3xl border border-line bg-surface p-4 shadow-card">
         <div className="flex items-center justify-between">
           <h3 className="font-bold">অপেক্ষায় <span className="text-muted">({bnDigits(l.waiting.length)})</span></h3>
-          {l.waiting.length > 0 && <span className="text-xs text-muted">সবার শেষে প্রায় {bnDigits(etaMin(l))} মিনিট</span>}
         </div>
         {l.waiting.length === 0 ? (
           <p className="py-5 text-center text-sm text-muted">কেউ অপেক্ষায় নেই</p>
@@ -191,7 +176,7 @@ function Lane({ lane: l, onAdd }: { lane: Lane; onAdd: () => void }) {
                   <p className="flex items-center gap-2 leading-snug font-semibold"><span className="truncate">{w.name}</span>{i === 0 && <span className="flex-none rounded-full bg-gold/25 px-2 py-0.5 text-[10px] font-bold text-gold-ink">পরের জন</span>}</p>
                   <p className="text-xs leading-snug text-muted">{w.service} · {taka(w.price)}</p>
                   {(w.phone || w.note) && <p className="mt-0.5 text-xs leading-snug text-gold-ink">{w.phone ? `📞 ${bnDigits(w.phone)}` : ""}{w.phone && w.note ? " · " : ""}{w.note ? `📝 ${w.note}` : ""}</p>}
-                  <p className="mt-1 flex items-center gap-1.5 text-[11px] text-muted"><span className={cx("h-1.5 w-1.5 rounded-full", SRC[w.source].dot)} />{SRC[w.source].t} · প্রায় {bnDigits((i + (cur ? 1 : 0)) * MIN_PER_CUT)} মিনিট পরে</p>
+                  <p className="mt-1 flex items-center gap-1.5 text-[11px] text-muted"><span className={cx("h-1.5 w-1.5 rounded-full", SRC[w.source].dot)} />{SRC[w.source].t} · ~{bnDigits((i + (cur ? 1 : 0)) * MIN_PER_CUT)} মিনিট</p>
                 </div>
                 <button onClick={() => { if (window.confirm(`${w.name} (${bnDigits(w.serial)} নম্বর) বাদ দেবেন?`)) removeTicket(l.id, w.serial); }} aria-label={`${bnDigits(w.serial)} নম্বর বাদ দিন`} className="flex h-9 flex-none items-center rounded-full px-3 text-xs font-medium text-danger hover:bg-bg">বাদ</button>
               </li>
