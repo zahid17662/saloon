@@ -8,6 +8,6 @@ export const instant = false;
 export default async function ShopPage() {
   await connection();
   const menu = await fetchPublicMenu();
-  const services = (menu?.services ?? []).map((s) => ({ id: s.id, name: s.name, price: s.price }));
-  return <ShopBoard services={services} />;
+  const services = (menu?.services ?? []).map((s) => ({ id: s.id, name: s.name, price: s.price, categoryId: s.categoryId }));
+  return <ShopBoard services={services} categories={menu?.categories ?? []} />;
 }

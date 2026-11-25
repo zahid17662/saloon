@@ -8,14 +8,15 @@ import { ServiceArt, ServiceIcon } from "./service-icon";
 import { cx } from "./ui";
 import { BarberFace, squarePhoto } from "./barber-face";
 
-type Svc = { id: number; name: string; price: number };
+type Svc = { id: number; name: string; price: number; categoryId?: number };
+type Cat = { id: number; name: string };
 const FALLBACK: Svc[] = [
-  { id: 1, name: "হেয়ার কাট", price: 150 },
-  { id: 2, name: "দাড়ি ট্রিম", price: 80 },
-  { id: 3, name: "হেয়ার স্টাইল", price: 200 },
-  { id: 4, name: "ফেসিয়াল", price: 400 },
-  { id: 5, name: "হেয়ার ওয়াশ", price: 100 },
-  { id: 6, name: "গ্রুমিং প্যাকেজ", price: 550 },
+  { id: 1, name: "হেয়ার কাট", price: 150, categoryId: 1 },
+  { id: 2, name: "হেয়ার ওয়াশ", price: 50, categoryId: 1 },
+  { id: 3, name: "দাড়ি ট্রিম", price: 100, categoryId: 1 },
+  { id: 4, name: "হেয়ার সেটআপ", price: 100, categoryId: 1 },
+  { id: 10, name: "ব্রাইটেনিং ফেসিয়াল", price: 300, categoryId: 3 },
+  { id: 20, name: "হেয়ার স্পা", price: 600, categoryId: 4 },
 ];
 
 const SRC: Record<Source, { t: string; dot: string }> = {
@@ -33,7 +34,7 @@ const TABS: { id: View; label: string; icon: string }[] = [
 
 /** Shop dashboard. Phone: bottom tab bar. Desktop: tabs in the header.
  *  "নতুন সিরিয়াল": every service is listed first; once a service is picked the barbers appear with full details. */
-export function ShopBoard({ services }: { services: Svc[] }) {
+export function ShopBoard({ services, categories = [] }: { services: Svc[]; categories?: Cat[] }) {
   const q = useQueue();
   const svcs = services.length ? services : FALLBACK;
   const [view, setView] = useState<View>("new");
@@ -62,7 +63,7 @@ export function ShopBoard({ services }: { services: Svc[] }) {
 
       <main className="mx-auto max-w-6xl px-4 pt-5 pb-40 sm:px-8 lg:pb-10">
         {view === "new" && (
-          <NewSerial key={preset ?? "x"} services={svcs} lanes={q.lanes} preset={preset} onSeeQueue={(id) => { if (id) setTab(id); setView("queue"); }} />
+          <NewSerial key={preset ?? "x"} services={svcs} categories={categories} lanes={q.lanes} preset={preset} onSeeQueue={(id) => { if (id) setTab(id); setView("queue"); }} />
         )}
 
         {view === "queue" && (
@@ -349,9 +350,10 @@ function StepHead({ n, title, hint }: { n: string; title: string; hint?: string 
 }
 
 /** Step 1: all services (always visible). Step 2: barbers with details, shown once a service is picked. Step 3: name + confirm. */
-function NewSerial({ services, lanes, preset, onSeeQueue }: { services: Svc[]; lanes: Lane[]; preset?: number; onSeeQueue: (barberId?: number) => void }) {
+function NewSerial({ services, categories, lanes, preset, onSeeQueue }: { services: Svc[]; categories: Cat[]; lanes: Lane[]; preset?: number; onSeeQueue: (barberId?: number) => void }) {
   const [picked, setPicked] = useState<number[]>([]);
   const [barber, setBarber] = useState<number | "any" | null>(preset ?? null);
+  const [cat, setCat] = useState(0);
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [note, setNote] = useState("");
@@ -396,8 +398,16 @@ function NewSerial({ services, lanes, preset, onSeeQueue }: { services: Svc[]; l
           <StepHead n="১" title="কী সার্ভিস নেবেন?" hint="এক বা একাধিক সার্ভিস বেছে নিন" />
           {chosen.length > 0 && <button onClick={() => { setPicked([]); setBarber(null); }} className="mt-1.5 rounded-full border border-line-strong px-3 py-1 text-xs font-medium text-muted">মুছে ফেলুন</button>}
         </div>
+        {categories.length > 1 && (
+          <div role="tablist" aria-label="সার্ভিসের ধরন" className="-mx-4 mb-3 flex gap-2 overflow-x-auto px-4 pb-1 sm:mx-0 sm:px-0">
+            {[{ id: 0, name: "সব" }, ...categories].map((c) => (
+              <button key={c.id} role="tab" aria-selected={cat === c.id} onClick={() => setCat(c.id)}
+                className={cx("h-10 flex-none rounded-full border px-4 text-sm font-semibold whitespace-nowrap", cat === c.id ? "border-primary bg-primary text-white" : "border-line-strong bg-surface text-fg")}>{c.name}</button>
+            ))}
+          </div>
+        )}
         <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 lg:grid-cols-4">
-          {services.map((s) => {
+          {services.filter((s) => cat === 0 || s.categoryId === cat).map((s) => {
             const on = picked.includes(s.id);
             return (
               <button key={s.id} aria-pressed={on} onClick={() => setPicked((p) => (on ? p.filter((x) => x !== s.id) : [...p, s.id]))}

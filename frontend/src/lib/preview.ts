@@ -19,18 +19,39 @@ const dhakaDay = (t: number) => new Date(t + 6 * HOUR).toISOString().slice(0, 10
 
 const categories: Category[] = [
   { id: 1, name: "চুল কাটা", sortOrder: 1, active: true },
-  { id: 2, name: "দাড়ি ও শেভ", sortOrder: 2, active: true },
-  { id: 3, name: "ফেসিয়াল ও ম্যাসাজ", sortOrder: 3, active: true },
+  { id: 2, name: "হেয়ার কালার", sortOrder: 2, active: true },
+  { id: 3, name: "ফেসিয়াল", sortOrder: 3, active: true },
+  { id: 4, name: "হেয়ার ট্রিটমেন্ট", sortOrder: 4, active: true },
+  { id: 5, name: "বডি ম্যাসাজ চেয়ার", sortOrder: 5, active: true },
 ];
 
+// The shop's printed price list.
 const services: Service[] = [
-  { id: 1, categoryId: 1, name: "রেগুলার কাট", price: 150, sortOrder: 1, active: true },
-  { id: 2, categoryId: 1, name: "স্টাইলিশ কাট", price: 250, sortOrder: 2, active: true },
-  { id: 3, categoryId: 1, name: "বাচ্চাদের কাট", price: 100, sortOrder: 3, active: true },
-  { id: 4, categoryId: 2, name: "দাড়ি ট্রিম", price: 80, sortOrder: 1, active: true },
-  { id: 5, categoryId: 2, name: "ক্লিন শেভ", price: 100, sortOrder: 2, active: true },
-  { id: 6, categoryId: 3, name: "ফেসিয়াল", price: 400, sortOrder: 1, active: true },
-  { id: 7, categoryId: 3, name: "হেড ম্যাসাজ", price: 200, sortOrder: 2, active: true },
+  { id: 1, categoryId: 1, name: "হেয়ার কাট", price: 150, sortOrder: 1, active: true },
+  { id: 2, categoryId: 1, name: "হেয়ার ওয়াশ", price: 50, sortOrder: 2, active: true },
+  { id: 3, categoryId: 1, name: "দাড়ি ট্রিম", price: 100, sortOrder: 3, active: true },
+  { id: 4, categoryId: 1, name: "হেয়ার সেটআপ", price: 100, sortOrder: 4, active: true },
+  { id: 5, categoryId: 2, name: "হেয়ার শাইনিং", price: 400, sortOrder: 1, active: true },
+  { id: 6, categoryId: 2, name: "হেয়ার কালার ব্ল্যাক রেভলন", price: 600, sortOrder: 2, active: true },
+  { id: 7, categoryId: 2, name: "হেয়ার কালার ব্রাউন", price: 600, sortOrder: 3, active: true },
+  { id: 8, categoryId: 2, name: "হেয়ার কালার বিগিন", price: 600, sortOrder: 4, active: true },
+  { id: 9, categoryId: 2, name: "হাইলাইট কালার (প্রতি স্টেপ)", price: 200, sortOrder: 5, active: true },
+  { id: 10, categoryId: 3, name: "ব্রাইটেনিং ফেসিয়াল", price: 300, sortOrder: 1, active: true },
+  { id: 11, categoryId: 3, name: "গোল্ড ফেসিয়াল", price: 600, sortOrder: 2, active: true },
+  { id: 12, categoryId: 3, name: "ডায়মন্ড ফেসিয়াল", price: 700, sortOrder: 3, active: true },
+  { id: 13, categoryId: 3, name: "সিলভার ফেসিয়াল", price: 600, sortOrder: 4, active: true },
+  { id: 14, categoryId: 3, name: "একনে ফেসিয়াল", price: 600, sortOrder: 5, active: true },
+  { id: 15, categoryId: 3, name: "ফ্রুট ফেসিয়াল", price: 600, sortOrder: 6, active: true },
+  { id: 16, categoryId: 3, name: "হাইড্রা ফেসিয়াল (মিনি)", price: 1200, sortOrder: 7, active: true },
+  { id: 17, categoryId: 3, name: "হাইড্রা ফেসিয়াল (ফুল)", price: 1800, sortOrder: 8, active: true },
+  { id: 18, categoryId: 4, name: "হেয়ার ট্রিটমেন্ট", price: 600, sortOrder: 1, active: true },
+  { id: 19, categoryId: 4, name: "হেয়ার স্পা", price: 600, sortOrder: 2, active: true },
+  { id: 20, categoryId: 4, name: "হেয়ার স্ট্রেট", price: 2000, sortOrder: 3, active: true },
+  { id: 21, categoryId: 4, name: "হেয়ার রিবন্ডিং", price: 2500, sortOrder: 4, active: true },
+  { id: 22, categoryId: 5, name: "ম্যাসাজ চেয়ার ১০ মিনিট", price: 100, sortOrder: 1, active: true },
+  { id: 23, categoryId: 5, name: "ম্যাসাজ চেয়ার ২০ মিনিট", price: 200, sortOrder: 2, active: true },
+  { id: 24, categoryId: 5, name: "ম্যাসাজ চেয়ার ৩০ মিনিট", price: 250, sortOrder: 3, active: true },
+  { id: 25, categoryId: 5, name: "ম্যাসাজ চেয়ার ৬০ মিনিট", price: 400, sortOrder: 4, active: true },
 ];
 
 const barbers: Barber[] = [

@@ -1,16 +1,19 @@
 import type { ReactNode } from "react";
 
-type Kind = "cut" | "beard" | "mustache" | "clipper" | "style" | "facial" | "wash" | "package";
+type Kind = "cut" | "beard" | "mustache" | "clipper" | "style" | "facial" | "wash" | "package" | "color" | "treatment" | "massage";
 
 /** Pick an icon from the Bangla service name, so new services get a sensible icon without extra data. */
 export function serviceKind(name: string): Kind {
   if (/গ্রুমিং|প্যাকেজ|কম্বো/.test(name)) return "package";
+  if (/ম্যাসাজ/.test(name)) return "massage";
+  if (/কালার|শাইনিং|হাইলাইট|রং/.test(name)) return "color";
+  if (/ট্রিটমেন্ট|স্পা|স্ট্রেট|রিবন্ডিং/.test(name)) return "treatment";
   if (/ফেসিয়াল|ফেস|স্কিন|ক্লিন/.test(name)) return "facial";
   if (/ওয়াশ|শ্যাম্পু|ধোয়া/.test(name)) return "wash";
   if (/গোঁফ/.test(name)) return "mustache";
   if (/ট্রিমার|ক্লিপার|মেশিন|বাজ/.test(name)) return "clipper";
   if (/দাড়ি|শেভ|রেজর/.test(name)) return "beard";
-  if (/স্টাইল|রং|কালার|ড্রাই/.test(name)) return "style";
+  if (/স্টাইল|সেটআপ|ড্রাই/.test(name)) return "style";
   return "cut";
 }
 
@@ -53,6 +56,12 @@ const PATHS: Record<Kind, ReactNode> = {
       <path d="M7 11C6 6 9 3 12 3s6 3 5 8zM8 11h8v2.5H8zM9.5 13.5 10.5 21h3l1-7.5" />
     </>
   ),
+  // paint brush
+  color: <path d="M18 3 9 12l3 3 9-9zM9 12c-3 0-5 2-5 6 0 2 2 3 4 3 3 0 5-2 5-5" />,
+  // sparkle
+  treatment: <path d="M12 3l2 6 6 2-6 2-2 6-2-6-6-2 6-2zM19 15l.8 2.200L22 18l-2.200.8L19 21l-.8-2.200L16 18l2.200-.8z" />,
+  // massage chair
+  massage: <path d="M7 3h6a3 3 0 0 1 3 3v8H7zM7 14v4M16 14h3v4M5 21h14" />,
   // shampoo bottle
   wash: (
     <>
@@ -90,7 +99,7 @@ const Sparkle = ({ x, y }: { x: number; y: number }) => (
 );
 
 /** Customer bust: cape, neck, head, short black hair. Props add beard, moustache, foam or a different hair shape. */
-function Person({ beard, stache, foam, hair = "short", cape = BLUE }: { beard?: boolean; stache?: boolean; foam?: boolean; hair?: "short" | "none" | "foam"; cape?: string }) {
+function Person({ beard, stache, foam, calm, hair = "short", hairFill = INK, cape = BLUE }: { beard?: boolean; stache?: boolean; foam?: boolean; calm?: boolean; hair?: "short" | "none" | "foam"; hairFill?: string; cape?: string }) {
   return (
     <g>
       <rect x="42" y="56" width="12" height="14" fill="#fff" {...sw} />
@@ -99,7 +108,7 @@ function Person({ beard, stache, foam, hair = "short", cape = BLUE }: { beard?: 
       <circle cx="33" cy="44" r="3.500" fill="#fff" {...sw} />
       <circle cx="63" cy="44" r="3.500" fill="#fff" {...sw} />
       <ellipse cx="48" cy="42" rx="15" ry="18" fill="#fff" {...sw} />
-      {hair === "short" && <path d="M32 40C30 22 41 14 49 14s19 8 16 26c-3-9-9-13-17-13s-14 4-16 13z" fill={INK} stroke={INK} strokeWidth="2" strokeLinejoin="round" />}
+      {hair === "short" && <path d="M32 40C30 22 41 14 49 14s19 8 16 26c-3-9-9-13-17-13s-14 4-16 13z" fill={hairFill} stroke={INK} strokeWidth="2" strokeLinejoin="round" />}
       {hair === "foam" && (
         <g fill="#fff" {...sw} strokeWidth="2">
           <circle cx="38" cy="22" r="7" /><circle cx="49" cy="17" r="8" /><circle cx="60" cy="22" r="7" /><circle cx="44" cy="27" r="5" /><circle cx="55" cy="27" r="5" />
@@ -111,8 +120,14 @@ function Person({ beard, stache, foam, hair = "short", cape = BLUE }: { beard?: 
           <circle cx="38" cy="52" r="5" /><circle cx="45" cy="57" r="5" /><circle cx="58" cy="52" r="5" /><circle cx="51" cy="57" r="5" />
         </g>
       )}
-      <circle cx="42" cy="41" r="1.8" fill={INK} />
-      <circle cx="54" cy="41" r="1.8" fill={INK} />
+      {calm ? (
+        <path d="M39 41q3 3 6 0M51 41q3 3 6 0" fill="none" stroke={INK} strokeWidth="2" strokeLinecap="round" />
+      ) : (
+        <>
+          <circle cx="42" cy="41" r="1.8" fill={INK} />
+          <circle cx="54" cy="41" r="1.8" fill={INK} />
+        </>
+      )}
       {stache ? (
         <path d="M48 48c-3-3-8-3-11-1 3 5 8 4 11 2 3 2 8 3 11-2-3-2-8-2-11 1z" fill={INK} stroke={INK} strokeWidth="1.5" strokeLinejoin="round" />
       ) : (
@@ -194,6 +209,33 @@ const ART: Record<Kind, ReactNode> = {
       <Person hair="foam" />
       <path d="M76 30s4 4 4 7a4 4 0 0 1-8 0c0-3 4-7 4-7z" fill={SKY} stroke={INK} strokeWidth="1.8" strokeLinejoin="round" />
       <path d="M20 34s3 3 3 5.500a3 3 0 0 1-6 0c0-2.500 3-5.500 3-5.500z" fill={SKY} stroke={INK} strokeWidth="1.8" strokeLinejoin="round" />
+    </>
+  ),
+  // hair colour: gold hair and a colour brush
+  color: (
+    <>
+      <Person hairFill={GOLD} />
+      <g transform="translate(74 52) rotate(-35)">
+        <path d="M-4 0C-5-8 0-13 4-13s8 5 7 13z" fill={GOLD} {...sw} strokeWidth="2" />
+        <rect x="-4" y="0" width="12" height="5" rx="2" fill="#fff" {...sw} strokeWidth="2" />
+        <path d="M-1.500 5h7l-1.500 14h-4z" fill={BLUE} {...sw} strokeWidth="2" />
+      </g>
+    </>
+  ),
+  // hair treatment / spa / straightening: shine and a drop
+  treatment: (
+    <>
+      <Person />
+      <path d="M72 22l2.500 7 7 2.500-7 2.500-2.500 7-2.500-7-7-2.500 7-2.500z" fill={GOLD} {...sw} strokeWidth="2" />
+      <path d="M20 30l1.500 4 4 1.500-4 1.500-1.500 4-1.500-4-4-1.500 4-1.500z" fill={SKY} {...sw} strokeWidth="1.600" />
+    </>
+  ),
+  // body massage chair: relaxed face on a chair back, vibration lines
+  massage: (
+    <>
+      <rect x="22" y="26" width="52" height="70" rx="16" fill={SKY} {...sw} />
+      <Person calm />
+      <path d="M12 44q-3 6 0 12M7 40q-5 10 0 20M84 44q3 6 0 12M89 40q5 10 0 20" fill="none" stroke={INK} strokeWidth="2" strokeLinecap="round" />
     </>
   ),
   // grooming package: barber in an apron next to a pole
