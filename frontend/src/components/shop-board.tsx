@@ -196,9 +196,8 @@ function dayLabel(back: number) {
 /** One stable card stack (newest on top). Swipe the top card away to reveal the older day beneath; undo brings it back (LIFO). */
 const TOP_SVC = ["হেয়ার কাট", "দাড়ি ট্রিম", "হেয়ার কাট", "ফেসিয়াল", "হেয়ার স্টাইল", "হেয়ার কাট", "গ্রুমিং প্যাকেজ"];
 const PEAK = ["সন্ধ্যা ৬–৮টা", "বিকাল ৪–৬টা", "সন্ধ্যা ৭–৯টা", "দুপুর ১২–২টা", "সন্ধ্যা ৬–৮টা", "বিকাল ৫–৭টা", "সন্ধ্যা ৭–৯টা"];
-const SPLIT = [0.38, 0.33, 0.29];
 
-function DayStack({ todayTotal, todayDone, lanes }: { todayTotal: number; todayDone: number; lanes: Lane[] }) {
+function DayStack({ todayTotal, todayDone }: { todayTotal: number; todayDone: number }) {
   const days: [number, number, number][] = [[todayTotal, todayDone, 3100], ...[...HISTORY].reverse()];
   const [gone, setGone] = useState(0);
   const [dx, setDx] = useState(0);
@@ -207,10 +206,9 @@ function DayStack({ todayTotal, todayDone, lanes }: { todayTotal: number; todayD
 
   const last = days.length - 1;
   const dismiss = (dir: 1 | -1) => {
-    if (gone >= last) return;
     setDrag(false);
     setDx(dir * 520);
-    window.setTimeout(() => { setGone((g) => Math.min(g + 1, last)); setDx(0); }, 220);
+    window.setTimeout(() => { setGone((g) => (g >= last ? 0 : g + 1)); setDx(0); }, 220);
   };
   const undo = () => { if (gone > 0) setGone((g) => g - 1); };
 
@@ -221,10 +219,10 @@ function DayStack({ todayTotal, todayDone, lanes }: { todayTotal: number; todayD
         <h2 className="text-sm font-semibold text-muted">দিনের হিসাব</h2>
         <div className="flex gap-2">
           <button aria-label="আগের কার্ড ফিরিয়ে আনুন" disabled={gone === 0} onClick={undo} className="flex h-9 w-9 items-center justify-center rounded-full border border-line-strong bg-surface text-primary disabled:opacity-40">‹</button>
-          <button aria-label="কার্ড সরিয়ে পুরনো দিন দেখুন" disabled={gone >= last} onClick={() => dismiss(-1)} className="flex h-9 w-9 items-center justify-center rounded-full border border-line-strong bg-surface text-primary disabled:opacity-40">›</button>
+          <button aria-label="কার্ড সরিয়ে পুরনো দিন দেখুন" onClick={() => dismiss(-1)} className="flex h-9 w-9 items-center justify-center rounded-full border border-line-strong bg-surface text-primary disabled:opacity-40">›</button>
         </div>
       </div>
-      <div className="relative mx-auto h-[500px] max-w-md">
+      <div className="relative mx-auto h-[380px] max-w-md">
         {[...visible].reverse().map((i) => {
           const depth = i - gone;
           const [inc, done, prev] = days[i];
@@ -244,7 +242,7 @@ function DayStack({ todayTotal, todayDone, lanes }: { todayTotal: number; todayD
               onPointerMove={top ? (e) => { if (drag) setDx(e.clientX - start.current); } : undefined}
               onPointerUp={top ? () => { setDrag(false); if (Math.abs(dx) > 80) dismiss(dx > 0 ? 1 : -1); else setDx(0); } : undefined}
               onPointerCancel={top ? () => { setDrag(false); setDx(0); } : undefined}
-              className={cx("absolute inset-x-0 top-0 h-[470px] select-none rounded-3xl p-5 shadow-card motion-reduce:transition-none", i === 0 ? "bg-barber text-white" : "border border-line bg-surface")}
+              className={cx("absolute inset-x-0 top-0 h-[350px] select-none rounded-3xl p-5 shadow-card motion-reduce:transition-none", i === 0 ? "bg-barber text-white" : "border border-line bg-surface")}
             >
               {(() => {
                 const dark = i === 0;
@@ -254,7 +252,7 @@ function DayStack({ todayTotal, todayDone, lanes }: { todayTotal: number; todayD
                     <div className="flex items-baseline gap-2">
                       <h3 className="text-lg font-bold">{l.week}</h3>
                       <span className={cx("text-sm", mute)}>· {l.date}</span>
-                      {top && gone < last && <span className={cx("ml-auto text-[11px]", mute)}>সোয়াইপ করুন ⇄</span>}
+                      {top && <span className={cx("ml-auto text-[11px]", mute)}>সোয়াইপ করুন ⇄</span>}
                     </div>
                     <p className={cx("mt-2 text-xs", mute)}>মোট আয়</p>
                     <p className={cx("text-4xl font-bold tabular-nums", dark && "text-gold")}>{taka(inc)}</p>
@@ -274,19 +272,6 @@ function DayStack({ todayTotal, todayDone, lanes }: { todayTotal: number; todayD
                       <div><p className={mute}>সেরা সার্ভিস</p><p className="mt-0.5 truncate text-sm font-bold">{TOP_SVC[i % TOP_SVC.length]}</p></div>
                       <div><p className={mute}>ব্যস্ত সময়</p><p className="mt-0.5 truncate text-sm font-bold">{PEAK[i % PEAK.length]}</p></div>
                     </div>
-                    <p className={cx("mt-3 text-xs font-semibold", mute)}>কারিগর অনুযায়ী (দোকানে জমা)</p>
-                    <ul className="mt-1 space-y-1.5">
-                      {lanes.map((ln, k) => {
-                        const inc2 = i === 0 ? ln.earned : Math.round(inc * SPLIT[k % 3]);
-                        const n2 = i === 0 ? ln.doneToday : Math.max(1, Math.round(done * SPLIT[k % 3]));
-                        return (
-                          <li key={ln.id} className="flex items-center justify-between gap-2 text-sm">
-                            <span className="min-w-0 truncate">{ln.name} <span className={cx("text-xs", mute)}>· {bnDigits(n2)}টি · {taka(inc2)}</span></span>
-                            <span className={cx("font-bold tabular-nums", dark && "text-gold")}>{taka(Math.round(inc2 / 2))}</span>
-                          </li>
-                        );
-                      })}
-                    </ul>
                   </>
                 );
               })()}
@@ -308,7 +293,7 @@ function Money({ lanes }: { lanes: Lane[] }) {
   const done = lanes.reduce((n, l) => n + l.doneToday, 0);
   return (
     <div className="mx-auto max-w-2xl space-y-4">
-      <DayStack todayTotal={total} todayDone={done} lanes={lanes} />
+      <DayStack todayTotal={total} todayDone={done} />
       <section className="rounded-3xl border border-line bg-surface p-2 shadow-card">
         <h2 className="px-3 pt-3 pb-1 text-sm font-semibold text-muted">কারিগর অনুযায়ী</h2>
         <ul className="divide-y divide-line">
