@@ -40,7 +40,7 @@ const barbers: Barber[] = [
 ];
 
 const settings: Settings = {
-  shopName: "নির জেন্টস পার্লার",
+  shopName: "NIR SMART GENTS PARLOUR",
   shopAddress: "মেইন রোড, দিনাজপুর",
   shopPhone: "01700000000",
   receiptFooter: "ধন্যবাদ, আবার আসবেন",

@@ -7,7 +7,7 @@ import { useSyncExternalStore } from "react";
 
 export type Source = "online" | "walkin" | "advance";
 export type Ticket = { serial: number; name: string; service: string; price: number; source: Source; phone?: string; note?: string };
-export type Lane = { id: number; name: string; initial: string; current: Ticket | null; waiting: Ticket[]; lastSerial: number; doneToday: number; earned: number };
+export type Lane = { id: number; name: string; initial: string; photo?: string; current: Ticket | null; waiting: Ticket[]; lastSerial: number; doneToday: number; earned: number };
 export type QueueState = { lanes: Lane[]; mine: { barberId: number; serial: number } | null };
 
 const KEY = "nir-queue-v1";
@@ -92,6 +92,12 @@ export function finish(barberId: number) {
     return { ...l, current: next ?? null, waiting: rest, doneToday: l.doneToday + 1, earned: l.earned + l.current.price };
   });
   commit({ ...s, lanes });
+}
+
+/** Barber profile picture (small data URL while there is no backend); undefined removes it. */
+export function setPhoto(barberId: number, photo: string | undefined) {
+  const s = load();
+  commit({ ...s, lanes: s.lanes.map((l) => (l.id === barberId ? { ...l, photo } : l)) });
 }
 
 /** Shop side: take a waiting ticket out of a barber's queue. */

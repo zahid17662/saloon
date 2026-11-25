@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { BarberFace } from "../barber-face";
 import { useState } from "react";
 import { bnDigits, taka } from "@/lib/money";
 import { aheadOf, etaMin, isFree, join, useQueue } from "@/lib/queue";
@@ -68,7 +69,7 @@ export function QueueJoin({ menu }: { menu: PublicMenu }) {
           return (
             <button type="button" key={l.id} aria-pressed={on} onClick={() => setChosen(l.id)}
               className={cx("flex items-center gap-3 rounded-2xl border-2 p-3 text-left transition-colors", on ? "border-primary bg-surface-2" : "border-line-strong bg-surface")}>
-              <span className="flex h-11 w-11 flex-none items-center justify-center rounded-full bg-primary font-bold text-gold">{l.initial}</span>
+              <BarberFace lane={l} size={44} />
               <span className="min-w-0 flex-1">
                 <span className="block font-bold text-fg">{l.name}</span>
                 <span className="block text-sm text-muted">{f ? "এখন ফাঁকা, সরাসরি কাটবেন" : `সামনে ${bnDigits(aheadOf(l))} জন, প্রায় ${bnDigits(etaMin(l))} মিনিট`}</span>

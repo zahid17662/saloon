@@ -30,7 +30,7 @@ export function Tracker() {
 
   return (
     <main className="mx-auto min-h-dvh max-w-md space-y-4 bg-bg p-5">
-      <header className="flex items-center gap-2"><Logo size={36} /><span className="font-bold">নীড় স্মার্ট জেন্টস পার্লার</span></header>
+      <header className="flex items-center gap-2"><Logo size={36} /><span className="font-bold">NIR SMART GENTS PARLOUR</span></header>
       <section className="rounded-3xl bg-primary p-6 text-center text-white">
         <div className="mx-auto flex h-24 w-24 items-center justify-center rounded-full bg-gold text-3xl font-bold text-primary">#{bnDigits(serial)}</div>
         <h1 className="mt-4 text-xl font-bold">{done ? "আপনার সার্ভিস শেষ" : serving ? "এখন আপনার পালা!" : `আপনার সামনে আছেন ${bnDigits(ahead)} জন`}</h1>

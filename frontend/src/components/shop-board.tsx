@@ -3,9 +3,10 @@
 import { useRef, useState } from "react";
 import { Logo } from "./logo";
 import { bnDigits, taka } from "@/lib/money";
-import { aheadOf, etaMin, finish, isFree, join, MIN_PER_CUT, removeTicket, resetDemo, useQueue, type Lane, type Source } from "@/lib/queue";
+import { aheadOf, etaMin, finish, isFree, join, MIN_PER_CUT, removeTicket, resetDemo, setPhoto, useQueue, type Lane, type Source } from "@/lib/queue";
 import { ServiceArt, ServiceIcon } from "./service-icon";
 import { cx } from "./ui";
+import { BarberFace, squarePhoto } from "./barber-face";
 
 type Svc = { id: number; name: string; price: number };
 const FALLBACK: Svc[] = [
@@ -46,7 +47,7 @@ export function ShopBoard({ services }: { services: Svc[] }) {
         <div className="mx-auto flex h-14 max-w-6xl items-center gap-2.5 px-4 sm:px-8">
           <Logo size={30} />
           <div className="min-w-0 flex-1">
-            <h1 className="truncate text-[15px] leading-snug font-bold">নীড় স্মার্ট জেন্টস পার্লার</h1>
+            <h1 className="truncate text-[15px] leading-snug font-bold">NIR SMART GENTS PARLOUR</h1>
             <p className="text-[11px] leading-snug text-muted">{bnDigits(waiting)} জন অপেক্ষায়</p>
           </div>
           <span className="flex items-center gap-1.5 text-xs font-medium text-success"><span className="h-2 w-2 animate-pulse rounded-full bg-success" />লাইভ</span>
@@ -105,8 +106,8 @@ export function ShopBoard({ services }: { services: Svc[] }) {
 
 function Avatar({ l, size }: { l: Lane; size: number }) {
   return (
-    <span style={{ width: size, height: size }} className="relative flex flex-none items-center justify-center rounded-full bg-primary-soft font-bold text-primary">
-      {l.initial}
+    <span className="relative inline-flex flex-none" style={{ width: size, height: size }}>
+      <BarberFace lane={l} size={size} />
       <span className={cx("absolute -right-0.5 -bottom-0.5 h-3 w-3 rounded-full border-2 border-surface", isFree(l) ? "bg-success" : "bg-gold")} />
     </span>
   );
@@ -117,12 +118,18 @@ function Lane({ lane: l, onAdd }: { lane: Lane; onAdd: () => void }) {
   const next = l.waiting[0];
   return (
     <section className="space-y-3" aria-label={l.name}>
-      <div className="hidden items-center gap-3 px-1 lg:flex">
-        <Avatar l={l} size={40} />
+      <div className="flex items-center gap-3 px-1">
+        <label className="relative cursor-pointer" title="প্রোফাইল ছবি বদলান">
+          <BarberFace lane={l} size={52} />
+          <span className="absolute -right-1 -bottom-1 flex h-6 w-6 items-center justify-center rounded-full border-2 border-bg bg-primary text-[11px] text-gold" aria-hidden="true">📷</span>
+          <input type="file" accept="image/*" className="sr-only" aria-label={`${l.name}-এর ছবি দিন`}
+            onChange={async (e) => { const f = e.target.files?.[0]; e.target.value = ""; if (f) { try { setPhoto(l.id, await squarePhoto(f)); } catch { window.alert("ছবি নেওয়া যায়নি, আবার চেষ্টা করুন।"); } } }} />
+        </label>
         <div className="min-w-0 flex-1">
           <h2 className="truncate font-bold">{l.name}</h2>
-          <p className="text-xs text-muted">আজ {bnDigits(l.doneToday)}টি সম্পন্ন</p>
+          <p className="text-xs text-muted">{l.photo ? "ছবি বদলাতে ক্যামেরায় ট্যাপ করুন" : "ছবি যোগ করতে ক্যামেরায় ট্যাপ করুন"}</p>
         </div>
+        {l.photo && <button onClick={() => setPhoto(l.id, undefined)} className="h-9 rounded-full px-3 text-xs text-muted hover:bg-bg">সরান</button>}
       </div>
 
       {cur ? (
@@ -434,7 +441,7 @@ function NewSerial({ services, lanes, preset, onSeeQueue }: { services: Svc[]; l
                   {/* navy header */}
                   <span className="relative flex items-center gap-3 overflow-hidden bg-[linear-gradient(135deg,#0B1F4B_0%,#17347a_100%)] px-4 py-4">
                     <svg aria-hidden="true" viewBox="0 0 120 120" className="pointer-events-none absolute -top-10 -right-8 h-36 w-36 text-gold opacity-[0.16]"><circle cx="60" cy="60" r="56" fill="none" stroke="currentColor" strokeWidth="2" /><circle cx="60" cy="60" r="38" fill="none" stroke="currentColor" strokeWidth="2" /><circle cx="60" cy="60" r="20" fill="currentColor" /></svg>
-                    <span className="relative flex h-14 w-14 flex-none items-center justify-center rounded-full bg-white/10 text-2xl font-bold text-gold ring-2 ring-gold/70">{l.initial}</span>
+                    <BarberFace lane={l} size={56} className="ring-2 ring-gold/70" />
                     <span className="relative min-w-0 flex-1">
                       <span className="block truncate text-lg leading-snug font-bold text-white">{l.name}</span>
                       <span className="mt-0.5 block text-xs text-white/65">আজ {bnDigits(l.doneToday)}টি সম্পন্ন · শেষ সিরিয়াল #{bnDigits(l.lastSerial)}</span>
