@@ -3,6 +3,7 @@ import { bnDigits, taka } from "@/lib/money";
 import type { PublicMenu } from "@/lib/types";
 import { CalendarIcon, PhoneIcon, PinIcon, ScissorsIcon } from "../icons";
 import { Logo } from "../logo";
+import { ServiceIcon } from "../service-icon";
 import { BookingForm } from "./booking-form";
 import { QueueJoin } from "./queue-join";
 
@@ -85,7 +86,7 @@ export function Landing({ menu }: { menu: PublicMenu | null }) {
                   <ul className="divide-y divide-line">
                     {g.items.map((s) => (
                       <li key={s.id} className="flex items-center justify-between gap-3 py-2.5 text-[15px]">
-                        <span className="text-fg">{s.name}</span>
+                        <span className="flex min-w-0 items-center gap-3 text-fg"><span className="flex h-9 w-9 flex-none items-center justify-center rounded-xl bg-primary-soft text-primary"><ServiceIcon name={s.name} className="h-[18px] w-[18px]" /></span><span className="min-w-0 break-words">{s.name}</span></span>
                         <span className="font-semibold text-primary tabular-nums">{taka(s.price)}</span>
                       </li>
                     ))}

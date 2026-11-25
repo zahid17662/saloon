@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Logo } from "./logo";
 import { bnDigits, taka } from "@/lib/money";
 import { aheadOf, etaMin, finish, isFree, join, resetDemo, useQueue, type Lane, type Source } from "@/lib/queue";
+import { ServiceIcon } from "./service-icon";
 import { cx } from "./ui";
 
 type Svc = { id: number; name: string; price: number };
@@ -57,7 +58,7 @@ export function ShopBoard({ services }: { services: Svc[] }) {
         </div>
       </header>
 
-      <main className="mx-auto max-w-6xl px-4 pt-5 pb-32 sm:px-8 lg:pb-10">
+      <main className="mx-auto max-w-6xl px-4 pt-5 pb-40 sm:px-8 lg:pb-10">
         {view === "new" && (
           <NewSerial key={preset ?? "x"} services={svcs} lanes={q.lanes} preset={preset} onSeeQueue={(id) => { if (id) setTab(id); setView("queue"); }} />
         )}
@@ -93,7 +94,7 @@ export function ShopBoard({ services }: { services: Svc[] }) {
       <nav className="fixed inset-x-0 bottom-0 z-30 border-t border-line bg-surface/95 pb-[env(safe-area-inset-bottom)] backdrop-blur lg:hidden" aria-label="বিভাগ">
         <div className="mx-auto grid h-16 max-w-md grid-cols-3">
           {TABS.map((t) => (
-            <button key={t.id} onClick={() => setView(t.id)} aria-current={view === t.id} className={cx("flex flex-col items-center justify-center gap-0.5 text-xs font-semibold", view === t.id ? "text-primary" : "text-muted")}>
+            <button key={t.id} onClick={() => setView(t.id)} aria-current={view === t.id} className={cx("flex min-w-0 flex-col items-center justify-center gap-0.5 px-1 text-[11px] font-semibold sm:text-xs", view === t.id ? "text-primary" : "text-muted")}>
               <span className={cx("flex h-7 w-12 items-center justify-center rounded-full text-lg leading-none", view === t.id && "bg-primary-soft")}>{t.icon}</span>{t.label}
             </button>
           ))}
@@ -258,9 +259,14 @@ function NewSerial({ services, lanes, preset, onSeeQueue }: { services: Svc[]; l
             const on = picked.includes(s.id);
             return (
               <button key={s.id} aria-pressed={on} onClick={() => setPicked((p) => (on ? p.filter((x) => x !== s.id) : [...p, s.id]))}
-                className={cx("relative flex min-h-24 flex-col justify-between rounded-2xl border-2 p-3.5 text-left transition-colors", on ? "border-primary bg-surface shadow-card" : "border-transparent bg-surface hover:border-line-strong")}>
-                <span className="font-semibold">{s.name}</span>
-                <span className="text-base font-bold text-gold-ink">{taka(s.price)}</span>
+                className={cx("relative flex min-h-28 min-w-0 flex-col justify-between gap-3 rounded-2xl border-2 p-3 text-left transition-colors sm:p-3.5", on ? "border-primary bg-surface shadow-card" : "border-transparent bg-surface hover:border-line-strong")}>
+                <span className={cx("flex h-10 w-10 items-center justify-center rounded-xl", on ? "bg-primary text-gold" : "bg-primary-soft text-primary")}>
+                  <ServiceIcon name={s.name} className="h-5 w-5" />
+                </span>
+                <span className="min-w-0">
+                  <span className="block text-[15px] leading-snug font-semibold break-words">{s.name}</span>
+                  <span className="mt-0.5 block text-base font-bold text-gold-ink">{taka(s.price)}</span>
+                </span>
                 {on && <span className="absolute top-2.5 right-2.5 flex h-6 w-6 items-center justify-center rounded-full bg-primary text-xs text-white">✓</span>}
               </button>
             );
@@ -272,7 +278,7 @@ function NewSerial({ services, lanes, preset, onSeeQueue }: { services: Svc[]; l
       </section>
 
       {chosen.length > 0 && (
-        <section aria-labelledby="bar-h">
+        <section id="bar" aria-labelledby="bar-h" className="scroll-mt-20">
           <p className="text-xs font-semibold text-gold-ink">ধাপ ২</p>
           <h2 id="bar-h" className="mb-3 text-xl font-bold">কোন কারিগর?</h2>
           <div className="grid gap-3 lg:grid-cols-3">
@@ -292,9 +298,9 @@ function NewSerial({ services, lanes, preset, onSeeQueue }: { services: Svc[]; l
                   </div>
 
                   <dl className="mt-4 grid grid-cols-3 gap-2 text-center">
-                    <div className="rounded-xl bg-bg px-1 py-2"><dd className="text-base font-bold tabular-nums">{l.current ? `#${bnDigits(l.current.serial)}` : "—"}</dd><dt className="text-[11px] text-muted">এখন চলছে</dt></div>
-                    <div className="rounded-xl bg-bg px-1 py-2"><dd className="text-base font-bold tabular-nums">{bnDigits(aheadOf(l))} জন</dd><dt className="text-[11px] text-muted">সামনে</dt></div>
-                    <div className="rounded-xl bg-bg px-1 py-2"><dd className="text-base font-bold tabular-nums">{free ? "এখনই" : `~${bnDigits(etaMin(l))} মি.`}</dd><dt className="text-[11px] text-muted">অপেক্ষা</dt></div>
+                    <div className="rounded-xl bg-bg px-1 py-2"><dd className="text-sm font-bold tabular-nums sm:text-base">{l.current ? `#${bnDigits(l.current.serial)}` : "—"}</dd><dt className="text-[10px] text-muted sm:text-[11px]">এখন চলছে</dt></div>
+                    <div className="rounded-xl bg-bg px-1 py-2"><dd className="text-sm font-bold tabular-nums sm:text-base">{bnDigits(aheadOf(l))} জন</dd><dt className="text-[10px] text-muted sm:text-[11px]">সামনে</dt></div>
+                    <div className="rounded-xl bg-bg px-1 py-2"><dd className="text-sm font-bold tabular-nums sm:text-base">{free ? "এখনই" : `~${bnDigits(etaMin(l))} মি.`}</dd><dt className="text-[10px] text-muted sm:text-[11px]">অপেক্ষা</dt></div>
                   </dl>
 
                   <ul className="mt-3 space-y-1 text-xs text-muted">
@@ -320,20 +326,33 @@ function NewSerial({ services, lanes, preset, onSeeQueue }: { services: Svc[]; l
       )}
 
       {chosen.length > 0 && target && (
-        <section aria-labelledby="ok-h" className="rounded-3xl border border-line bg-surface p-4 sm:p-5">
+        <section id="ok" aria-labelledby="ok-h" className="scroll-mt-20 rounded-3xl border border-line bg-surface p-4 sm:p-5">
           <p className="text-xs font-semibold text-gold-ink">ধাপ ৩</p>
           <h2 id="ok-h" className="mb-3 text-xl font-bold">নিশ্চিত করুন</h2>
           <label className="grid gap-1 text-sm font-medium">কাস্টমারের নাম (ঐচ্ছিক)
             <input value={name} onChange={(e) => setName(e.target.value)} maxLength={60} className="h-12 rounded-xl border border-line-strong px-3 text-base" />
           </label>
           <dl className="mt-4 space-y-2 text-sm">
-            <div className="flex justify-between gap-4"><dt className="text-muted">সার্ভিস</dt><dd className="text-right font-medium">{chosen.map((s) => s.name).join(" + ")}</dd></div>
+            <div className="flex justify-between gap-4"><dt className="text-muted">সার্ভিস</dt><dd className="flex flex-wrap justify-end gap-1.5">{chosen.map((s) => <span key={s.id} className="inline-flex items-center gap-1 rounded-full bg-primary-soft px-2.5 py-1 text-xs font-semibold text-primary"><ServiceIcon name={s.name} className="h-3.5 w-3.5" />{s.name}</span>)}</dd></div>
             <div className="flex justify-between gap-4"><dt className="text-muted">কারিগর</dt><dd className="font-medium">{target.name}</dd></div>
             <div className="flex justify-between gap-4"><dt className="text-muted">সিরিয়াল</dt><dd className="font-medium">#{bnDigits(target.lastSerial + 1)} · {isFree(target) ? "সরাসরি শুরু" : `প্রায় ${bnDigits(etaMin(target))} মিনিট পরে`}</dd></div>
             <div className="flex justify-between gap-4 border-t border-dashed border-line-strong pt-2"><dt className="font-semibold">মোট</dt><dd className="text-lg font-bold">{taka(price)}</dd></div>
           </dl>
           <button onClick={confirm} className="mt-4 h-14 w-full rounded-2xl bg-primary text-base font-bold text-white active:opacity-90 sm:w-auto sm:px-12">সিরিয়াল দিন</button>
         </section>
+      )}
+
+      {chosen.length > 0 && (
+        <div className="fixed inset-x-0 bottom-[calc(4rem+env(safe-area-inset-bottom))] z-20 border-t border-line bg-surface/95 px-4 py-2.5 backdrop-blur lg:hidden">
+          <div className="mx-auto flex max-w-md items-center gap-3">
+            <div className="min-w-0 flex-1 text-sm"><div className="truncate text-muted">{bnDigits(chosen.length)}টি সার্ভিস{target ? ` · ${target.name}` : ""}</div><div className="font-bold">{taka(price)}</div></div>
+            {target ? (
+              <button onClick={() => document.getElementById("ok")?.scrollIntoView({ behavior: "smooth" })} className="h-11 rounded-xl bg-primary px-5 text-sm font-semibold text-white">নিশ্চিত করুন ↓</button>
+            ) : (
+              <button onClick={() => document.getElementById("bar")?.scrollIntoView({ behavior: "smooth" })} className="h-11 rounded-xl bg-primary px-5 text-sm font-semibold text-white">কারিগর বাছুন ↓</button>
+            )}
+          </div>
+        </div>
       )}
     </div>
   );
