@@ -37,7 +37,7 @@ export function Landing({ menu }: { menu: PublicMenu | null }) {
         <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3">
           <div className="flex items-center gap-2.5">
             <Logo size={40} />
-            <span className="font-semibold text-fg">{name}</span>
+            <span className="font-display font-semibold tracking-wide text-fg">{name}</span>
           </div>
           <a
             href="#book"
@@ -53,7 +53,7 @@ export function Landing({ menu }: { menu: PublicMenu | null }) {
       <main className="mx-auto max-w-5xl space-y-12 px-4 pb-16">
         <section className="bg-barber -mx-4 rounded-b-[2rem] px-4 pt-12 pb-12 text-center sm:pt-20 sm:pb-16">
           <p className="text-xs font-bold tracking-[0.3em] text-gold uppercase">Gents Parlour</p>
-          <h1 className="mt-3 text-4xl leading-snug font-extrabold tracking-tight text-white sm:text-6xl">
+          <h1 className="font-display mt-3 text-4xl leading-snug font-extrabold tracking-tight text-white sm:text-6xl">
             Look Good, <span className="text-gold">Feel Confident</span>
           </h1>
           <p className="mx-auto mt-4 max-w-xl text-base text-white/75">

@@ -12,7 +12,7 @@ type Variant = "primary" | "secondary" | "danger" | "ghost";
 type Size = "sm" | "md" | "lg";
 
 const VARIANTS: Record<Variant, string> = {
-  primary: "bg-primary text-white hover:bg-primary-hover font-semibold shadow-[0_4px_14px_rgb(59_130_246/0.28)]",
+  primary: "bg-primary text-white hover:bg-primary-hover font-semibold shadow-[0_4px_14px_rgb(42_29_21/0.28)]",
   secondary: "bg-surface text-fg border border-line hover:bg-surface-2",
   danger: "bg-danger-soft text-danger hover:bg-danger/15",
   ghost: "text-muted hover:text-fg hover:bg-surface-2",
@@ -148,7 +148,7 @@ export function TrendPill({ value, onDark }: { value: number | null; onDark?: bo
 
 export type StatTone = "primary" | "lavender" | "blush" | "peach" | "mint" | "plain";
 const STAT_TONES: Record<StatTone, string> = {
-  primary: "bg-primary text-white shadow-[0_10px_30px_rgb(59_130_246/0.30)]",
+  primary: "bg-primary text-white shadow-[0_10px_30px_rgb(42_29_21/0.30)]",
   lavender: "bg-lavender",
   blush: "bg-blush",
   peach: "bg-peach",

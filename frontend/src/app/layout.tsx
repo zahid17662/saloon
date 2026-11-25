@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Noto_Sans_Bengali, Poppins } from "next/font/google";
+import { Noto_Sans_Bengali, Playfair_Display, Poppins } from "next/font/google";
 import { connection } from "next/server";
 import { CatalogBoundary } from "@/components/catalog-boundary";
 import { fetchShopName } from "@/lib/shop-name";
@@ -11,6 +11,13 @@ const latin = Poppins({
   variable: "--font-latin",
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
+});
+
+// Serif for the brand name and big headings only.
+const display = Playfair_Display({
+  variable: "--font-display-latin",
+  subsets: ["latin"],
+  weight: ["500", "600", "700"],
 });
 
 const bangla = Noto_Sans_Bengali({
@@ -30,14 +37,14 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export const viewport: Viewport = {
-  themeColor: "#f3f5f9",
+  themeColor: "#f6f1e9",
   width: "device-width",
   initialScale: 1,
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="bn" className={`${latin.variable} ${bangla.variable} h-full antialiased`}>
+    <html lang="bn" className={`${latin.variable} ${display.variable} ${bangla.variable} h-full antialiased`}>
       <body className="min-h-full font-sans">
         <CatalogBoundary>{children}</CatalogBoundary>
       </body>

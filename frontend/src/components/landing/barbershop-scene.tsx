@@ -1,5 +1,5 @@
-/** Flat illustration of the shop: chair, mirror, counter with tools, shelf. Drawn for this project (no outlines, navy / periwinkle / coral / cream). */
-const C = { ink: "#121F30", navy: "#243B7D", mid: "#4A5FAE", sky: "#8BAEDD", mist: "#BECFE9", top: "#6F97D0", coral: "#E0705F", coralDark: "#C04B44", cream: "#F5F4E8" };
+/** Flat illustration of the shop: chair, mirror, counter with tools, shelf. Drawn for this project (no outlines: espresso, leather, tan, cream). */
+const C = { ink: "#140F0B", navy: "#2A1D15", mid: "#5A3E2B", sky: "#CDB791", mist: "#E8DCC8", top: "#9C7249", coral: "#B5703F", coralDark: "#8A4F2A", cream: "#F5F0E8" };
 
 export function BarbershopScene({ className = "" }: { className?: string }) {
   return (
@@ -18,8 +18,8 @@ export function BarbershopScene({ className = "" }: { className?: string }) {
       <rect x="228" y="20" width="106" height="92" fill={C.cream} />
       <rect x="236" y="62" width="26" height="40" fill={C.mist} />
       <rect x="270" y="74" width="22" height="30" fill={C.mist} />
-      <path d="M304 52h30v60h-30z" fill="#E0A096" />
-      <path d="M296 80h38v32h-38z" fill="#D9877B" />
+      <path d="M304 52h30v60h-30z" fill="#D9B79A" />
+      <path d="M296 80h38v32h-38z" fill="#C99A78" />
       {/* shelf unit */}
       <rect x="352" width="48" height="150" fill={C.mid} />
       <rect x="358" y="6" width="42" height="40" fill={C.ink} />

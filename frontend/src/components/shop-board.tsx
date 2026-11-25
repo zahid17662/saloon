@@ -48,7 +48,7 @@ export function ShopBoard({ services, categories = [] }: { services: Svc[]; cate
         <div className="mx-auto flex h-14 max-w-6xl items-center gap-2.5 px-4 sm:px-8">
           <Logo size={30} />
           <div className="min-w-0 flex-1">
-            <h1 className="truncate text-[15px] leading-snug font-bold">NIR SMART GENTS PARLOUR</h1>
+            <h1 className="font-display truncate text-[15px] leading-snug font-bold tracking-wide">NIR SMART GENTS PARLOUR</h1>
             <p className="text-[11px] leading-snug text-muted">{bnDigits(waiting)} জন অপেক্ষায়</p>
           </div>
           <span className="flex items-center gap-1.5 text-xs font-medium text-success"><span className="h-2 w-2 animate-pulse rounded-full bg-success" />লাইভ</span>
@@ -479,7 +479,7 @@ function NewSerial({ services, categories, lanes, preset, onSeeQueue }: { servic
                       </span>
                     </span>
 
-                    <span className="grid grid-cols-2 divide-x divide-line rounded-2xl bg-[#F8F6EE] py-3">
+                    <span className="grid grid-cols-2 divide-x divide-line rounded-2xl bg-surface-2 py-3">
                       <span className="px-4">
                         <span className="block text-[11px] text-muted">সামনে আছেন</span>
                         <span className="block text-2xl leading-snug font-bold tabular-nums">{bnDigits(aheadOf(l))}<span className="ml-1 text-sm font-semibold text-muted">জন</span></span>

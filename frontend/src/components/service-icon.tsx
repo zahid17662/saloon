@@ -86,11 +86,11 @@ export function ServiceIcon({ name, className = "h-5 w-5" }: { name: string; cla
   );
 }
 
-const INK = "#121F30";
-const GOLD = "#E0705F"; // coral accent
-const BLUE = "#4A5FAE";
-const SKY = "#8BAEDD";
-const MIST = "#BECFE9";
+const INK = "#1B1612";
+const GOLD = "#C6A15B"; // brass accent
+const BLUE = "#7A5236"; // leather brown
+const SKY = "#D2B48C"; // tan
+const MIST = "#EFE5D3";
 const sw = { stroke: INK, strokeWidth: 2.5, strokeLinejoin: "round", strokeLinecap: "round" } as const;
 
 /** Flat illustration pieces: soft blob, outlined objects, small sparkles. */
