@@ -77,104 +77,118 @@ export function ServiceIcon({ name, className = "h-5 w-5" }: { name: string; cla
   );
 }
 
-const G = "#F5C518";
-const W = "#F4F2EA";
+const INK = "#0B1F4B";
+const GOLD = "#F5C518";
+const BLUE = "#4B6EF5";
+const SKY = "#A9C0FF";
+const MIST = "#DCE6FF";
+const sw = { stroke: INK, strokeWidth: 2.5, strokeLinejoin: "round", strokeLinecap: "round" } as const;
+
+/** Flat illustration pieces: soft blob, outlined objects, small sparkles. */
+const Sparkle = ({ x, y }: { x: number; y: number }) => (
+  <path d={`M${x - 3} ${y}h6M${x} ${y - 3}v6`} stroke={INK} strokeWidth="1.6" strokeLinecap="round" />
+);
 
 const ART: Record<Kind, ReactNode> = {
-  // scissors
+  // scissors + comb
   cut: (
     <>
-      <path d="M37 56 61 22M59 56 35 22" stroke={G} strokeWidth="7" strokeLinecap="round" />
-      <circle cx="35" cy="68" r="8.5" fill="none" stroke={G} strokeWidth="6" />
-      <circle cx="61" cy="68" r="8.5" fill="none" stroke={G} strokeWidth="6" />
-      <circle cx="48" cy="40" r="3.2" fill="#0B1F4B" />
+      <path d="M33 56 58 20M55 56 30 20" fill="none" {...sw} strokeWidth="7" />
+      <path d="M33 56 58 20M55 56 30 20" fill="none" stroke={SKY} strokeWidth="3" strokeLinecap="round" />
+      <circle cx="30" cy="66" r="8" fill={GOLD} {...sw} />
+      <circle cx="58" cy="66" r="8" fill={GOLD} {...sw} />
+      <circle cx="44" cy="40" r="2.4" fill={INK} />
     </>
   ),
   // straight razor
   beard: (
-    <g transform="rotate(-32 48 48)">
-      <path d="M12 38h40a4 4 0 0 1 4 4v8H12z" fill={W} />
-      <rect x="12" y="38" width="44" height="4" rx="2" fill={G} />
-      <rect x="54" y="42" width="30" height="9" rx="4.5" fill={G} />
-      <circle cx="58" cy="46.5" r="2.6" fill="#0B1F4B" />
+    <g transform="translate(-2 4) rotate(-28 48 50) scale(1.1)">
+      <path d="M14 40h38a4 4 0 0 1 4 4v6H14z" fill="#fff" {...sw} />
+      <path d="M18 44h30" stroke={SKY} strokeWidth="2" strokeLinecap="round" />
+      <rect x="54" y="42" width="28" height="9" rx="4.5" fill={BLUE} {...sw} />
+      <circle cx="59" cy="46.5" r="2" fill={GOLD} stroke={INK} strokeWidth="1.5" />
     </g>
   ),
+  // moustache
   mustache: (
-    <path
-      d="M48 50C42 41 30 39 20 45c-4 2.600-4 7 0 9 8-4 17-2 23 6 2 2.800 8 2.800 10 0 6-8 15-10 23-6 4-2 4-6.400 0-9-10-6-22-4-28 5z"
-      fill={G}
-    />
-  ),
-  clipper: (
     <>
-      <rect x="35" y="30" width="26" height="46" rx="9" fill={G} />
-      <rect x="32" y="18" width="32" height="14" rx="3" fill={W} />
-      {[0, 1, 2, 3, 4, 5].map((i) => (
-        <rect key={i} x={35 + i * 5} y="18" width="2.6" height="9" rx="1" fill="#0B1F4B" />
-      ))}
-      <rect x="44" y="40" width="8" height="14" rx="4" fill="#0B1F4B" />
-      <circle cx="48" cy="66" r="3" fill="#0B1F4B" />
+      <path d="M48 52C42 42 30 40 20 46c-4 2.600-4 7 0 9 8-4 17-2 23 6 2 2.800 8 2.800 10 0 6-8 15-10 23-6 4-2 4-6.400 0-9-10-6-22-4-28 6z" fill={INK} stroke={INK} strokeWidth="2" strokeLinejoin="round" />
+      <path d="M26 49c5-2 10-1 14 3M70 49c-5-2-10-1-14 3" stroke={SKY} strokeWidth="2" strokeLinecap="round" fill="none" />
     </>
   ),
-  // comb
-  style: (
-    <g transform="rotate(-12 48 50)">
-      <rect x="16" y="32" width="64" height="16" rx="6" fill={G} />
-      {[0, 1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
-        <rect key={i} x={19 + i * 6.6} y="48" width="3.8" height="20" rx="1.9" fill={G} />
+  // hair clipper
+  clipper: (
+    <>
+      <rect x="34" y="30" width="28" height="48" rx="10" fill={BLUE} {...sw} />
+      <rect x="31" y="16" width="34" height="16" rx="3" fill="#fff" {...sw} />
+      {[0, 1, 2, 3, 4].map((i) => (
+        <path key={i} d={`M${37 + i * 6} 16v9`} stroke={INK} strokeWidth="2" strokeLinecap="round" />
       ))}
-      <rect x="22" y="37" width="30" height="3" rx="1.5" fill="#0B1F4B" opacity=".25" />
-    </g>
+      <rect x="43" y="40" width="10" height="16" rx="5" fill={SKY} {...sw} />
+      <circle cx="48" cy="67" r="3.500" fill={GOLD} stroke={INK} strokeWidth="2" />
+    </>
+  ),
+  // comb + spray bottle
+  style: (
+    <>
+      <g transform="translate(6 0) rotate(-14 44 52) scale(.92)">
+        <rect x="14" y="36" width="62" height="14" rx="5" fill={SKY} {...sw} />
+        {[0, 1, 2, 3, 4, 5, 6, 7].map((i) => (
+          <path key={i} d={`M${20 + i * 7.5} 50v16`} stroke={INK} strokeWidth="3" strokeLinecap="round" />
+        ))}
+      </g>
+      <rect x="66" y="40" width="16" height="30" rx="5" fill={BLUE} {...sw} />
+      <path d="M68 40v-6h10l4 3" fill="none" {...sw} />
+      <circle cx="74" cy="56" r="3" fill={GOLD} stroke={INK} strokeWidth="1.5" />
+    </>
   ),
   // shaving brush
   facial: (
     <>
-      <path d="M35 52C30 33 38 20 48 20s18 13 13 32z" fill={W} />
-      <path d="M41 28c-2 7-2 14-1 22M48 24v26M55 28c2 7 2 14 1 22" stroke="#0B1F4B" strokeWidth="1.6" opacity=".18" fill="none" />
-      <rect x="33" y="51" width="30" height="9" rx="3" fill={G} />
-      <path d="M39 60h18l-3 18H42z" fill={G} />
+      <path d="M34 50C29 32 37 18 48 18s19 14 14 32z" fill="#fff" {...sw} />
+      <path d="M42 26c-2 6-2 13-1 20M50 22v26M56 28c1 6 1 12 0 18" stroke={SKY} strokeWidth="2" strokeLinecap="round" fill="none" />
+      <rect x="32" y="49" width="32" height="9" rx="3" fill={GOLD} {...sw} />
+      <path d="M38 58h20l-3 20H41z" fill={BLUE} {...sw} />
     </>
   ),
   // shampoo bottle
   wash: (
     <>
-      <rect x="32" y="38" width="32" height="40" rx="10" fill={G} />
-      <rect x="38" y="26" width="20" height="14" rx="3" fill={W} />
-      <rect x="42" y="18" width="20" height="8" rx="3" fill={W} />
-      <rect x="38" y="50" width="20" height="16" rx="4" fill="#0B1F4B" opacity=".85" />
-      <path d="M48 53s5 5 5 8a5 5 0 0 1-10 0c0-3 5-8 5-8z" fill={G} />
+      <rect x="31" y="38" width="34" height="42" rx="11" fill={BLUE} {...sw} />
+      <rect x="38" y="26" width="20" height="13" rx="3" fill="#fff" {...sw} />
+      <path d="M42 26v-8h14l3 5" fill="none" {...sw} />
+      <rect x="37" y="50" width="22" height="18" rx="5" fill="#fff" {...sw} />
+      <path d="M48 53s5 5 5 8a5 5 0 0 1-10 0c0-3 5-8 5-8z" fill={GOLD} stroke={INK} strokeWidth="1.8" strokeLinejoin="round" />
     </>
   ),
   // barber pole
   package: (
     <>
       <clipPath id="poleClip">
-        <rect x="37" y="26" width="22" height="46" rx="6" />
+        <rect x="36" y="26" width="24" height="46" rx="7" />
       </clipPath>
-      <rect x="37" y="26" width="22" height="46" rx="6" fill={W} />
+      <rect x="36" y="26" width="24" height="46" rx="7" fill="#fff" />
       <g clipPath="url(#poleClip)">
-        <path d="M30 28l36 14v10L30 38zM30 48l36 14v10L30 58z" fill={G} />
-        <path d="M30 38l36 14v6L30 44zM30 58l36 14v6L30 64z" fill="#5B9BE8" />
+        <path d="M30 28l36 14v10L30 38zM30 50l36 14v10L30 60z" fill={BLUE} />
+        <path d="M30 38l36 14v5L30 43zM30 60l36 14v5L30 65z" fill={GOLD} />
       </g>
-      <rect x="33" y="19" width="30" height="9" rx="3.500" fill={G} />
-      <rect x="33" y="70" width="30" height="9" rx="3.500" fill={G} />
+      <rect x="36" y="26" width="24" height="46" rx="7" fill="none" {...sw} />
+      <rect x="32" y="17" width="32" height="10" rx="3.500" fill={SKY} {...sw} />
+      <rect x="32" y="71" width="32" height="10" rx="3.500" fill={SKY} {...sw} />
     </>
   ),
 };
 
-/** Solid barbershop glyph: gold on a dark navy tile with a thin gold keyline. */
+/** Flat illustration: soft blue blob, bold navy outlines, blue and gold fills. */
 export function ServiceArt({ name, size = 72, className = "" }: { name: string; size?: number; className?: string }) {
   const kind = serviceKind(name);
   return (
     <svg width={size} height={size} viewBox="0 0 96 96" aria-hidden="true" className={className}>
-      <defs>
-        <linearGradient id="tileBg" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0" stopColor="#16347F" />
-          <stop offset="1" stopColor="#081638" />
-        </linearGradient>
-      </defs>
-      <rect x="4" y="4" width="88" height="88" rx="22" fill="url(#tileBg)" />
-      <rect x="9" y="9" width="78" height="78" rx="18" fill="none" stroke={G} strokeOpacity=".35" strokeWidth="1.5" />
+      <path d="M14 52C8 30 26 8 50 9s38 20 32 42-26 36-46 34S20 72 14 52z" fill={MIST} />
+      <path d="M22 20c8-7 20-10 30-8" stroke={INK} strokeOpacity=".35" strokeWidth="1.6" strokeDasharray="3 4" strokeLinecap="round" fill="none" />
+      <Sparkle x={80} y={22} />
+      <Sparkle x={16} y={78} />
+      <circle cx="84" cy="70" r="2" fill={SKY} />
       {ART[kind]}
     </svg>
   );
