@@ -1,28 +1,27 @@
 @import "tailwindcss";
 
 /*
- * Barbershop theme taken from the shop logo: dark slate-navy and mustard gold on a
- * light neutral canvas. Keep it quiet: one dark colour, one accent.
+ * Barbershop theme: royal blue and ink black on a pale blue canvas. Keep it quiet: one dark colour, one accent.
  */
 @theme {
   /* Surfaces: light neutral canvas, white cards, grey lines */
-  --color-bg: #f4f2ee;
+  --color-bg: #f4f7ff;
   --color-surface: #ffffff;
-  --color-surface-2: #faf8f4;
-  --color-line: #e3e0d8;
-  --color-line-strong: #c9c4b6;
+  --color-surface-2: #f9fbff;
+  --color-line: #dde5fa;
+  --color-line-strong: #bccaf2;
 
-  /* Text: slate */
-  --color-fg: #171d29;
-  --color-muted: #5b6272;
-  --color-subtle: #7d8494;
+  /* Text: ink */
+  --color-fg: #0b0f1a;
+  --color-muted: #505a78;
+  --color-subtle: #7b86a6;
 
-  /* Accent: slate-navy with logo gold */
-  --color-primary: #232b3b;
-  --color-gold: #e0a526;
-  --color-gold-ink: #8a5f00;
-  --color-primary-hover: #33405a;
-  --color-primary-soft: #e9ecf2;
+  /* Accent: royal blue with ink */
+  --color-primary: #4a6cf0;
+  --color-gold: #9ab5ff;
+  --color-gold-ink: #3552d6;
+  --color-primary-hover: #3552d6;
+  --color-primary-soft: #e6edff;
 
   /* Status */
   --color-success: #2f6b4a;
@@ -33,16 +32,16 @@
   --color-warning-soft: #f4ead2;
 
   /* Soft tints */
-  --color-lavender: #eef0f4;
-  --color-blush: #f6ece6;
+  --color-lavender: #eef2ff;
+  --color-blush: #fdeeee;
   --color-peach: #f8efdc;
-  --color-mint: #ecf2ee;
+  --color-mint: #eaf6f0;
 
   --font-sans: var(--font-latin), var(--font-bn), ui-sans-serif, system-ui, sans-serif;
   --font-display: var(--font-display-latin), var(--font-bn), Georgia, serif;
 
-  --shadow-card: 0 1px 2px rgb(35 43 59 / 0.05), 0 6px 20px rgb(35 43 59 / 0.05);
-  --shadow-pop: 0 12px 40px rgb(35 43 59 / 0.18);
+  --shadow-card: 0 1px 2px rgb(74 108 240 / 0.05), 0 6px 20px rgb(74 108 240 / 0.05);
+  --shadow-pop: 0 12px 40px rgb(74 108 240 / 0.18);
 }
 
 html {
@@ -103,13 +102,13 @@ input[type="number"] {
 /* Barbershop theme: barber-pole stripe and a faint diagonal texture. */
 .pole-bar {
   height: 5px;
-  background: repeating-linear-gradient(-45deg, #e0a526 0 10px, #f4f2ee 10px 20px, #232b3b 20px 30px);
+  background: repeating-linear-gradient(-45deg, #4a6cf0 0 10px, #ffffff 10px 20px, #0b0f1a 20px 30px);
 }
 .bg-barber {
-  background-color: #232b3b;
+  background-color: #0b0f1a;
   background-image:
     repeating-linear-gradient(135deg, rgb(255 255 255 / 0.03) 0 2px, transparent 2px 14px),
-    linear-gradient(160deg, #2f3a52 0%, #232b3b 55%, #161c28 100%);
+    linear-gradient(160deg, #1c2a5c 0%, #232b3b 55%, #060912 100%);
 }
 
 /* Admin tables become one card per row on phones. Cells carry data-label (set by TableWrap). */
