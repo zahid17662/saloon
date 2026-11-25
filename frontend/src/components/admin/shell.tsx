@@ -1,12 +1,12 @@
 "use client";
 
-import { useRef, type ReactNode } from "react";
+import { useRef, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { logoutAdmin } from "@/api/auth";
 import { NET_ERR } from "@/lib/messages";
 import { useCatalog } from "../catalog-context";
-import { cx, LoadingScreen } from "../ui";
+import { cx, LoadingScreen, Modal } from "../ui";
 import {
   CalendarIcon,
   ChartIcon,
@@ -19,6 +19,8 @@ import {
   UsersIcon,
   WalletIcon,
 } from "../icons";
+
+const TABS = ["/admin", "/admin/sales", "/admin/appointments", "/admin/payouts"];
 
 const NAV = [
   { href: "/admin", label: "ড্যাশবোর্ড", Icon: ChartIcon },
@@ -41,6 +43,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const isLogin = pathname === "/admin/login";
   const loggingOut = useRef(false);
+  const [more, setMore] = useState(false);
 
   if (isLogin) return <>{children}</>;
   if (!catalog) return <LoadingScreen />;
@@ -129,39 +132,66 @@ export function AdminShell({ children }: { children: ReactNode }) {
 
       {/* Mobile top bar */}
       <header className="sticky top-0 z-20 border-b border-line bg-bg/90 backdrop-blur lg:hidden">
-        <div className="flex items-center justify-between px-4 pt-3">
-          <div className="font-semibold text-fg">{shopName}</div>
+        <div className="flex items-center justify-between px-4 pt-[max(0.75rem,env(safe-area-inset-top))] pb-2">
+          <div className="min-w-0 truncate font-semibold text-fg">{NAV.find((n) => active(n.href))?.label ?? shopName}</div>
           <div className="flex gap-1">
-            <Link href="/staff" aria-label="নাপিতের স্ক্রিন" className="rounded-lg p-2 text-muted hover:bg-surface-2">
+            <Link href="/staff" aria-label="নাপিতের স্ক্রিন" className="flex h-11 w-11 items-center justify-center rounded-lg text-muted hover:bg-surface-2">
               <HomeIcon className="h-5 w-5" />
             </Link>
             <button
               aria-label="লগআউট"
               onClick={logout}
-              className="rounded-lg p-2 text-muted hover:bg-surface-2"
+              className="flex h-11 w-11 items-center justify-center rounded-lg text-muted hover:bg-surface-2"
             >
               <LogoutIcon className="h-5 w-5" />
             </button>
           </div>
         </div>
-        <nav aria-label="মেনু" className="scrollbar-none flex gap-1 overflow-x-auto px-3 py-2">
-          {NAV.map(({ href, label }) => (
-            <Link
-              key={href}
-              href={href}
-              aria-current={active(href) ? "page" : undefined}
-              className={cx(
-                "shrink-0 rounded-full border px-3.5 py-1.5 text-sm",
-                active(href) ? "border-primary bg-primary font-semibold text-white" : "border-line bg-surface text-muted",
-              )}
-            >
-              {label}
-            </Link>
-          ))}
-        </nav>
       </header>
 
-      <main id="main" className="mx-auto max-w-7xl p-4 sm:p-6 lg:py-8">{children}</main>
+      <main id="main" className="mx-auto max-w-7xl p-4 pb-[calc(6rem+env(safe-area-inset-bottom))] sm:p-6 lg:py-8 lg:pb-8">{children}</main>
+
+      {/* Mobile bottom tab bar: four daily screens + "আরও" for the rest */}
+      <nav aria-label="নিচের মেনু" className="fixed inset-x-0 bottom-0 z-30 border-t border-line bg-surface/95 pb-[env(safe-area-inset-bottom)] backdrop-blur lg:hidden">
+        <ul className="mx-auto grid max-w-xl grid-cols-5">
+          {NAV.filter((n) => TABS.includes(n.href)).map(({ href, label, Icon }) => {
+            const on = active(href);
+            return (
+              <li key={href}>
+                <Link href={href} aria-current={on ? "page" : undefined} className={cx("flex min-h-14 flex-col items-center justify-center gap-0.5 px-1 text-[11px] leading-tight", on ? "font-semibold text-primary" : "text-muted")}>
+                  <span className={cx("flex h-7 w-12 items-center justify-center rounded-full", on && "bg-primary-soft")}><Icon className="h-5 w-5" /></span>
+                  <span className="max-w-full truncate">{label.replace("নাপিতের ", "").replace("অ্যাপয়েন্টমেন্ট", "বুকিং")}</span>
+                </Link>
+              </li>
+            );
+          })}
+          <li>
+            <button onClick={() => setMore(true)} aria-haspopup="dialog" className={cx("flex min-h-14 w-full flex-col items-center justify-center gap-0.5 px-1 text-[11px] leading-tight", NAV.some((n) => !TABS.includes(n.href) && active(n.href)) ? "font-semibold text-primary" : "text-muted")}>
+              <span className="flex h-7 w-12 items-center justify-center rounded-full"><ListIcon className="h-5 w-5" /></span>
+              আরও
+            </button>
+          </li>
+        </ul>
+      </nav>
+
+      <Modal open={more} title="আরও" onClose={() => setMore(false)}>
+        <ul className="-mx-2 space-y-1">
+          {NAV.filter((n) => !TABS.includes(n.href)).map(({ href, label, Icon }) => (
+            <li key={href}>
+              <Link href={href} onClick={() => setMore(false)} className={cx("flex min-h-12 items-center gap-3 rounded-xl px-3 text-[15px]", active(href) ? "bg-primary-soft font-semibold text-primary" : "text-fg hover:bg-surface-2")}>
+                <Icon className="h-5 w-5" />{label}
+              </Link>
+            </li>
+          ))}
+          <li className="my-1 border-t border-line" />
+          <li>
+            <Link href="/staff" onClick={() => setMore(false)} className="flex min-h-12 items-center gap-3 rounded-xl px-3 text-[15px] text-fg hover:bg-surface-2"><HomeIcon className="h-5 w-5" />নাপিতের স্ক্রিন</Link>
+          </li>
+          <li>
+            <button onClick={logout} className="flex min-h-12 w-full items-center gap-3 rounded-xl px-3 text-left text-[15px] text-fg hover:bg-surface-2"><LogoutIcon className="h-5 w-5" />লগআউট</button>
+          </li>
+        </ul>
+      </Modal>
     </div>
   );
 }

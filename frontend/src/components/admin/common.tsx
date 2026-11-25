@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useRef } from "react";
 import { bnDigits, nameInitial, taka } from "@/lib/money";
 import { fmtDateKey, type DateRange } from "@/lib/time";
 import type { BarberRow } from "@/lib/reports";
@@ -13,11 +14,32 @@ export const thNum = "px-3 py-2.5 text-right text-xs font-semibold uppercase tra
 export const td = "px-3 py-2.5 text-sm text-fg";
 export const tdNum = "px-3 py-2.5 text-right text-sm tabular-nums text-fg";
 
-/** `flat` drops the card chrome when the table already sits inside a Card. */
+/**
+ * `flat` drops the card chrome when the table already sits inside a Card.
+ * On phones (< sm) the table is shown as one card per row: each cell gets its column header as a
+ * `data-label`, copied from the <thead> here so the pages keep plain table markup. See `.rt` in globals.css.
+ */
 export function TableWrap({ children, flat }: { children: React.ReactNode; flat?: boolean }) {
+  const table = useRef<HTMLTableElement>(null);
+  useEffect(() => {
+    const el = table.current;
+    if (!el) return;
+    const label = () => {
+      const heads = [...el.querySelectorAll("thead th")].map((h) => (h.querySelector(".sr-only") ? "" : (h.textContent ?? "").trim()));
+      el.querySelectorAll("tbody tr, tfoot tr").forEach((tr) => {
+        [...tr.children].forEach((c, i) => {
+          if (c instanceof HTMLElement && c.dataset.label !== (heads[i] ?? "")) c.dataset.label = heads[i] ?? "";
+        });
+      });
+    };
+    label();
+    const mo = new MutationObserver(label);
+    mo.observe(el, { childList: true, subtree: true });
+    return () => mo.disconnect();
+  }, []);
   return (
     <div className={flat ? "-mx-1 overflow-x-auto" : "overflow-x-auto rounded-3xl bg-surface p-2 shadow-card"}>
-      <table className="w-full min-w-[560px] border-collapse">{children}</table>
+      <table ref={table} className="rt w-full min-w-[560px] border-collapse">{children}</table>
     </div>
   );
 }
