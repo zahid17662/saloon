@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Logo } from "./logo";
 import { bnDigits, taka } from "@/lib/money";
 import { aheadOf, etaMin, finish, isFree, join, resetDemo, useQueue, type Lane, type Source } from "@/lib/queue";
@@ -22,16 +22,21 @@ const SRC: Record<Source, { t: string; dot: string }> = {
   advance: { t: "আগাম", dot: "bg-primary" },
 };
 
-type View = "queue" | "money";
+type View = "new" | "queue" | "money";
+const TABS: { id: View; label: string; icon: string }[] = [
+  { id: "new", label: "নতুন সিরিয়াল", icon: "＋" },
+  { id: "queue", label: "চলমান কিউ", icon: "☰" },
+  { id: "money", label: "আজকের হিসাব", icon: "৳" },
+];
 
-/** Shop dashboard. Phone: app layout (top bar, barber switcher, one lane, bottom tab bar with a + button).
- *  Desktop: three lanes side by side. */
+/** Shop dashboard. Phone: bottom tab bar. Desktop: tabs in the header.
+ *  "নতুন সিরিয়াল": every service is listed first; once a service is picked the barbers appear with full details. */
 export function ShopBoard({ services }: { services: Svc[] }) {
   const q = useQueue();
   const svcs = services.length ? services : FALLBACK;
-  const [view, setView] = useState<View>("queue");
+  const [view, setView] = useState<View>("new");
   const [tab, setTab] = useState<number>(1);
-  const [sheet, setSheet] = useState<{ barberId?: number } | null>(null);
+  const [preset, setPreset] = useState<number | undefined>();
   const waiting = q.lanes.reduce((n, l) => n + l.waiting.length, 0);
 
   return (
@@ -45,17 +50,20 @@ export function ShopBoard({ services }: { services: Svc[] }) {
           </div>
           <span className="flex items-center gap-1.5 text-xs font-medium text-success"><span className="h-2 w-2 animate-pulse rounded-full bg-success" />লাইভ</span>
           <nav className="ml-3 hidden gap-1 lg:flex" aria-label="বিভাগ">
-            <TabBtn on={view === "queue"} onClick={() => setView("queue")}>কিউ</TabBtn>
-            <TabBtn on={view === "money"} onClick={() => setView("money")}>আজকের হিসাব</TabBtn>
+            {TABS.map((t) => (
+              <button key={t.id} onClick={() => setView(t.id)} aria-current={view === t.id} className={cx("h-10 rounded-full px-4 text-sm font-semibold", view === t.id ? "bg-primary text-white" : "text-muted hover:bg-bg")}>{t.label}</button>
+            ))}
           </nav>
-          <button onClick={() => setSheet({})} className="ml-2 hidden h-10 rounded-full bg-primary px-5 text-sm font-semibold text-white lg:block">+ নতুন কাস্টমার</button>
         </div>
       </header>
 
-      <main className="mx-auto max-w-6xl px-4 pt-4 pb-28 sm:px-8 lg:pb-10">
-        {view === "queue" ? (
+      <main className="mx-auto max-w-6xl px-4 pt-5 pb-32 sm:px-8 lg:pb-10">
+        {view === "new" && (
+          <NewSerial key={preset ?? "x"} services={svcs} lanes={q.lanes} preset={preset} onSeeQueue={(id) => { if (id) setTab(id); setView("queue"); }} />
+        )}
+
+        {view === "queue" && (
           <>
-            {/* Phone: barber switcher */}
             <div role="tablist" aria-label="কারিগর" className="-mx-4 mb-4 flex gap-2 overflow-x-auto px-4 pb-1 lg:hidden">
               {q.lanes.map((l) => (
                 <button key={l.id} role="tab" aria-selected={tab === l.id} onClick={() => setTab(l.id)}
@@ -68,45 +76,33 @@ export function ShopBoard({ services }: { services: Svc[] }) {
                 </button>
               ))}
             </div>
-
             <div className="grid items-start gap-4 lg:grid-cols-3">
               {q.lanes.map((l) => (
                 <div key={l.id} className={cx(tab === l.id ? "block" : "hidden", "lg:block")}>
-                  <Lane lane={l} onAdd={() => setSheet({ barberId: l.id })} />
+                  <Lane lane={l} onAdd={() => { setPreset(l.id); setView("new"); }} />
                 </div>
               ))}
             </div>
           </>
-        ) : (
-          <Money lanes={q.lanes} />
         )}
-        <button onClick={resetDemo} className="mx-auto mt-6 block text-xs text-muted underline">ডেমো ডেটা রিসেট</button>
+
+        {view === "money" && <Money lanes={q.lanes} />}
+        <button onClick={resetDemo} className="mx-auto mt-8 block text-xs text-muted underline">ডেমো ডেটা রিসেট</button>
       </main>
 
-      {/* Phone bottom tab bar */}
       <nav className="fixed inset-x-0 bottom-0 z-30 border-t border-line bg-surface/95 pb-[env(safe-area-inset-bottom)] backdrop-blur lg:hidden" aria-label="বিভাগ">
-        <div className="mx-auto grid h-16 max-w-md grid-cols-3 items-center">
-          <BarBtn on={view === "queue"} onClick={() => setView("queue")} label="কিউ" icon="☰" />
-          <button onClick={() => setSheet({})} aria-label="নতুন কাস্টমার" className="mx-auto -mt-6 flex h-14 w-14 items-center justify-center rounded-full bg-gold text-3xl font-medium text-primary shadow-pop">+</button>
-          <BarBtn on={view === "money"} onClick={() => setView("money")} label="হিসাব" icon="৳" />
+        <div className="mx-auto grid h-16 max-w-md grid-cols-3">
+          {TABS.map((t) => (
+            <button key={t.id} onClick={() => setView(t.id)} aria-current={view === t.id} className={cx("flex flex-col items-center justify-center gap-0.5 text-xs font-semibold", view === t.id ? "text-primary" : "text-muted")}>
+              <span className={cx("flex h-7 w-12 items-center justify-center rounded-full text-lg leading-none", view === t.id && "bg-primary-soft")}>{t.icon}</span>{t.label}
+            </button>
+          ))}
         </div>
       </nav>
-
-      {sheet && <NewCustomer services={svcs} lanes={q.lanes} preset={sheet.barberId} onClose={() => setSheet(null)} onDone={(id) => { setTab(id); setView("queue"); setSheet(null); }} />}
     </div>
   );
 }
 
-function TabBtn({ on, onClick, children }: { on: boolean; onClick: () => void; children: React.ReactNode }) {
-  return <button onClick={onClick} className={cx("h-10 rounded-full px-4 text-sm font-semibold", on ? "bg-primary-soft text-primary" : "text-muted hover:bg-bg")}>{children}</button>;
-}
-function BarBtn({ on, onClick, label, icon }: { on: boolean; onClick: () => void; label: string; icon: string }) {
-  return (
-    <button onClick={onClick} aria-current={on} className={cx("flex h-full flex-col items-center justify-center gap-0.5 text-xs font-semibold", on ? "text-primary" : "text-muted")}>
-      <span className="text-lg leading-none">{icon}</span>{label}
-    </button>
-  );
-}
 function Avatar({ l, size }: { l: Lane; size: number }) {
   return (
     <span style={{ width: size, height: size }} className="relative flex flex-none items-center justify-center rounded-full bg-primary-soft font-bold text-primary">
@@ -211,83 +207,134 @@ function Money({ lanes }: { lanes: Lane[] }) {
   );
 }
 
-/** Step 1: choose service(s). Step 2: choose barber (a free one serves right away). Bottom sheet on mobile. */
-function NewCustomer({ services, lanes, preset, onClose, onDone }: { services: Svc[]; lanes: Lane[]; preset?: number; onClose: () => void; onDone: (barberId: number) => void }) {
-  const [step, setStep] = useState<1 | 2>(1);
+/** Step 1: all services (always visible). Step 2: barbers with details, shown once a service is picked. Step 3: name + confirm. */
+function NewSerial({ services, lanes, preset, onSeeQueue }: { services: Svc[]; lanes: Lane[]; preset?: number; onSeeQueue: (barberId?: number) => void }) {
   const [picked, setPicked] = useState<number[]>([]);
   const [barber, setBarber] = useState<number | "any" | null>(preset ?? null);
   const [name, setName] = useState("");
+  const [done, setDone] = useState<{ barberId: number; serial: number; direct: boolean } | null>(null);
+
   const chosen = services.filter((s) => picked.includes(s.id));
   const price = chosen.reduce((n, s) => n + s.price, 0);
-
-  useEffect(() => {
-    const h = (e: KeyboardEvent) => e.key === "Escape" && onClose();
-    window.addEventListener("keydown", h);
-    return () => window.removeEventListener("keydown", h);
-  }, [onClose]);
+  const shortest = [...lanes].sort((a, b) => aheadOf(a) - aheadOf(b))[0];
+  const target = barber === "any" ? shortest : lanes.find((l) => l.id === barber);
 
   function confirm() {
-    if (!chosen.length || barber === null) return;
-    const r = join(barber, { name: name.trim() || "ওয়াক-ইন কাস্টমার", service: chosen.map((s) => s.name).join(" + "), price, source: "walkin" });
-    onDone(r.barberId);
+    if (!chosen.length || !target) return;
+    const r = join(barber as number | "any", { name: name.trim() || "ওয়াক-ইন কাস্টমার", service: chosen.map((s) => s.name).join(" + "), price, source: "walkin" });
+    setDone(r);
+  }
+  function again() {
+    setPicked([]); setBarber(null); setName(""); setDone(null);
+  }
+
+  if (done) {
+    const l = lanes.find((x) => x.id === done.barberId);
+    return (
+      <div className="mx-auto max-w-md rounded-3xl border border-line bg-surface p-6 text-center shadow-card" role="status">
+        <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-success-soft text-3xl font-bold tabular-nums text-success">#{bnDigits(done.serial)}</div>
+        <h2 className="mt-4 text-lg font-bold">{done.direct ? "সরাসরি চেয়ারে বসানো হয়েছে" : "লাইনে যুক্ত করা হয়েছে"}</h2>
+        <p className="mt-1 text-sm text-muted">{l?.name}{done.direct ? "-এর কাছে এখনই শুরু" : `-এর সারিতে, সামনে ${bnDigits(Math.max(0, (l ? aheadOf(l) : 1) - 1))} জন`}</p>
+        <div className="mt-5 grid gap-2.5">
+          <button onClick={again} className="h-12 rounded-xl bg-primary font-semibold text-white">+ আরেকজন যোগ করুন</button>
+          <button onClick={() => onSeeQueue(done.barberId)} className="h-12 rounded-xl border border-line-strong font-semibold">কিউ দেখুন</button>
+        </div>
+      </div>
+    );
   }
 
   return (
-    <div className="fixed inset-0 z-40 flex items-end justify-center bg-black/50 sm:items-center" onClick={onClose} role="dialog" aria-modal="true" aria-label="নতুন কাস্টমার">
-      <div onClick={(e) => e.stopPropagation()} className="flex max-h-[92dvh] w-full flex-col rounded-t-3xl bg-surface sm:max-w-lg sm:rounded-3xl">
-        <div className="flex items-center justify-between border-b border-line px-5 py-4">
+    <div className="space-y-7">
+      <section aria-labelledby="svc-h">
+        <div className="mb-3 flex items-end justify-between gap-3">
           <div>
-            <div className="text-xs font-semibold text-muted">ধাপ {bnDigits(step)} / ২</div>
-            <h3 className="text-lg font-bold">{step === 1 ? "কী সার্ভিস নেবেন?" : "কোন কারিগর?"}</h3>
+            <p className="text-xs font-semibold text-gold-ink">ধাপ ১</p>
+            <h2 id="svc-h" className="text-xl font-bold">কী সার্ভিস নেবেন?</h2>
           </div>
-          <button onClick={onClose} aria-label="বন্ধ করুন" className="h-11 w-11 rounded-full bg-bg text-xl">×</button>
+          {chosen.length > 0 && <button onClick={() => { setPicked([]); setBarber(null); }} className="text-sm font-medium text-muted underline">মুছে ফেলুন</button>}
         </div>
+        <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 lg:grid-cols-4">
+          {services.map((s) => {
+            const on = picked.includes(s.id);
+            return (
+              <button key={s.id} aria-pressed={on} onClick={() => setPicked((p) => (on ? p.filter((x) => x !== s.id) : [...p, s.id]))}
+                className={cx("relative flex min-h-24 flex-col justify-between rounded-2xl border-2 p-3.5 text-left transition-colors", on ? "border-primary bg-surface shadow-card" : "border-transparent bg-surface hover:border-line-strong")}>
+                <span className="font-semibold">{s.name}</span>
+                <span className="text-base font-bold text-gold-ink">{taka(s.price)}</span>
+                {on && <span className="absolute top-2.5 right-2.5 flex h-6 w-6 items-center justify-center rounded-full bg-primary text-xs text-white">✓</span>}
+              </button>
+            );
+          })}
+        </div>
+        {chosen.length > 0 && (
+          <p className="mt-3 text-sm text-muted">{bnDigits(chosen.length)}টি সার্ভিস · মোট <b className="text-fg">{taka(price)}</b></p>
+        )}
+      </section>
 
-        <div className="flex-1 space-y-2.5 overflow-y-auto p-5">
-          {step === 1 ? (
-            <div className="grid grid-cols-2 gap-2.5">
-              {services.map((s) => {
-                const on = picked.includes(s.id);
-                return (
-                  <button key={s.id} aria-pressed={on} onClick={() => setPicked((p) => (on ? p.filter((x) => x !== s.id) : [...p, s.id]))}
-                    className={cx("flex min-h-20 flex-col items-start justify-between rounded-2xl border-2 p-3 text-left transition-colors", on ? "border-primary bg-primary-soft" : "border-line-strong")}>
-                    <span className="font-semibold">{s.name}</span>
-                    <span className="text-sm font-bold text-gold-ink">{taka(s.price)}</span>
-                  </button>
-                );
-              })}
-            </div>
-          ) : (
-            <>
-              {lanes.map((l) => (
-                <button key={l.id} aria-pressed={barber === l.id} onClick={() => setBarber(l.id)}
-                  className={cx("flex w-full items-center gap-3 rounded-2xl border-2 p-3 text-left", barber === l.id ? "border-primary bg-primary-soft" : "border-line-strong")}>
-                  <span className="flex h-11 w-11 flex-none items-center justify-center rounded-full bg-primary font-bold text-gold">{l.initial}</span>
-                  <span className="min-w-0 flex-1">
-                    <span className="block font-bold">{l.name}</span>
-                    <span className="block text-sm text-muted">{isFree(l) ? "ফাঁকা, এখনই শুরু" : `সামনে ${bnDigits(aheadOf(l))} জন · প্রায় ${bnDigits(etaMin(l))} মিনিট`}</span>
-                  </span>
-                  <span className={cx("rounded-full px-3 py-1.5 text-xs font-bold", isFree(l) ? "bg-success-soft text-success" : "bg-warning-soft text-warning")}>{isFree(l) ? "এখনই" : "ব্যস্ত"}</span>
+      {chosen.length > 0 && (
+        <section aria-labelledby="bar-h">
+          <p className="text-xs font-semibold text-gold-ink">ধাপ ২</p>
+          <h2 id="bar-h" className="mb-3 text-xl font-bold">কোন কারিগর?</h2>
+          <div className="grid gap-3 lg:grid-cols-3">
+            {lanes.map((l) => {
+              const on = barber === l.id;
+              const free = isFree(l);
+              return (
+                <button key={l.id} aria-pressed={on} onClick={() => setBarber(l.id)}
+                  className={cx("rounded-3xl border-2 bg-surface p-4 text-left transition-colors", on ? "border-primary shadow-card" : "border-transparent hover:border-line-strong")}>
+                  <div className="flex items-center gap-3">
+                    <Avatar l={l} size={48} />
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-base font-bold">{l.name}</p>
+                      <p className={cx("text-xs font-semibold", free ? "text-success" : "text-warning")}>{free ? "ফাঁকা, এখনই শুরু করতে পারবেন" : "এখন ব্যস্ত"}</p>
+                    </div>
+                    <span className={cx("flex h-6 w-6 items-center justify-center rounded-full border-2 text-xs", on ? "border-primary bg-primary text-white" : "border-line-strong text-transparent")}>✓</span>
+                  </div>
+
+                  <dl className="mt-4 grid grid-cols-3 gap-2 text-center">
+                    <div className="rounded-xl bg-bg px-1 py-2"><dd className="text-base font-bold tabular-nums">{l.current ? `#${bnDigits(l.current.serial)}` : "—"}</dd><dt className="text-[11px] text-muted">এখন চলছে</dt></div>
+                    <div className="rounded-xl bg-bg px-1 py-2"><dd className="text-base font-bold tabular-nums">{bnDigits(aheadOf(l))} জন</dd><dt className="text-[11px] text-muted">সামনে</dt></div>
+                    <div className="rounded-xl bg-bg px-1 py-2"><dd className="text-base font-bold tabular-nums">{free ? "এখনই" : `~${bnDigits(etaMin(l))} মি.`}</dd><dt className="text-[11px] text-muted">অপেক্ষা</dt></div>
+                  </dl>
+
+                  <ul className="mt-3 space-y-1 text-xs text-muted">
+                    {l.current && <li>চলছে: <span className="font-medium text-fg">{l.current.service}</span></li>}
+                    <li>শেষ সিরিয়াল #{bnDigits(l.lastSerial)} · আজ {bnDigits(l.doneToday)}টি সম্পন্ন</li>
+                  </ul>
+                  <p className={cx("mt-3 rounded-xl px-3 py-2 text-sm font-semibold", free ? "bg-success-soft text-success" : "bg-warning-soft text-warning")}>
+                    {free ? `সরাসরি শুরু, সিরিয়াল #${bnDigits(l.lastSerial + 1)}` : `লাইনে যুক্ত হবে, সিরিয়াল #${bnDigits(l.lastSerial + 1)}`}
+                  </p>
                 </button>
-              ))}
-              <button aria-pressed={barber === "any"} onClick={() => setBarber("any")} className={cx("w-full rounded-2xl border-2 border-dashed p-3 text-left font-semibold", barber === "any" ? "border-primary bg-primary-soft" : "border-line-strong")}>যে কেউ, যিনি আগে ফাঁকা হবেন</button>
-              <label className="mt-2 grid gap-1 text-sm font-medium">কাস্টমারের নাম (ঐচ্ছিক)
-                <input value={name} onChange={(e) => setName(e.target.value)} maxLength={60} className="h-12 rounded-xl border border-line-strong px-3 text-base" />
-              </label>
-            </>
-          )}
-        </div>
+              );
+            })}
+          </div>
+          <button aria-pressed={barber === "any"} onClick={() => setBarber("any")}
+            className={cx("mt-3 flex w-full items-center gap-3 rounded-2xl border-2 border-dashed p-3.5 text-left", barber === "any" ? "border-primary bg-surface" : "border-line-strong")}>
+            <span className="min-w-0 flex-1">
+              <span className="block font-semibold">যে কেউ, যিনি আগে ফাঁকা হবেন</span>
+              <span className="block text-xs text-muted">এখন সবচেয়ে কম অপেক্ষা: {shortest.name} ({isFree(shortest) ? "ফাঁকা" : `~${bnDigits(etaMin(shortest))} মিনিট`})</span>
+            </span>
+            <span className={cx("flex h-6 w-6 flex-none items-center justify-center rounded-full border-2 text-xs", barber === "any" ? "border-primary bg-primary text-white" : "border-line-strong text-transparent")}>✓</span>
+          </button>
+        </section>
+      )}
 
-        <div className="flex items-center gap-3 border-t border-line p-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
-          <div className="min-w-0 flex-1 text-sm"><div className="text-muted">{bnDigits(chosen.length)}টি সার্ভিস</div><div className="text-lg font-bold">{taka(price)}</div></div>
-          {step === 2 && <button onClick={() => setStep(1)} className="h-12 rounded-xl border border-line-strong px-4 font-semibold">পিছনে</button>}
-          {step === 1 ? (
-            <button disabled={!chosen.length} onClick={() => setStep(2)} className="h-12 rounded-xl bg-primary px-6 font-bold text-gold disabled:opacity-40">পরের ধাপ</button>
-          ) : (
-            <button disabled={barber === null} onClick={confirm} className="h-12 rounded-xl bg-primary px-6 font-bold text-gold disabled:opacity-40">সিরিয়াল দিন</button>
-          )}
-        </div>
-      </div>
+      {chosen.length > 0 && target && (
+        <section aria-labelledby="ok-h" className="rounded-3xl border border-line bg-surface p-4 sm:p-5">
+          <p className="text-xs font-semibold text-gold-ink">ধাপ ৩</p>
+          <h2 id="ok-h" className="mb-3 text-xl font-bold">নিশ্চিত করুন</h2>
+          <label className="grid gap-1 text-sm font-medium">কাস্টমারের নাম (ঐচ্ছিক)
+            <input value={name} onChange={(e) => setName(e.target.value)} maxLength={60} className="h-12 rounded-xl border border-line-strong px-3 text-base" />
+          </label>
+          <dl className="mt-4 space-y-2 text-sm">
+            <div className="flex justify-between gap-4"><dt className="text-muted">সার্ভিস</dt><dd className="text-right font-medium">{chosen.map((s) => s.name).join(" + ")}</dd></div>
+            <div className="flex justify-between gap-4"><dt className="text-muted">কারিগর</dt><dd className="font-medium">{target.name}</dd></div>
+            <div className="flex justify-between gap-4"><dt className="text-muted">সিরিয়াল</dt><dd className="font-medium">#{bnDigits(target.lastSerial + 1)} · {isFree(target) ? "সরাসরি শুরু" : `প্রায় ${bnDigits(etaMin(target))} মিনিট পরে`}</dd></div>
+            <div className="flex justify-between gap-4 border-t border-dashed border-line-strong pt-2"><dt className="font-semibold">মোট</dt><dd className="text-lg font-bold">{taka(price)}</dd></div>
+          </dl>
+          <button onClick={confirm} className="mt-4 h-14 w-full rounded-2xl bg-primary text-base font-bold text-white active:opacity-90 sm:w-auto sm:px-12">সিরিয়াল দিন</button>
+        </section>
+      )}
     </div>
   );
 }
