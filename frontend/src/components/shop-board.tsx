@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Logo } from "./logo";
 import { bnDigits, taka } from "@/lib/money";
 import { aheadOf, etaMin, finish, isFree, join, resetDemo, useQueue, type Lane, type Source } from "@/lib/queue";
-import { ServiceIcon } from "./service-icon";
+import { ServiceArt, ServiceIcon } from "./service-icon";
 import { cx } from "./ui";
 
 type Svc = { id: number; name: string; price: number };
@@ -259,15 +259,13 @@ function NewSerial({ services, lanes, preset, onSeeQueue }: { services: Svc[]; l
             const on = picked.includes(s.id);
             return (
               <button key={s.id} aria-pressed={on} onClick={() => setPicked((p) => (on ? p.filter((x) => x !== s.id) : [...p, s.id]))}
-                className={cx("relative flex min-h-28 min-w-0 flex-col justify-between gap-3 rounded-2xl border-2 p-3 text-left transition-colors sm:p-3.5", on ? "border-primary bg-surface shadow-card" : "border-transparent bg-surface hover:border-line-strong")}>
-                <span className={cx("flex h-10 w-10 items-center justify-center rounded-xl", on ? "bg-primary text-gold" : "bg-primary-soft text-primary")}>
-                  <ServiceIcon name={s.name} className="h-5 w-5" />
-                </span>
+                className={cx("relative flex min-h-36 min-w-0 flex-col justify-between gap-2 rounded-2xl border-2 p-3 text-left transition-colors sm:p-3.5", on ? "border-primary bg-surface shadow-card" : "border-transparent bg-surface hover:border-line-strong")}>
+                <ServiceArt name={s.name} size={76} className="-mt-1 -mr-1 h-[76px] w-[76px] flex-none self-end sm:h-20 sm:w-20" />
                 <span className="min-w-0">
                   <span className="block text-[15px] leading-snug font-semibold break-words">{s.name}</span>
                   <span className="mt-0.5 block text-base font-bold text-gold-ink">{taka(s.price)}</span>
                 </span>
-                {on && <span className="absolute top-2.5 right-2.5 flex h-6 w-6 items-center justify-center rounded-full bg-primary text-xs text-white">✓</span>}
+                {on && <span className="absolute top-2.5 left-2.5 flex h-6 w-6 items-center justify-center rounded-full bg-primary text-xs text-white">✓</span>}
               </button>
             );
           })}
