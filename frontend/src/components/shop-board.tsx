@@ -3,7 +3,7 @@
 import { useRef, useState } from "react";
 import { Logo } from "./logo";
 import { bnDigits, taka } from "@/lib/money";
-import { aheadOf, etaMin, finish, isFree, join, resetDemo, useQueue, type Lane, type Source } from "@/lib/queue";
+import { aheadOf, etaMin, finish, isFree, join, MIN_PER_CUT, removeTicket, resetDemo, useQueue, type Lane, type Source } from "@/lib/queue";
 import { ServiceArt, ServiceIcon } from "./service-icon";
 import { cx } from "./ui";
 
@@ -46,8 +46,8 @@ export function ShopBoard({ services }: { services: Svc[] }) {
         <div className="mx-auto flex h-14 max-w-6xl items-center gap-2.5 px-4 sm:px-8">
           <Logo size={30} />
           <div className="min-w-0 flex-1">
-            <h1 className="truncate text-[15px] leading-tight font-bold">নীড় স্মার্ট জেন্টস পার্লার</h1>
-            <p className="text-[11px] leading-tight text-muted">{bnDigits(waiting)} জন অপেক্ষায়</p>
+            <h1 className="truncate text-[15px] leading-snug font-bold">নীড় স্মার্ট জেন্টস পার্লার</h1>
+            <p className="text-[11px] leading-snug text-muted">{bnDigits(waiting)} জন অপেক্ষায়</p>
           </div>
           <span className="flex items-center gap-1.5 text-xs font-medium text-success"><span className="h-2 w-2 animate-pulse rounded-full bg-success" />লাইভ</span>
           <nav className="ml-3 hidden gap-1 lg:flex" aria-label="বিভাগ">
@@ -66,15 +66,25 @@ export function ShopBoard({ services }: { services: Svc[] }) {
 
         {view === "queue" && (
           <>
-            <div role="tablist" aria-label="কারিগর" className="-mx-4 mb-4 flex gap-2 overflow-x-auto px-4 pb-1 lg:hidden">
+            <div className="mb-4 grid grid-cols-3 gap-2 text-center">
+              {[
+                ["অপেক্ষায়", bnDigits(waiting), "text-primary"],
+                ["চলছে", bnDigits(q.lanes.filter((l) => l.current).length), "text-gold-ink"],
+                ["ফাঁকা কারিগর", bnDigits(q.lanes.filter(isFree).length), "text-success"],
+              ].map(([k, v, c]) => (
+                <div key={k} className="rounded-2xl border border-line bg-surface px-2 py-2.5">
+                  <p className={cx("text-2xl leading-none font-extrabold tabular-nums", c)}>{v}</p>
+                  <p className="mt-1 text-[11px] font-medium text-muted">{k}</p>
+                </div>
+              ))}
+            </div>
+            <div role="tablist" aria-label="কারিগর" className="mb-4 grid grid-cols-3 gap-2 lg:hidden">
               {q.lanes.map((l) => (
                 <button key={l.id} role="tab" aria-selected={tab === l.id} onClick={() => setTab(l.id)}
-                  className={cx("flex min-w-[8.5rem] flex-1 items-center gap-2.5 rounded-2xl border px-3 py-2.5 text-left transition-colors", tab === l.id ? "border-primary bg-surface shadow-card" : "border-line bg-surface/60")}>
-                  <Avatar l={l} size={36} />
-                  <span className="min-w-0">
-                    <span className="block truncate text-sm font-semibold">{l.name}</span>
-                    <span className={cx("block text-[11px] font-medium", isFree(l) ? "text-success" : "text-muted")}>{isFree(l) ? "ফাঁকা" : `${bnDigits(l.waiting.length)} জন অপেক্ষায়`}</span>
-                  </span>
+                  className={cx("flex flex-col items-center gap-1 rounded-2xl border-2 px-1.5 py-2.5 transition-colors", tab === l.id ? "border-primary bg-surface shadow-card" : "border-transparent bg-surface/70")}>
+                  <Avatar l={l} size={40} />
+                  <span className="w-full truncate text-center text-[13px] leading-snug font-semibold">{l.name}</span>
+                  <span className={cx("rounded-full px-2 py-0.5 text-[11px] font-semibold", isFree(l) ? "bg-success-soft text-success" : "bg-warning-soft text-warning")}>{isFree(l) ? "ফাঁকা" : `${bnDigits(l.waiting.length)} জন`}</span>
                 </button>
               ))}
             </div>
@@ -115,62 +125,80 @@ function Avatar({ l, size }: { l: Lane; size: number }) {
 }
 
 function Lane({ lane: l, onAdd }: { lane: Lane; onAdd: () => void }) {
+  const cur = l.current;
+  const next = l.waiting[0];
   return (
-    <section className="overflow-hidden rounded-3xl border border-line bg-surface shadow-card">
-      <header className="flex items-center gap-3 px-4 pt-4">
-        <Avatar l={l} size={44} />
+    <section className="space-y-3" aria-label={l.name}>
+      <div className="hidden items-center gap-3 px-1 lg:flex">
+        <Avatar l={l} size={40} />
         <div className="min-w-0 flex-1">
           <h2 className="truncate font-bold">{l.name}</h2>
-          <p className="text-xs text-muted">শেষ সিরিয়াল #{bnDigits(l.lastSerial)} · আজ {bnDigits(l.doneToday)}টি সম্পন্ন</p>
+          <p className="text-xs text-muted">আজ {bnDigits(l.doneToday)}টি সম্পন্ন</p>
         </div>
-        <button onClick={onAdd} aria-label={`${l.name}-এর জন্য কাস্টমার যোগ`} className="flex h-10 w-10 items-center justify-center rounded-full bg-bg text-xl text-primary hover:bg-line">+</button>
-      </header>
+      </div>
 
-      <div className="p-4">
-        {l.current ? (
-          <div className="rounded-2xl border border-line bg-surface-2 p-4">
-            <div className="flex items-center justify-between">
-              <span className="rounded-full bg-gold/25 px-2.5 py-1 text-[11px] font-bold text-gold-ink">এখন চলছে</span>
-              <span className="text-2xl font-bold tabular-nums">#{bnDigits(l.current.serial)}</span>
+      {cur ? (
+        <div className="bg-barber overflow-hidden rounded-3xl p-5 text-white shadow-card">
+          <div className="flex items-center justify-between">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-gold px-3 py-1 text-xs font-bold text-primary"><span className="h-1.5 w-1.5 animate-pulse rounded-full bg-primary" />এখন চলছে</span>
+            <span className="text-xs text-white/60">আজ {bnDigits(l.doneToday)}টি সম্পন্ন</span>
+          </div>
+          <div className="mt-4 flex items-end gap-4">
+            <div>
+              <p className="text-[11px] text-white/60">সিরিয়াল</p>
+              <p className="text-6xl leading-none font-extrabold text-gold tabular-nums">{bnDigits(cur.serial)}</p>
             </div>
-            <p className="mt-3 truncate text-base font-semibold">{l.current.name}</p>
-            <p className="truncate text-sm text-muted">{l.current.service}</p>
-            {l.current.phone && <a href={`tel:${l.current.phone}`} className="mt-1 block text-sm font-medium text-primary">📞 {bnDigits(l.current.phone)}</a>}
-            {l.current.note && <p className="mt-1 rounded-lg bg-gold/15 px-2.5 py-1.5 text-sm text-gold-ink">📝 {l.current.note}</p>}
-            <p className="mt-1 text-lg font-bold">{taka(l.current.price)}</p>
-            <button onClick={() => finish(l.id)} className="mt-3 h-12 w-full rounded-xl bg-primary text-[15px] font-semibold text-white active:opacity-90">
-              ✓ সম্পন্ন{l.waiting[0] ? `, পরের জন #${bnDigits(l.waiting[0].serial)}` : ""}
-            </button>
+            <div className="min-w-0 flex-1 pb-1">
+              <p className="truncate text-xl leading-snug font-bold">{cur.name}</p>
+              <p className="text-sm leading-snug text-white/75">{cur.service}</p>
+            </div>
           </div>
-        ) : (
-          <div className="rounded-2xl border border-dashed border-line-strong p-5 text-center">
-            <p className="font-semibold text-success">কারিগর ফাঁকা আছেন</p>
-            <p className="mt-0.5 text-sm text-muted">নতুন কাস্টমার এলে সরাসরি বসবে</p>
-            <button onClick={onAdd} className="mt-3 h-11 rounded-xl bg-primary px-5 text-sm font-semibold text-white">+ কাস্টমার যোগ করুন</button>
+          {(cur.phone || cur.note) && (
+            <div className="mt-3 flex flex-wrap gap-2 text-sm">
+              {cur.phone && <a href={`tel:${cur.phone}`} className="inline-flex min-h-9 items-center rounded-full bg-white/10 px-3 font-medium">📞 {bnDigits(cur.phone)}</a>}
+              {cur.note && <span className="inline-flex items-center rounded-full bg-gold/20 px-3 py-1.5 text-gold">📝 {cur.note}</span>}
+            </div>
+          )}
+          <div className="mt-4 flex items-center justify-between border-t border-white/15 pt-3">
+            <span className="text-sm text-white/70">মোট বিল</span>
+            <span className="text-2xl font-bold tabular-nums">{taka(cur.price)}</span>
           </div>
-        )}
+          <button onClick={() => finish(l.id)} className="mt-4 h-14 w-full rounded-2xl bg-gold text-base font-bold text-primary active:opacity-90">
+            ✓ সম্পন্ন{next ? ` · পরের জন ${bnDigits(next.serial)} নম্বর` : ""}
+          </button>
+        </div>
+      ) : (
+        <div className="rounded-3xl border-2 border-dashed border-line-strong bg-surface p-6 text-center">
+          <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-success-soft text-xl text-success">✓</span>
+          <p className="mt-3 text-lg font-bold text-success">কারিগর ফাঁকা আছেন</p>
+          <p className="mt-0.5 text-sm text-muted">নতুন কাস্টমার এলে সরাসরি বসবে</p>
+        </div>
+      )}
 
-        <div className="mt-4 flex items-center justify-between">
-          <h3 className="text-sm font-semibold">অপেক্ষায়</h3>
-          <span className="text-xs text-muted">{bnDigits(l.waiting.length)} জন{l.waiting.length ? ` · প্রায় ${bnDigits(etaMin(l))} মিনিট` : ""}</span>
+      <div className="rounded-3xl border border-line bg-surface p-4 shadow-card">
+        <div className="flex items-center justify-between">
+          <h3 className="font-bold">অপেক্ষায় <span className="text-muted">({bnDigits(l.waiting.length)})</span></h3>
+          {l.waiting.length > 0 && <span className="text-xs text-muted">সবার শেষে প্রায় {bnDigits(etaMin(l))} মিনিট</span>}
         </div>
         {l.waiting.length === 0 ? (
-          <p className="py-4 text-center text-sm text-muted">কেউ অপেক্ষায় নেই</p>
+          <p className="py-5 text-center text-sm text-muted">কেউ অপেক্ষায় নেই</p>
         ) : (
-          <ul className="mt-1 divide-y divide-line">
-            {l.waiting.map((w) => (
-              <li key={w.serial} className="flex items-center gap-3 py-3">
-                <span className="flex h-9 w-9 flex-none items-center justify-center rounded-full bg-bg text-sm font-bold tabular-nums">{bnDigits(w.serial)}</span>
+          <ul className="mt-2 divide-y divide-line">
+            {l.waiting.map((w, i) => (
+              <li key={w.serial} className="flex items-start gap-3 py-3">
+                <span className={cx("flex h-10 w-10 flex-none items-center justify-center rounded-full text-base font-bold tabular-nums", i === 0 ? "bg-primary text-gold" : "bg-bg text-fg")}>{bnDigits(w.serial)}</span>
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-semibold">{w.name}</p>
-                  <p className="truncate text-xs text-muted">{w.service} · {taka(w.price)}</p>
-                  {(w.phone || w.note) && <p className="truncate text-xs text-gold-ink">{w.phone ? `📞 ${bnDigits(w.phone)}` : ""}{w.phone && w.note ? " · " : ""}{w.note ? `📝 ${w.note}` : ""}</p>}
+                  <p className="flex items-center gap-2 leading-snug font-semibold"><span className="truncate">{w.name}</span>{i === 0 && <span className="flex-none rounded-full bg-gold/25 px-2 py-0.5 text-[10px] font-bold text-gold-ink">পরের জন</span>}</p>
+                  <p className="text-xs leading-snug text-muted">{w.service} · {taka(w.price)}</p>
+                  {(w.phone || w.note) && <p className="mt-0.5 text-xs leading-snug text-gold-ink">{w.phone ? `📞 ${bnDigits(w.phone)}` : ""}{w.phone && w.note ? " · " : ""}{w.note ? `📝 ${w.note}` : ""}</p>}
+                  <p className="mt-1 flex items-center gap-1.5 text-[11px] text-muted"><span className={cx("h-1.5 w-1.5 rounded-full", SRC[w.source].dot)} />{SRC[w.source].t} · প্রায় {bnDigits((i + (cur ? 1 : 0)) * MIN_PER_CUT)} মিনিট পরে</p>
                 </div>
-                <span className="flex items-center gap-1.5 text-[11px] font-medium text-muted"><span className={cx("h-1.5 w-1.5 rounded-full", SRC[w.source].dot)} />{SRC[w.source].t}</span>
+                <button onClick={() => { if (window.confirm(`${w.name} (${bnDigits(w.serial)} নম্বর) বাদ দেবেন?`)) removeTicket(l.id, w.serial); }} aria-label={`${bnDigits(w.serial)} নম্বর বাদ দিন`} className="flex h-9 flex-none items-center rounded-full px-3 text-xs font-medium text-danger hover:bg-bg">বাদ</button>
               </li>
             ))}
           </ul>
         )}
+        <button onClick={onAdd} className="mt-3 h-12 w-full rounded-2xl border-2 border-primary text-[15px] font-bold text-primary active:bg-primary-soft">+ কাস্টমার যোগ করুন</button>
       </div>
     </section>
   );
@@ -321,7 +349,7 @@ function StepHead({ n, title, hint }: { n: string; title: string; hint?: string 
     <div className="mb-4 flex items-center gap-3">
       <span className="flex h-9 w-9 flex-none items-center justify-center rounded-full bg-primary text-sm font-bold text-gold shadow-card">{n}</span>
       <div className="min-w-0">
-        <h2 className="text-xl leading-tight font-bold">{title}</h2>
+        <h2 className="text-xl leading-snug font-bold">{title}</h2>
         {hint && <p className="text-xs text-muted">{hint}</p>}
       </div>
     </div>
@@ -423,7 +451,7 @@ function NewSerial({ services, lanes, preset, onSeeQueue }: { services: Svc[]; l
                     <svg aria-hidden="true" viewBox="0 0 120 120" className="pointer-events-none absolute -top-10 -right-8 h-36 w-36 text-gold opacity-[0.16]"><circle cx="60" cy="60" r="56" fill="none" stroke="currentColor" strokeWidth="2" /><circle cx="60" cy="60" r="38" fill="none" stroke="currentColor" strokeWidth="2" /><circle cx="60" cy="60" r="20" fill="currentColor" /></svg>
                     <span className="relative flex h-14 w-14 flex-none items-center justify-center rounded-full bg-white/10 text-2xl font-bold text-gold ring-2 ring-gold/70">{l.initial}</span>
                     <span className="relative min-w-0 flex-1">
-                      <span className="block truncate text-lg leading-tight font-bold text-white">{l.name}</span>
+                      <span className="block truncate text-lg leading-snug font-bold text-white">{l.name}</span>
                       <span className="mt-0.5 block text-xs text-white/65">আজ {bnDigits(l.doneToday)}টি সম্পন্ন · শেষ সিরিয়াল #{bnDigits(l.lastSerial)}</span>
                     </span>
                     <span className={cx("relative flex flex-none items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold", free ? "bg-success/90 text-white" : "bg-gold text-primary")}>
@@ -452,11 +480,11 @@ function NewSerial({ services, lanes, preset, onSeeQueue }: { services: Svc[]; l
                     <span className="grid grid-cols-2 divide-x divide-line rounded-2xl bg-[#F8F6EE] py-3">
                       <span className="px-4">
                         <span className="block text-[11px] text-muted">সামনে আছেন</span>
-                        <span className="block text-2xl leading-tight font-bold tabular-nums">{bnDigits(aheadOf(l))}<span className="ml-1 text-sm font-semibold text-muted">জন</span></span>
+                        <span className="block text-2xl leading-snug font-bold tabular-nums">{bnDigits(aheadOf(l))}<span className="ml-1 text-sm font-semibold text-muted">জন</span></span>
                       </span>
                       <span className="px-4">
                         <span className="block text-[11px] text-muted">আনুমানিক অপেক্ষা</span>
-                        <span className="block text-2xl leading-tight font-bold tabular-nums">{free ? "এখনই" : <>~{bnDigits(etaMin(l))}<span className="ml-1 text-sm font-semibold text-muted">মিনিট</span></>}</span>
+                        <span className="block text-2xl leading-snug font-bold tabular-nums">{free ? "এখনই" : <>~{bnDigits(etaMin(l))}<span className="ml-1 text-sm font-semibold text-muted">মিনিট</span></>}</span>
                       </span>
                     </span>
 

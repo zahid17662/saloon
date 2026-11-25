@@ -1,11 +1,11 @@
 import type { Metadata, Viewport } from "next";
-import { Hind_Siliguri, Poppins } from "next/font/google";
+import { Noto_Sans_Bengali, Poppins } from "next/font/google";
 import { connection } from "next/server";
 import { CatalogBoundary } from "@/components/catalog-boundary";
 import { fetchShopName } from "@/lib/shop-name";
 import "./globals.css";
 
-// Poppins renders Latin letters and numbers; Hind Siliguri covers Bangla.
+// Poppins renders Latin letters and numbers; Noto Sans Bengali covers Bangla (clear, open letterforms at small sizes).
 // The browser picks per glyph, so mixed text uses both.
 const latin = Poppins({
   variable: "--font-latin",
@@ -13,10 +13,10 @@ const latin = Poppins({
   weight: ["400", "500", "600", "700"],
 });
 
-const bangla = Hind_Siliguri({
+const bangla = Noto_Sans_Bengali({
   variable: "--font-bn",
   subsets: ["bengali"],
-  weight: ["400", "500", "600", "700"],
+  weight: ["400", "500", "600", "700", "800"],
 });
 
 const FALLBACK_TITLE = "সেলুন হিসাব";

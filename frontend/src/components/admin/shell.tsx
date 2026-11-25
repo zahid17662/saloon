@@ -158,7 +158,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
             const on = active(href);
             return (
               <li key={href}>
-                <Link href={href} aria-current={on ? "page" : undefined} className={cx("flex min-h-14 flex-col items-center justify-center gap-0.5 px-1 text-[11px] leading-tight", on ? "font-semibold text-primary" : "text-muted")}>
+                <Link href={href} aria-current={on ? "page" : undefined} className={cx("flex min-h-14 flex-col items-center justify-center gap-0.5 px-1 text-[11px] leading-snug", on ? "font-semibold text-primary" : "text-muted")}>
                   <span className={cx("flex h-7 w-12 items-center justify-center rounded-full", on && "bg-primary-soft")}><Icon className="h-5 w-5" /></span>
                   <span className="max-w-full truncate">{label.replace("নাপিতের ", "").replace("অ্যাপয়েন্টমেন্ট", "বুকিং")}</span>
                 </Link>
@@ -166,7 +166,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
             );
           })}
           <li>
-            <button onClick={() => setMore(true)} aria-haspopup="dialog" className={cx("flex min-h-14 w-full flex-col items-center justify-center gap-0.5 px-1 text-[11px] leading-tight", NAV.some((n) => !TABS.includes(n.href) && active(n.href)) ? "font-semibold text-primary" : "text-muted")}>
+            <button onClick={() => setMore(true)} aria-haspopup="dialog" className={cx("flex min-h-14 w-full flex-col items-center justify-center gap-0.5 px-1 text-[11px] leading-snug", NAV.some((n) => !TABS.includes(n.href) && active(n.href)) ? "font-semibold text-primary" : "text-muted")}>
               <span className="flex h-7 w-12 items-center justify-center rounded-full"><ListIcon className="h-5 w-5" /></span>
               আরও
             </button>

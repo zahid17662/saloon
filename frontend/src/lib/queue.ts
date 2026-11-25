@@ -11,7 +11,7 @@ export type Lane = { id: number; name: string; initial: string; current: Ticket 
 export type QueueState = { lanes: Lane[]; mine: { barberId: number; serial: number } | null };
 
 const KEY = "nir-queue-v1";
-const MIN_PER_CUT = 25;
+export const MIN_PER_CUT = 25;
 
 const seed = (): QueueState => ({
   mine: null,
@@ -92,6 +92,14 @@ export function finish(barberId: number) {
     return { ...l, current: next ?? null, waiting: rest, doneToday: l.doneToday + 1, earned: l.earned + l.current.price };
   });
   commit({ ...s, lanes });
+}
+
+/** Shop side: take a waiting ticket out of a barber's queue. */
+export function removeTicket(barberId: number, serial: number) {
+  const s = load();
+  const lanes = s.lanes.map((l) => (l.id === barberId ? { ...l, waiting: l.waiting.filter((w) => w.serial !== serial) } : l));
+  const mine = s.mine && s.mine.barberId === barberId && s.mine.serial === serial ? null : s.mine;
+  commit({ lanes, mine });
 }
 
 export function cancelMine() {

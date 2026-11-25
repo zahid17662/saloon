@@ -52,6 +52,13 @@ body {
   background: var(--color-bg);
   color: var(--color-fg);
   -webkit-tap-highlight-color: transparent;
+  /* Bangla needs more line height than Latin so the matras above and below are not clipped. */
+  line-height: 1.65;
+  font-size: 16px;
+  text-rendering: optimizeLegibility;
+}
+h1, h2, h3, h4 {
+  line-height: 1.4;
 }
 
 /* Hide number-input spinners — taka fields are typed, not stepped. */
