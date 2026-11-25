@@ -295,7 +295,16 @@ function NewSerial({ services, lanes, preset, onSeeQueue }: { services: Svc[]; l
 
       {chosen.length > 0 && (
         <section id="bar" aria-labelledby="bar-h" className="scroll-mt-20">
-          <StepHead n="২" title="কোন কারিগর?" hint="কার সিরিয়াল কতদূর, দেখে বেছে নিন" />
+          <StepHead n="২" title="কোন কারিগর?" hint="প্রথমে 'যে কেউ', অথবা পছন্দের কারিগর" />
+          <button aria-pressed={barber === "any"} onClick={() => setBarber("any")}
+            className={cx("mb-4 flex w-full items-center gap-3 rounded-2xl border-2 border-dashed bg-surface p-4 text-left transition-colors", barber === "any" ? "border-primary shadow-card" : "border-line-strong")}>
+            <span className="flex h-11 w-11 flex-none items-center justify-center rounded-full bg-primary-soft text-lg text-primary">⇄</span>
+            <span className="min-w-0 flex-1">
+              <span className="block font-bold">যে কেউ (দ্রুততম)</span>
+              <span className="block text-xs text-muted">এখন যিনি আগে ফাঁকা হবেন: {shortest.name} ({isFree(shortest) ? "ফাঁকা" : `~${bnDigits(etaMin(shortest))} মিনিট`})</span>
+            </span>
+            <span className={cx("flex h-7 w-7 flex-none items-center justify-center rounded-full border-2 text-xs", barber === "any" ? "border-primary bg-primary text-gold" : "border-line-strong text-transparent")}>✓</span>
+          </button>
           <div className="grid gap-4 lg:grid-cols-3">
             {lanes.map((l) => {
               const on = barber === l.id;
@@ -364,15 +373,6 @@ function NewSerial({ services, lanes, preset, onSeeQueue }: { services: Svc[]; l
               );
             })}
           </div>
-          <button aria-pressed={barber === "any"} onClick={() => setBarber("any")}
-            className={cx("mt-4 flex w-full items-center gap-3 rounded-2xl border-2 border-dashed bg-surface p-4 text-left transition-colors", barber === "any" ? "border-primary shadow-card" : "border-line-strong")}>
-            <span className="flex h-11 w-11 flex-none items-center justify-center rounded-full bg-primary-soft text-lg text-primary">⇄</span>
-            <span className="min-w-0 flex-1">
-              <span className="block font-bold">যে কেউ, যিনি আগে ফাঁকা হবেন</span>
-              <span className="block text-xs text-muted">এখন সবচেয়ে কম অপেক্ষা: {shortest.name} ({isFree(shortest) ? "ফাঁকা" : `~${bnDigits(etaMin(shortest))} মিনিট`})</span>
-            </span>
-            <span className={cx("flex h-7 w-7 flex-none items-center justify-center rounded-full border-2 text-xs", barber === "any" ? "border-primary bg-primary text-gold" : "border-line-strong text-transparent")}>✓</span>
-          </button>
         </section>
       )}
 
