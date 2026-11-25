@@ -6,7 +6,7 @@ import { useSyncExternalStore } from "react";
 // the shop board and the tracker stay in sync across tabs, the way the real backend (SSE) will later.
 
 export type Source = "online" | "walkin" | "advance";
-export type Ticket = { serial: number; name: string; service: string; price: number; source: Source };
+export type Ticket = { serial: number; name: string; service: string; price: number; source: Source; phone?: string; note?: string };
 export type Lane = { id: number; name: string; initial: string; current: Ticket | null; waiting: Ticket[]; lastSerial: number; doneToday: number; earned: number };
 export type QueueState = { lanes: Lane[]; mine: { barberId: number; serial: number } | null };
 
@@ -70,7 +70,7 @@ export const etaMin = (l: Lane) => aheadOf(l) * MIN_PER_CUT;
 export const isFree = (l: Lane) => !l.current;
 
 /** Join: a free barber serves directly; otherwise the ticket goes to the back of his queue. "any" picks the shortest lane. */
-export function join(barberId: number | "any", t: { name: string; service: string; price: number; source: Source }): { barberId: number; serial: number; direct: boolean } {
+export function join(barberId: number | "any", t: { name: string; service: string; price: number; source: Source; phone?: string; note?: string }): { barberId: number; serial: number; direct: boolean } {
   const s = load();
   const lanes = s.lanes.map((l) => ({ ...l, waiting: [...l.waiting] }));
   const lane = barberId === "any" ? [...lanes].sort((a, b) => aheadOf(a) - aheadOf(b))[0] : lanes.find((l) => l.id === barberId)!;

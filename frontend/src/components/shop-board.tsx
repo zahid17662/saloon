@@ -135,6 +135,8 @@ function Lane({ lane: l, onAdd }: { lane: Lane; onAdd: () => void }) {
             </div>
             <p className="mt-3 truncate text-base font-semibold">{l.current.name}</p>
             <p className="truncate text-sm text-muted">{l.current.service}</p>
+            {l.current.phone && <a href={`tel:${l.current.phone}`} className="mt-1 block text-sm font-medium text-primary">📞 {bnDigits(l.current.phone)}</a>}
+            {l.current.note && <p className="mt-1 rounded-lg bg-gold/15 px-2.5 py-1.5 text-sm text-gold-ink">📝 {l.current.note}</p>}
             <p className="mt-1 text-lg font-bold">{taka(l.current.price)}</p>
             <button onClick={() => finish(l.id)} className="mt-3 h-12 w-full rounded-xl bg-primary text-[15px] font-semibold text-white active:opacity-90">
               ✓ সম্পন্ন{l.waiting[0] ? `, পরের জন #${bnDigits(l.waiting[0].serial)}` : ""}
@@ -162,6 +164,7 @@ function Lane({ lane: l, onAdd }: { lane: Lane; onAdd: () => void }) {
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-semibold">{w.name}</p>
                   <p className="truncate text-xs text-muted">{w.service} · {taka(w.price)}</p>
+                  {(w.phone || w.note) && <p className="truncate text-xs text-gold-ink">{w.phone ? `📞 ${bnDigits(w.phone)}` : ""}{w.phone && w.note ? " · " : ""}{w.note ? `📝 ${w.note}` : ""}</p>}
                 </div>
                 <span className="flex items-center gap-1.5 text-[11px] font-medium text-muted"><span className={cx("h-1.5 w-1.5 rounded-full", SRC[w.source].dot)} />{SRC[w.source].t}</span>
               </li>
@@ -226,6 +229,8 @@ function NewSerial({ services, lanes, preset, onSeeQueue }: { services: Svc[]; l
   const [picked, setPicked] = useState<number[]>([]);
   const [barber, setBarber] = useState<number | "any" | null>(preset ?? null);
   const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [note, setNote] = useState("");
   const [done, setDone] = useState<{ barberId: number; serial: number; direct: boolean } | null>(null);
 
   const chosen = services.filter((s) => picked.includes(s.id));
@@ -233,13 +238,16 @@ function NewSerial({ services, lanes, preset, onSeeQueue }: { services: Svc[]; l
   const shortest = [...lanes].sort((a, b) => aheadOf(a) - aheadOf(b))[0];
   const target = barber === "any" ? shortest : lanes.find((l) => l.id === barber);
 
+  const phoneDigits = phone.replace(/[০-৯]/g, (d) => String("০১২৩৪৫৬৭৮৯".indexOf(d))).replace(/\D/g, "");
+  const phoneBad = phoneDigits.length > 0 && !/^01\d{9}$/.test(phoneDigits);
+
   function confirm() {
-    if (!chosen.length || !target) return;
-    const r = join(barber as number | "any", { name: name.trim() || "ওয়াক-ইন কাস্টমার", service: chosen.map((s) => s.name).join(" + "), price, source: "walkin" });
+    if (!chosen.length || !target || phoneBad) return;
+    const r = join(barber as number | "any", { name: name.trim() || "ওয়াক-ইন কাস্টমার", service: chosen.map((s) => s.name).join(" + "), price, source: "walkin", phone: phoneDigits || undefined, note: note.trim() || undefined });
     setDone(r);
   }
   function again() {
-    setPicked([]); setBarber(null); setName(""); setDone(null);
+    setPicked([]); setBarber(null); setName(""); setPhone(""); setNote(""); setDone(null);
   }
 
   if (done) {
@@ -370,9 +378,16 @@ function NewSerial({ services, lanes, preset, onSeeQueue }: { services: Svc[]; l
 
       {chosen.length > 0 && target && (
         <section id="ok" aria-labelledby="ok-h" className="scroll-mt-20 rounded-[28px] border border-line bg-surface p-4 shadow-card sm:p-5">
-          <StepHead n="৩" title="নিশ্চিত করুন" hint="নাম না দিলেও চলবে" />
+          <StepHead n="৩" title="নিশ্চিত করুন" hint="নাম, ফোন ও নোট ঐচ্ছিক" />
           <label className="grid gap-1 text-sm font-medium">কাস্টমারের নাম (ঐচ্ছিক)
             <input value={name} onChange={(e) => setName(e.target.value)} maxLength={60} className="h-12 rounded-xl border border-line-strong px-3 text-base" />
+          </label>
+          <label className="mt-3 grid gap-1 text-sm font-medium">ফোন নম্বর (ঐচ্ছিক)
+            <input type="tel" inputMode="numeric" autoComplete="tel" value={phone} onChange={(e) => setPhone(e.target.value)} maxLength={14} placeholder="০১XXXXXXXXX" aria-invalid={phoneBad} className={cx("h-12 rounded-xl border px-3 text-base", phoneBad ? "border-red-500" : "border-line-strong")} />
+            {phoneBad && <span className="text-xs font-normal text-red-600">১১ সংখ্যার নম্বর দিন, যেমন ০১৭XXXXXXXX</span>}
+          </label>
+          <label className="mt-3 grid gap-1 text-sm font-medium">নোট (ঐচ্ছিক)
+            <textarea value={note} onChange={(e) => setNote(e.target.value)} maxLength={200} rows={2} placeholder="যেমন: সাইড ছোট, দাড়ি হালকা" className="rounded-xl border border-line-strong px-3 py-2.5 text-base" />
           </label>
           <dl className="mt-4 space-y-2 text-sm">
             <div className="flex justify-between gap-4"><dt className="text-muted">সার্ভিস</dt><dd className="flex flex-wrap justify-end gap-1.5">{chosen.map((s) => <span key={s.id} className="inline-flex items-center gap-1 rounded-full bg-primary-soft px-2.5 py-1 text-xs font-semibold text-primary"><ServiceIcon name={s.name} className="h-3.5 w-3.5" />{s.name}</span>)}</dd></div>
@@ -380,7 +395,7 @@ function NewSerial({ services, lanes, preset, onSeeQueue }: { services: Svc[]; l
             <div className="flex justify-between gap-4"><dt className="text-muted">সিরিয়াল</dt><dd className="font-medium">#{bnDigits(target.lastSerial + 1)} · {isFree(target) ? "সরাসরি শুরু" : `প্রায় ${bnDigits(etaMin(target))} মিনিট পরে`}</dd></div>
             <div className="flex justify-between gap-4 border-t border-dashed border-line-strong pt-2"><dt className="font-semibold">মোট</dt><dd className="text-lg font-bold">{taka(price)}</dd></div>
           </dl>
-          <button onClick={confirm} className="mt-4 h-14 w-full rounded-2xl bg-primary text-base font-bold text-white active:opacity-90 sm:w-auto sm:px-12">সিরিয়াল দিন</button>
+          <button onClick={confirm} disabled={phoneBad} className="mt-4 h-14 disabled:opacity-50 w-full rounded-2xl bg-primary text-base font-bold text-white active:opacity-90 sm:w-auto sm:px-12">সিরিয়াল দিন</button>
         </section>
       )}
 
