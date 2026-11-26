@@ -9,7 +9,7 @@ import { BookingForm } from "./booking-form";
 import { QueueJoin } from "./queue-join";
 
 /** The customer-facing home page. No login; staff and admin have their own entrances in the footer. */
-const TINTS = ["bg-gold/30", "bg-orange-soft", "bg-primary-soft", "bg-peach"];
+const TINTS = ["bg-gold/25", "bg-primary-soft", "bg-peach", "bg-mint"];
 
 export function Landing({ menu }: { menu: PublicMenu | null }) {
   if (!menu) {
@@ -64,7 +64,7 @@ export function Landing({ menu }: { menu: PublicMenu | null }) {
           <div className="mt-7 flex flex-wrap items-center justify-center gap-3">
             <a
               href="#book"
-              className="inline-flex h-12 items-center rounded-full bg-orange px-7 font-bold text-white shadow-[0_10px_24px_rgb(239_119_34/0.35)] transition-opacity hover:opacity-90"
+              className="inline-flex h-12 items-center rounded-full bg-gold px-7 font-bold text-primary shadow-[0_10px_24px_rgb(0_0_0/0.28)] transition-opacity hover:opacity-90"
             >
               অ্যাপয়েন্টমেন্ট নিন
             </a>
@@ -95,7 +95,7 @@ export function Landing({ menu }: { menu: PublicMenu | null }) {
                     {g.items.map((s) => (
                       <li key={s.id} className="flex items-center justify-between gap-3 py-2.5 text-[15px]">
                         <span className="flex min-w-0 items-center gap-3 text-fg"><span className={`flex h-12 w-12 flex-none items-center justify-center rounded-2xl ${TINTS[gi % TINTS.length]}`}><ServiceArt name={s.name} size={40} /></span><span className="min-w-0 break-words font-medium">{s.name}</span></span>
-                        <span className="font-bold text-orange tabular-nums">{taka(s.price)}</span>
+                        <span className="font-bold text-gold-ink tabular-nums">{taka(s.price)}</span>
                       </li>
                     ))}
                   </ul>

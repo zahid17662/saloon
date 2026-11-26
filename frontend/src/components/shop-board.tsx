@@ -448,8 +448,8 @@ function NewSerial({ services, categories, lanes, preset, onSeeQueue }: { servic
               return (
                 <button key={l.id} aria-pressed={on} onClick={() => setBarber(l.id)}
                   className={cx("group relative flex flex-col overflow-hidden rounded-[28px] bg-surface text-left ring-1 transition-all", on ? "-translate-y-0.5 shadow-[0_18px_40px_-14px_rgb(11_31_75/0.45)] ring-2 ring-primary" : "ring-line shadow-card hover:ring-line-strong")}>
-                  {/* green header */}
-                  <span className="relative flex items-center gap-3 overflow-hidden bg-[linear-gradient(135deg,#0C5C45_0%,#107254_100%)] px-4 py-4">
+                  {/* navy header */}
+                  <span className="relative flex items-center gap-3 overflow-hidden bg-[linear-gradient(135deg,#0B1F4B_0%,#17347a_100%)] px-4 py-4">
                     <svg aria-hidden="true" viewBox="0 0 120 120" className="pointer-events-none absolute -top-10 -right-8 h-36 w-36 text-gold opacity-[0.16]"><circle cx="60" cy="60" r="56" fill="none" stroke="currentColor" strokeWidth="2" /><circle cx="60" cy="60" r="38" fill="none" stroke="currentColor" strokeWidth="2" /><circle cx="60" cy="60" r="20" fill="currentColor" /></svg>
                     <BarberFace lane={l} size={56} className="ring-2 ring-gold/70" />
                     <span className="relative min-w-0 flex-1">

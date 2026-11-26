@@ -2,12 +2,12 @@
  * Flat line-art scene drawn for this project: a barber with scissors behind a seated customer,
  * a round mirror and a tool shelf. Ink outlines, white fills, one blue, soft blue blobs.
  */
-const INK = "#10332A";
-const BLUE = "#0C5C45";
-const SKY = "#9CC3AF";
-const PALE = "#E4EFE9";
-const DEEP = "#FBE3B0";
-const GOLD = "#EF7722";
+const INK = "#0B1F4B";
+const BLUE = "#15336E";
+const SKY = "#B9C7E6";
+const PALE = "#E9EDF8";
+const DEEP = "#D7DFF1";
+const GOLD = "#F5C518";
 
 const line = { fill: "none", stroke: INK, strokeWidth: 3, strokeLinecap: "round", strokeLinejoin: "round" } as const;
 const solid = { fill: "#fff", stroke: INK, strokeWidth: 3, strokeLinejoin: "round" } as const;
@@ -48,7 +48,7 @@ export function BarbershopScene({ className = "" }: { className?: string }) {
 
       {/* customer */}
       <path d="M112 258c0-54 18-86 58-86s58 32 58 86z" fill={BLUE} stroke={INK} strokeWidth="3" strokeLinejoin="round" />
-      <path d="M152 254c-4-34 1-56 11-68M194 254c4-32-1-54-9-66" stroke="#3E8F70" strokeWidth="3.500" strokeLinecap="round" fill="none" />
+      <path d="M152 254c-4-34 1-56 11-68M194 254c4-32-1-54-9-66" stroke="#4D6AA8" strokeWidth="3.500" strokeLinecap="round" fill="none" />
       <path d="M160 152h20v22h-20z" {...solid} />
       <ellipse cx="171" cy="130" rx="26" ry="30" {...solid} />
       <path d="M145 126c-4-28 10-40 28-40s30 12 26 40c-5-15-13-21-27-21s-23 6-27 21z" fill={INK} stroke={INK} strokeWidth="3" strokeLinejoin="round" />

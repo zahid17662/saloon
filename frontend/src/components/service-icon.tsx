@@ -86,11 +86,11 @@ export function ServiceIcon({ name, className = "h-5 w-5" }: { name: string; cla
   );
 }
 
-const INK = "#10332A";
-const GOLD = "#EF7722"; // brass accent
-const BLUE = "#0C5C45"; // leather brown
-const SKY = "#9CC3AF"; // tan
-const MIST = "#E4EFE9";
+const INK = "#0B1F4B";
+const GOLD = "#F5C518"; // brass accent
+const BLUE = "#15336E"; // leather brown
+const SKY = "#B9C7E6"; // tan
+const MIST = "#E7ECF8";
 const sw = { stroke: INK, strokeWidth: 2.5, strokeLinejoin: "round", strokeLinecap: "round" } as const;
 
 /** Flat illustration pieces: soft blob, outlined objects, small sparkles. */
@@ -261,7 +261,7 @@ const ART: Record<Kind, ReactNode> = {
   ),
 };
 
-/** Flat illustration: soft green blob, bold dark-green outlines, green and orange fills. */
+/** Flat illustration: soft blue blob, bold navy outlines, blue and gold fills. */
 export function ServiceArt({ name, size = 72, className = "" }: { name: string; size?: number; className?: string }) {
   const kind = serviceKind(name);
   return (

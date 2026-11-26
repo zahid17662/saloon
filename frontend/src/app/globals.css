@@ -1,50 +1,47 @@
 @import "tailwindcss";
 
 /*
- * Barbershop theme: deep forest green with orange and yellow accents on a warm cream canvas.
- * Green carries the dark surfaces, orange the calls to action, yellow the highlights.
+ * Barbershop theme: deep navy and gold on a warm ivory canvas. Keep it quiet: one dark colour, one accent.
  */
 @theme {
-  /* Surfaces: cream canvas, white cards, warm lines */
-  --color-bg: #faf6ec;
+  /* Surfaces: ivory canvas, white cards, warm lines */
+  --color-bg: #f4f2ea;
   --color-surface: #ffffff;
-  --color-surface-2: #fbf7ef;
-  --color-line: #ebe3d4;
-  --color-line-strong: #d9cfbb;
+  --color-surface-2: #f6f8fc;
+  --color-line: #e7e2d0;
+  --color-line-strong: #cbd3e4;
 
-  /* Text: deep green-black */
-  --color-fg: #112b22;
-  --color-muted: #5a6b61;
-  --color-subtle: #8b9890;
+  /* Text: navy */
+  --color-fg: #0b1f4b;
+  --color-muted: #44527a;
+  --color-subtle: #6f7587;
 
-  /* Accent: forest green, orange, yellow */
-  --color-primary: #0c5c45;
-  --color-primary-hover: #0a4a37;
-  --color-primary-soft: #e4efe9;
-  --color-orange: #ef7722;
-  --color-orange-soft: #fde9d7;
-  --color-gold: #f6d64a;
-  --color-gold-ink: #b4601a;
+  /* Accent: navy with gold */
+  --color-primary: #0b1f4b;
+  --color-gold: #f5c518;
+  --color-gold-ink: #8a6a00;
+  --color-primary-hover: #07142f;
+  --color-primary-soft: #eef2fa;
 
   /* Status */
   --color-success: #0f6b38;
-  --color-success-soft: #e4f4ea;
+  --color-success-soft: #e6f1ea;
   --color-danger: #c52a30;
-  --color-danger-soft: #fbe9e6;
-  --color-warning: #a2520a;
-  --color-warning-soft: #fdeeda;
+  --color-danger-soft: #f8e9e6;
+  --color-warning: #5a4600;
+  --color-warning-soft: #f4ead2;
 
   /* Soft tints */
-  --color-lavender: #eef0ff;
-  --color-blush: #fdeee8;
-  --color-peach: #fdf0dd;
-  --color-mint: #e4f0e8;
+  --color-lavender: #f3f0ff;
+  --color-blush: #fff0f3;
+  --color-peach: #fff5ea;
+  --color-mint: #eaf6f0;
 
   --font-sans: var(--font-latin), var(--font-bn), ui-sans-serif, system-ui, sans-serif;
   --font-display: var(--font-display-latin), var(--font-bn), ui-sans-serif, system-ui, sans-serif;
 
-  --shadow-card: 0 1px 2px rgb(17 43 34 / 0.05), 0 6px 20px rgb(17 43 34 / 0.06);
-  --shadow-pop: 0 14px 44px rgb(17 43 34 / 0.18);
+  --shadow-card: 0 1px 2px rgb(21 24 38 / 0.05), 0 6px 20px rgb(21 24 38 / 0.05);
+  --shadow-pop: 0 12px 40px rgb(21 24 38 / 0.18);
 }
 
 html {
@@ -105,10 +102,10 @@ input[type="number"] {
 /* Barbershop theme: barber-pole stripe and a faint diagonal texture. */
 .pole-bar {
   height: 5px;
-  background: repeating-linear-gradient(-45deg, #ef7722 0 10px, #f6d64a 10px 20px, #0c5c45 20px 30px);
+  background: repeating-linear-gradient(-45deg, #f5c518 0 10px, #f4f2ea 10px 20px, #0b1f4b 20px 30px);
 }
 .bg-barber {
-  background-color: #0c5c45;
+  background-color: #0b1f4b;
   background-image:
     repeating-linear-gradient(135deg, rgb(255 255 255 / 0.03) 0 2px, transparent 2px 14px),
     linear-gradient(160deg, #16347f 0%, #232b3b 55%, #060f2b 100%);
