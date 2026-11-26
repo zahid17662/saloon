@@ -1,0 +1,16 @@
+node_modules
+.next
+out
+build
+coverage
+*.tsbuildinfo
+next-env.d.ts
+npm-debug.log*
+.vercel
+.DS_Store
+*.pem
+
+# env files (the examples are committed, real values never are)
+.env*
+!.env.example
+!.env.test.example

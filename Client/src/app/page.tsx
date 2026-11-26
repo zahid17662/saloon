@@ -1,18 +1,19 @@
-import { db } from "@server/db";
+import { notFound, redirect } from "next/navigation";
 import { BarberPicker } from "@/components/barber-picker";
 import { ShopGate } from "@/components/gates";
-import { ensureShop } from "@server/lib/page-auth";
-import { todayStats } from "@server/server/sales";
+import { readApi } from "@/lib/api";
+import type { ReadResult, TodayStat } from "@/lib/api-types";
 
-// Live data from Neon on every request (Cache Components: no prerendered body for this page).
+// Live data from the API on every request (Cache Components: no prerendered body for this page).
 export const instant = false;
 
 export default async function Home() {
-  await ensureShop();
-  const stats = await todayStats(db);
+  const r = await readApi<ReadResult<TodayStat[]>>("read.home");
+  if (r.status === "redirect") redirect(r.to);
+  if (r.status !== "ok") notFound();
   return (
     <ShopGate>
-      <BarberPicker stats={stats} />
+      <BarberPicker stats={r.data} />
     </ShopGate>
   );
 }

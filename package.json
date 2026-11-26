@@ -1,29 +1,27 @@
 {
   "name": "salon-software",
-  "version": "0.1.0",
   "private": true,
-  "workspaces": [
-    "Client",
-    "Server"
-  ],
+  "version": "0.1.0",
+  "description": "Dev meta-repo. Client/ deploys to Vercel (frontend repo), Server/ deploys to Render (backend repo). Each is an independent package; there are no npm workspaces.",
   "scripts": {
-    "dev": "next dev Client",
-    "build": "node scripts/build.mjs",
-    "start": "next start Client",
-    "lint": "eslint",
-    "test": "npm run test --workspace=Server",
-    "typecheck": "tsc --noEmit -p Client/tsconfig.json && tsc --noEmit -p Server/tsconfig.json",
-    "db:generate": "drizzle-kit generate --config Server/drizzle.config.ts",
-    "db:migrate": "drizzle-kit migrate --config Server/drizzle.config.ts",
-    "db:seed": "tsx Server/src/db/seed.ts",
-    "db:studio": "drizzle-kit studio --config Server/drizzle.config.ts",
+    "install:all": "npm install --prefix Client && npm install --prefix Server",
+    "dev:api": "npm run dev --prefix Server",
+    "dev:web": "npm run dev --prefix Client",
+    "typecheck": "npm run typecheck --prefix Client && npm run typecheck --prefix Server",
+    "lint": "npm run lint --prefix Client",
+    "test": "npm test --prefix Server && npm test --prefix Client",
+    "build": "npm run build --prefix Client",
+    "db:generate": "npm run db:generate --prefix Server",
+    "db:migrate": "npm run db:migrate --prefix Server",
+    "db:seed": "npm run db:seed --prefix Server",
+    "sync:shared": "npm run sync:shared --prefix Client",
+    "publish:split": "node scripts/publish-split.mjs",
     "test:e2e": "playwright test",
-    "e2e:init": "node scripts/e2e-init.mjs",
-    "admin:reset-pin": "node scripts/reset-admin-pin.mjs"
+    "e2e:init": "node scripts/e2e-init.mjs"
   },
   "devDependencies": {
     "@playwright/test": "^1.65.1",
-    "eslint": "^9",
-    "eslint-config-next": "16.4.6"
+    "dotenv": "^18.0.10",
+    "@neondatabase/serverless": "^1.2.1"
   }
 }

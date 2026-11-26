@@ -1,23 +1,16 @@
-// Owner backup download (Settings). Admin session required: proxy.ts redirects /admin/* without a
-// cookie and this handler re-checks on the server. Never cached.
+// Owner backup download (Settings). The admin session is checked by the backend API (this handler
+// forwards the visitor's cookies); proxy.ts also redirects /admin/* without a cookie. Never cached.
 
-import { db } from "@server/db";
-import { AuthError, requireAdmin } from "@server/lib/auth";
-import { todayKey } from "@server/lib/time";
-import { exportBackup } from "@server/server/backup";
+import { readApi } from "@/lib/api";
+import type { ReadResult } from "@/lib/api-types";
 
 export async function GET(): Promise<Response> {
-  try {
-    await requireAdmin();
-  } catch (e) {
-    if (e instanceof AuthError) return new Response("Unauthorized", { status: 401, headers: { "cache-control": "no-store" } });
-    throw e;
-  }
-  const data = await exportBackup(db);
-  return new Response(JSON.stringify(data, null, 2), {
+  const r = await readApi<ReadResult<{ filename: string; json: string }>>("read.backup");
+  if (r.status !== "ok") return new Response("Unauthorized", { status: 401, headers: { "cache-control": "no-store" } });
+  return new Response(r.data.json, {
     headers: {
       "content-type": "application/json; charset=utf-8",
-      "content-disposition": `attachment; filename="salon-backup-${todayKey()}.json"`,
+      "content-disposition": `attachment; filename="${r.data.filename}"`,
       "cache-control": "no-store",
     },
   });

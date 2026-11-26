@@ -1,5 +1,6 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "installCommand": "cd .. && npm install",
-  "regions": ["sin1"]
+  "regions": [
+    "sin1"
+  ]
 }

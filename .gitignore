@@ -56,3 +56,9 @@ next-env.d.ts
 
 .vercel
 .env*
+
+# local logs
+.e2e.log
+.*-install.log
+.api.log
+.web.log

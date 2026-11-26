@@ -1,11 +1,17 @@
 import { connection } from "next/server";
 import { AdminLogin } from "@/components/admin/login";
-import { publicShopName } from "@server/lib/shop-name";
+import { readApi } from "@/lib/api";
 
-// Reads the shop name from the database on every request.
+// Reads the shop name from the API on every request.
 export const instant = false;
 
 export default async function Page() {
   await connection();
-  return <AdminLogin shopName={await publicShopName()} />;
+  let shopName = "সেলুন";
+  try {
+    shopName = await readApi<string>("read.shopName");
+  } catch {
+    /* API unreachable: still show the form */
+  }
+  return <AdminLogin shopName={shopName} />;
 }

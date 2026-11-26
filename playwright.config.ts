@@ -1,10 +1,14 @@
+import { randomBytes } from "node:crypto";
 import { defineConfig, devices } from "@playwright/test";
 import { loadE2eEnv } from "./e2e/support/env";
 
 // Refuses to continue unless .env.test points at the dedicated E2E Neon branch (never main / dev).
 loadE2eEnv();
 
-const PORT = 3100;
+const PORT = 3100; // the Next.js web app (Client/)
+const API_PORT = 4100; // the API (Server/)
+// Fresh shared secret for this run only; both processes get the same value.
+const API_KEY = randomBytes(32).toString("base64url");
 
 export default defineConfig({
   testDir: "./e2e",
@@ -29,11 +33,22 @@ export default defineConfig({
     { name: "mobile-375", use: { ...devices["Pixel 5"], viewport: { width: 375, height: 812 } } },
     { name: "desktop", use: { ...devices["Desktop Chrome"], viewport: { width: 1280, height: 800 } } },
   ],
-  webServer: {
-    command: "npm run build && npm start",
-    url: `http://localhost:${PORT}/unlock`,
-    timeout: 300_000,
-    reuseExistingServer: false,
-    env: { PORT: String(PORT), TRUST_PROXY_HEADERS: "1", NODE_ENV: "production" },
-  },
+  webServer: [
+    {
+      // The API talks to the dedicated E2E database (DATABASE_URL and SESSION_SECRET come from
+      // Client/.env.test via loadE2eEnv above).
+      command: "npm start --prefix Server",
+      url: `http://localhost:${API_PORT}/health`,
+      timeout: 120_000,
+      reuseExistingServer: false,
+      env: { PORT: String(API_PORT), API_KEY, TRUST_PROXY_HEADERS: "1", NODE_ENV: "production" },
+    },
+    {
+      command: "npm run build --prefix Client && npm start --prefix Client",
+      url: `http://localhost:${PORT}/unlock`,
+      timeout: 300_000,
+      reuseExistingServer: false,
+      env: { PORT: String(PORT), API_KEY, API_URL: `http://localhost:${API_PORT}`, NODE_ENV: "production" },
+    },
+  ],
 });

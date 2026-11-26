@@ -1,4 +1,3 @@
-import path from "node:path";
 import type { NextConfig } from "next";
 
 const isDev = process.env.NODE_ENV !== "production";
@@ -39,10 +38,6 @@ const nextConfig: NextConfig = {
     return [{ source: "/:path*", headers: securityHeaders }];
   },
   turbopack: {
-    // This app lives in Client/ inside the saloon_software monorepo (sibling: Server/, which
-    // Client/tsconfig.json's "@server/*" alias reaches into); without this, Turbopack would still
-    // auto-detect the repo root via package-lock.json, but setting it explicitly removes any doubt.
-    root: path.join(__dirname, ".."),
     rules: {
       "*.css": {
         loaders: ["@tailwindcss/turbopack"],

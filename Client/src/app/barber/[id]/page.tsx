@@ -1,23 +1,23 @@
-import { notFound } from "next/navigation";
-import { db } from "@server/db";
+import { notFound, redirect } from "next/navigation";
 import { BarberScreen } from "@/components/barber-screen";
 import { BarberGate, ShopGate } from "@/components/gates";
-import { ensureBarberSelf } from "@server/lib/page-auth";
-import { barberSalesToday } from "@server/server/sales";
+import { readApi } from "@/lib/api";
+import type { ReadResult, Sale } from "@/lib/api-types";
 
-// Live data from Neon on every request (Cache Components: no prerendered body for this page).
+// Live data from the API on every request (Cache Components: no prerendered body for this page).
 export const instant = false;
 
 export default async function BarberPage({ params }: PageProps<"/barber/[id]">) {
   const { id } = await params;
   const barberId = Number(id);
   if (!Number.isSafeInteger(barberId) || barberId <= 0) notFound();
-  await ensureBarberSelf(barberId);
-  const todaySales = await barberSalesToday(db, barberId);
+  const r = await readApi<ReadResult<Sale[]>>("read.barber", [barberId]);
+  if (r.status === "redirect") redirect(r.to);
+  if (r.status !== "ok") notFound();
   return (
     <ShopGate>
       <BarberGate barberId={barberId}>
-        <BarberScreen barberId={barberId} todaySales={todaySales} />
+        <BarberScreen barberId={barberId} todaySales={r.data} />
       </BarberGate>
     </ShopGate>
   );

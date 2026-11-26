@@ -1,5 +1,12 @@
 # Deploying the Salon POS (Vercel + Neon)
 
+> **Architecture changed.** The app is now two deployments: the web app (`Client/`, Vercel) and a separate API
+> (`Server/`, Render). Follow `Client/README.md` and `Server/README.md` for the current steps. Neon, the
+> secrets, and the first-time migrate/seed (sections 1 and 3 below) are unchanged, except that the database
+> strings now go on **Render** (not Vercel), and Vercel needs only `API_URL`, `API_KEY` and `SESSION_SECRET`.
+> Run migrate/seed from `Server/` (`npm run db:migrate`, `npm run db:seed`).
+
+
 You run every command yourself. Nothing here is automatic except the migration step in the Production build (section 4).
 
 ## 0. What you need
