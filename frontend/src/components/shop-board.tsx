@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useRef, useState } from "react";
+import { useRef, useState, useSyncExternalStore } from "react";
 import { Logo } from "./logo";
 import { bnDigits, taka } from "@/lib/money";
 import { aheadOf, etaMin, finish, isFree, join, MIN_PER_CUT, removeTicket, resetDemo, setPhoto, useQueue, type Lane, type Source } from "@/lib/queue";
@@ -27,6 +27,24 @@ const SRC: Record<Source, { t: string; dot: string }> = {
   advance: { t: "আগাম", dot: "bg-primary" },
 };
 
+// Soft edges so the picture melts into the page instead of sitting in a hard box.
+const FADE = {
+  maskImage: "linear-gradient(to bottom, transparent 0%, #000 22%, #000 72%, transparent 100%), linear-gradient(to right, transparent 0%, #000 6%, #000 94%, transparent 100%)",
+  maskComposite: "intersect",
+  WebkitMaskImage: "linear-gradient(to bottom, transparent 0%, #000 22%, #000 72%, transparent 100%), linear-gradient(to right, transparent 0%, #000 6%, #000 94%, transparent 100%)",
+  WebkitMaskComposite: "source-in",
+} as const;
+
+function greetingNow() {
+  const h = Number(new Intl.DateTimeFormat("en-GB", { hour: "numeric", hourCycle: "h23", timeZone: "Asia/Dhaka" }).format(new Date()));
+  if (h >= 5 && h < 12) return "শুভ সকাল";
+  if (h >= 12 && h < 16) return "শুভ দুপুর";
+  if (h >= 16 && h < 18) return "শুভ বিকাল";
+  if (h >= 18 && h < 21) return "শুভ সন্ধ্যা";
+  return "শুভ রাত্রি";
+}
+const noopSubscribe = () => () => {};
+
 type View = "new" | "queue" | "money";
 const TABS: { id: View; label: string; icon: string }[] = [
   { id: "new", label: "নতুন সিরিয়াল", icon: "＋" },
@@ -42,28 +60,38 @@ export function ShopBoard({ services, categories = [] }: { services: Svc[]; cate
   const [view, setView] = useState<View>("new");
   const [tab, setTab] = useState<number>(1);
   const [preset, setPreset] = useState<number | undefined>();
+  const greeting = useSyncExternalStore(noopSubscribe, greetingNow, () => "স্বাগতম");
   const waiting = q.lanes.reduce((n, l) => n + l.waiting.length, 0);
 
   return (
     <div className="min-h-dvh bg-bg text-fg">
-      <div className="mx-auto max-w-4xl overflow-hidden bg-primary sm:rounded-b-3xl">
-        <Image src="/hero-parlour.jpg" alt="পার্লারের ভেতরের ছবি" width={1600} height={502} sizes="(min-width: 896px) 896px, 100vw" priority className="block h-auto w-full" />
-      </div>
-      <header className="sticky top-0 z-30 bg-primary pt-[env(safe-area-inset-top)] text-white shadow-[0_10px_24px_-14px_rgb(11_31_75/0.7)]">
-        <div className="mx-auto flex h-16 max-w-6xl items-center gap-3 px-4 sm:px-8">
-          <Logo size={36} />
+      <header className="relative bg-gradient-to-b from-[#ecdcb4] via-[#f2e8cf] to-bg pt-[env(safe-area-inset-top)]">
+        <div className="mx-auto flex max-w-6xl items-center gap-3 px-4 pt-4 sm:px-8">
+          <Logo size={54} className="flex-none drop-shadow-[0_8px_12px_rgb(11_31_75/0.25)]" />
           <div className="min-w-0 flex-1">
-            <h1 className="font-display truncate text-sm leading-tight font-semibold tracking-[0.08em] sm:text-[15px] sm:tracking-[0.14em]">NIR SMART GENTS PARLOUR</h1>
-            <p className="mt-0.5 text-xs leading-snug text-white/65">{bnDigits(waiting)} জন অপেক্ষায়</p>
+            <p className="text-sm leading-snug text-muted">{greeting}</p>
+            <h1 className="font-display flex flex-col text-[17px] leading-tight font-bold tracking-[0.08em] text-primary sm:flex-row sm:gap-2 sm:text-xl">
+              <span>NIR SMART</span>
+              <span className="text-primary/70 sm:text-primary">GENTS PARLOUR</span>
+            </h1>
           </div>
-          <span className="flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1.5 text-xs font-semibold text-gold"><span className="h-2 w-2 animate-pulse rounded-full bg-gold" />লাইভ</span>
           <nav className="ml-2 hidden gap-1 lg:flex" aria-label="বিভাগ">
             {TABS.map((t) => (
-              <button key={t.id} onClick={() => setView(t.id)} aria-current={view === t.id} className={cx("h-10 rounded-full px-5 text-sm font-semibold transition-colors", view === t.id ? "bg-gold text-primary" : "text-white/70 hover:bg-white/10 hover:text-white")}>{t.label}</button>
+              <button key={t.id} onClick={() => setView(t.id)} aria-current={view === t.id} className={cx("h-10 rounded-full px-5 text-sm font-semibold transition-colors", view === t.id ? "bg-primary text-gold" : "text-primary/75 hover:bg-primary/10")}>{t.label}</button>
             ))}
           </nav>
+          <span className="flex flex-none items-center gap-2 rounded-full bg-surface px-3.5 py-2 text-xs font-semibold shadow-card ring-1 ring-line">
+            <span className="h-2 w-2 animate-pulse rounded-full bg-success" />
+            লাইভ · {bnDigits(waiting)} জন
+          </span>
         </div>
-        <div aria-hidden="true" className="h-px bg-gradient-to-r from-transparent via-gold/70 to-transparent" />
+        {view === "new" ? (
+          <div className="mx-auto mt-3 max-w-4xl" style={FADE}>
+            <Image src="/hero-parlour.jpg" alt="পার্লারের ভেতরের ছবি" width={1600} height={502} sizes="(min-width: 896px) 896px, 100vw" priority className="block h-auto w-full" />
+          </div>
+        ) : (
+          <div className="h-3" />
+        )}
       </header>
 
       <main className="mx-auto max-w-6xl px-4 pt-5 pb-40 sm:px-8 lg:pb-10">
