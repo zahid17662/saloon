@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useCatalog } from "../catalog-context";
 import { RangeFilter, useDateRange } from "../range-filter";
-import { Badge, Card, CardHeader, cx, Empty, ErrorText, LoadingScreen, TrendPill } from "../ui";
+import { Badge, cx, Empty, ErrorText, LoadingScreen, TrendPill } from "../ui";
 import { HairdresserPortrait } from "../service-icon";
 import { rangeLabel } from "./common";
 import { SalesChart } from "./sales-chart";
@@ -57,48 +57,51 @@ export function Dashboard() {
         <RangeFilter state={r} />
       </div>
 
-      {/* One summary card instead of four: the total is the headline, the rest is a quiet strip. */}
-      <section className="rounded-3xl bg-primary p-5 text-white shadow-card sm:p-6">
+      {/* One quiet card: headline total, three small figures, and the 14-day line. */}
+      <section className="rounded-3xl bg-surface p-5 shadow-card sm:p-6 xl:grid xl:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] xl:gap-10">
+        <div>
         <div className="flex items-start justify-between gap-3">
           <div>
-            <p className="text-sm text-white/70">মোট বিক্রি</p>
-            <p className="mt-1 text-[34px] leading-none font-bold tabular-nums sm:text-4xl">{taka(t.total)}</p>
+            <p className="text-sm text-muted">মোট বিক্রি</p>
+            <p className="mt-1 text-[34px] leading-none font-bold tabular-nums text-fg sm:text-4xl">{taka(t.total)}</p>
           </div>
-          <TrendPill value={pct(t.total, prev.total)} onDark />
+          <TrendPill value={pct(t.total, prev.total)} />
         </div>
-        <p className="mt-1.5 text-xs text-white/60">{vsLabel}</p>
-        <dl className="mt-5 grid grid-cols-3 gap-3 border-t border-white/15 pt-4">
+        <p className="mt-1.5 text-xs text-subtle">{vsLabel}</p>
+        <dl className="mt-5 grid grid-cols-3 gap-3 border-t border-line pt-4">
           <div>
-            <dt className="text-xs text-white/60">মালিকের ভাগ</dt>
-            <dd className="mt-0.5 text-base font-semibold tabular-nums text-gold sm:text-lg">{taka(t.ownerShare)}</dd>
+            <dt className="text-xs text-muted">মালিকের ভাগ</dt>
+            <dd className="mt-0.5 text-base font-semibold tabular-nums text-gold-ink sm:text-lg">{taka(t.ownerShare)}</dd>
           </div>
           <div>
-            <dt className="text-xs text-white/60">কাস্টমার</dt>
-            <dd className="mt-0.5 text-base font-semibold tabular-nums sm:text-lg">{bnDigits(t.count)}</dd>
+            <dt className="text-xs text-muted">কাস্টমার</dt>
+            <dd className="mt-0.5 text-base font-semibold tabular-nums text-fg sm:text-lg">{bnDigits(t.count)}</dd>
           </div>
           <div>
-            <dt className="text-xs text-white/60">গড় বিল</dt>
-            <dd className="mt-0.5 text-base font-semibold tabular-nums sm:text-lg">{taka(avg)}</dd>
+            <dt className="text-xs text-muted">গড় বিল</dt>
+            <dd className="mt-0.5 text-base font-semibold tabular-nums text-fg sm:text-lg">{taka(avg)}</dd>
           </div>
         </dl>
+        </div>
+        <div className="mt-4 border-t border-line pt-3 xl:mt-0 xl:border-t-0 xl:border-l xl:pt-0 xl:pl-10">
+          <p className="mb-1 text-xs text-subtle">গত ১৪ দিন</p>
+          <SalesChart sales={all} bare />
+        </div>
       </section>
 
-      <div className="mt-4 grid gap-4 xl:grid-cols-12">
-        <Card className="xl:col-span-7">
-          <SalesChart sales={all} />
-        </Card>
-
-        <Card className="xl:col-span-5">
-          <CardHeader
-            title="Hairdresser"
-            actions={<Link href="/admin/reports" className={linkCls}>রিপোর্ট</Link>}
-          />
+      {/* Everything below is plain lists on the page background: no more boxes. */}
+      <div className="mt-8 grid gap-x-12 gap-y-8 xl:grid-cols-3">
+        <section>
+          <div className="mb-2 flex items-center justify-between">
+            <h2 className="text-base font-semibold text-fg">Hairdresser</h2>
+            <Link href="/admin/reports" className={linkCls}>রিপোর্ট</Link>
+          </div>
           {rows.length === 0 ? (
             <Empty>এই সময়ে কোনো বিক্রি নেই</Empty>
           ) : (
             <ul className="divide-y divide-line">
               {rows.map((x) => (
-                <li key={x.barberId} className="flex items-center gap-3 py-3 first:pt-0 last:pb-0">
+                <li key={x.barberId} className="flex items-center gap-3 py-3">
                   <HairdresserPortrait id={x.barberId} size={36} />
                   <div className="min-w-0 flex-1">
                     <div className="truncate text-sm font-semibold text-fg">{x.barberName}</div>
@@ -112,10 +115,10 @@ export function Dashboard() {
               ))}
             </ul>
           )}
-        </Card>
+        </section>
 
         {/* Phone: one list at a time behind two tabs. Wide screens: both lists side by side. */}
-        <Card className="xl:col-span-12">
+        <section className="xl:col-span-2">
           <div role="tablist" aria-label="তালিকা" className="mb-3 flex gap-5 border-b border-line xl:hidden">
             {([["top", "শীর্ষ সার্ভিস"], ["recent", "সাম্প্রতিক এন্ট্রি"]] as const).map(([id, label]) => (
               <button
@@ -188,7 +191,7 @@ export function Dashboard() {
               <Link href="/admin/sales" className={cx(linkCls, "mt-2 inline-block xl:hidden")}>সব দেখুন</Link>
             </div>
           </div>
-        </Card>
+        </section>
       </div>
     </>
   );

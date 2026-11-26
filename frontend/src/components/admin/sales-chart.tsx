@@ -29,7 +29,7 @@ function smooth(pts: [number, number][]) {
 }
 
 /** Last 14 days of sales as a soft area chart (like the "Customer Orders" card). */
-export function SalesChart({ sales }: { sales: Sale[] }) {
+export function SalesChart({ sales, bare }: { sales: Sale[]; bare?: boolean }) {
   const today = todayKey();
   const keys = Array.from({ length: DAYS }, (_, i) => shiftDays(today, i - DAYS + 1));
   const totals = new Map(keys.map((k) => [k, 0]));
@@ -56,12 +56,16 @@ export function SalesChart({ sales }: { sales: Sale[] }) {
 
   return (
     <>
-      <CardHeader title="দৈনিক বিক্রি" sub={`${fmtDateKey(keys[0])} – ${fmtDateKey(today)}`} />
-      <div className="mb-2 flex items-center gap-3">
-        <span className="text-2xl leading-none font-bold tabular-nums text-fg">{taka(sum)}</span>
-        <TrendPill value={trend} />
-        <span className="text-xs text-muted">গত ১৪ দিন</span>
-      </div>
+      {!bare && (
+        <>
+          <CardHeader title="দৈনিক বিক্রি" sub={`${fmtDateKey(keys[0])} – ${fmtDateKey(today)}`} />
+          <div className="mb-2 flex items-center gap-3">
+            <span className="text-2xl leading-none font-bold tabular-nums text-fg">{taka(sum)}</span>
+            <TrendPill value={trend} />
+            <span className="text-xs text-muted">গত ১৪ দিন</span>
+          </div>
+        </>
+      )}
 
       <svg
         viewBox={`0 0 ${W} ${H}`}
