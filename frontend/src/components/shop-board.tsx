@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useRef, useState, useSyncExternalStore } from "react";
+import { useRef, useState } from "react";
 import { Logo } from "./logo";
 import { bnDigits, taka } from "@/lib/money";
 import { aheadOf, etaMin, finish, isFree, join, MIN_PER_CUT, removeTicket, resetDemo, setPhoto, useQueue, type Lane, type Source } from "@/lib/queue";
@@ -35,15 +35,6 @@ const FADE = {
   WebkitMaskComposite: "source-in",
 } as const;
 
-function greetingNow() {
-  const h = Number(new Intl.DateTimeFormat("en-GB", { hour: "numeric", hourCycle: "h23", timeZone: "Asia/Dhaka" }).format(new Date()));
-  if (h >= 5 && h < 12) return "শুভ সকাল";
-  if (h >= 12 && h < 16) return "শুভ দুপুর";
-  if (h >= 16 && h < 18) return "শুভ বিকাল";
-  if (h >= 18 && h < 21) return "শুভ সন্ধ্যা";
-  return "শুভ রাত্রি";
-}
-const noopSubscribe = () => () => {};
 
 type View = "new" | "queue" | "money";
 const TABS: { id: View; label: string; icon: string }[] = [
@@ -60,17 +51,15 @@ export function ShopBoard({ services, categories = [] }: { services: Svc[]; cate
   const [view, setView] = useState<View>("new");
   const [tab, setTab] = useState<number>(1);
   const [preset, setPreset] = useState<number | undefined>();
-  const greeting = useSyncExternalStore(noopSubscribe, greetingNow, () => "স্বাগতম");
   const waiting = q.lanes.reduce((n, l) => n + l.waiting.length, 0);
 
   return (
     <div className="min-h-dvh bg-bg text-fg">
       <header className="relative bg-gradient-to-b from-[#ecdcb4] via-[#f2e8cf] to-bg pt-[env(safe-area-inset-top)]">
         <div className="mx-auto flex max-w-6xl items-center gap-3 px-4 pt-4 sm:px-8">
-          <Logo size={54} className="flex-none drop-shadow-[0_8px_12px_rgb(16 29 67/0.25)]" />
+          <Logo size={46} className="flex-none" />
           <div className="min-w-0 flex-1">
-            <p className="text-sm leading-snug text-muted">{greeting}</p>
-            <h1 className="font-display flex flex-col text-[17px] leading-tight font-bold tracking-[0.08em] text-primary sm:flex-row sm:gap-2 sm:text-xl">
+            <h1 className="font-display flex flex-col text-[15px] leading-tight font-bold tracking-[0.1em] text-primary sm:flex-row sm:gap-2 sm:text-xl">
               <span>NIR SMART</span>
               <span className="text-primary/70 sm:text-primary">GENTS PARLOUR</span>
             </h1>
@@ -80,9 +69,9 @@ export function ShopBoard({ services, categories = [] }: { services: Svc[]; cate
               <button key={t.id} onClick={() => setView(t.id)} aria-current={view === t.id} className={cx("h-10 rounded-full px-5 text-sm font-semibold transition-colors", view === t.id ? "bg-primary text-gold" : "text-primary/75 hover:bg-primary/10")}>{t.label}</button>
             ))}
           </nav>
-          <span className="flex flex-none items-center gap-2 rounded-full bg-surface px-3.5 py-2 text-xs font-semibold shadow-card ring-1 ring-line">
+          <span aria-label={`লাইভ, ${bnDigits(waiting)} জন অপেক্ষায়`} className="flex flex-none items-center gap-1.5 rounded-full bg-surface px-3 py-1.5 text-sm font-bold tabular-nums shadow-card ring-1 ring-line">
             <span className="h-2 w-2 animate-pulse rounded-full bg-success" />
-            লাইভ · {bnDigits(waiting)} জন
+            {bnDigits(waiting)}
           </span>
         </div>
         {view === "new" ? (
