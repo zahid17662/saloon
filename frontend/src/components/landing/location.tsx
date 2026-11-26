@@ -68,7 +68,7 @@ function Skyline() {
 }
 
 export function Location({ address, phone }: { address: string; phone: string }) {
-  const q = encodeURIComponent(address ? `${address}, সাভার, ঢাকা` : "সাভার, ঢাকা");
+  const q = encodeURIComponent(address ? `${address}, ঢাকা` : "সাভার, ঢাকা");
   return (
     <section id="location" aria-labelledby="location-h" className="scroll-mt-24">
       <h2 id="location-h" className="mb-4 text-lg font-bold text-fg">

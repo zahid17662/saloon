@@ -62,7 +62,7 @@ const barbers: Barber[] = [
 
 const settings: Settings = {
   shopName: "NIR SMART GENTS PARLOUR",
-  shopAddress: "মেইন রোড, দিনাজপুর",
+  shopAddress: "ব্লক#এফ, প্লট#এফ-২৬, রোড#০৬, এ.ভি.৪-৩, আশুলিয়া মডেল টাউন",
   shopPhone: "01700000000",
   receiptFooter: "ধন্যবাদ, আবার আসবেন",
   paperWidth: "58",
