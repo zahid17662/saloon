@@ -45,22 +45,22 @@ export function ShopBoard({ services, categories = [] }: { services: Svc[]; cate
 
   return (
     <div className="min-h-dvh bg-bg text-fg">
-      <header className="sticky top-0 z-30 border-b border-line bg-surface/95 pt-[env(safe-area-inset-top)] backdrop-blur">
-        <div className="mx-auto flex h-14 max-w-6xl items-center gap-2.5 px-4 sm:px-8">
-          <Logo size={30} />
+      <header className="sticky top-0 z-30 bg-primary pt-[env(safe-area-inset-top)] text-white shadow-[0_10px_24px_-14px_rgb(11_31_75/0.7)]">
+        <div className="mx-auto flex h-16 max-w-6xl items-center gap-3 px-4 sm:px-8">
+          <Logo size={36} />
           <div className="min-w-0 flex-1">
-            <h1 className="font-display truncate text-[15px] leading-snug font-bold tracking-wide">NIR SMART GENTS PARLOUR</h1>
-            <p className="text-[11px] leading-snug text-muted">{bnDigits(waiting)} জন অপেক্ষায়</p>
+            <h1 className="font-display truncate text-sm leading-tight font-semibold tracking-[0.08em] sm:text-[15px] sm:tracking-[0.14em]">NIR SMART GENTS PARLOUR</h1>
+            <p className="mt-0.5 text-xs leading-snug text-white/65">{bnDigits(waiting)} জন অপেক্ষায়</p>
           </div>
-          <span className="flex items-center gap-1.5 text-xs font-medium text-success"><span className="h-2 w-2 animate-pulse rounded-full bg-success" />লাইভ</span>
-          <nav className="ml-3 hidden gap-1 lg:flex" aria-label="বিভাগ">
+          <span className="flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1.5 text-xs font-semibold text-gold"><span className="h-2 w-2 animate-pulse rounded-full bg-gold" />লাইভ</span>
+          <nav className="ml-2 hidden gap-1 lg:flex" aria-label="বিভাগ">
             {TABS.map((t) => (
-              <button key={t.id} onClick={() => setView(t.id)} aria-current={view === t.id} className={cx("h-10 rounded-full px-4 text-sm font-semibold", view === t.id ? "bg-primary text-white" : "text-muted hover:bg-bg")}>{t.label}</button>
+              <button key={t.id} onClick={() => setView(t.id)} aria-current={view === t.id} className={cx("h-10 rounded-full px-5 text-sm font-semibold transition-colors", view === t.id ? "bg-gold text-primary" : "text-white/70 hover:bg-white/10 hover:text-white")}>{t.label}</button>
             ))}
           </nav>
         </div>
+        <div aria-hidden="true" className="h-px bg-gradient-to-r from-transparent via-gold/70 to-transparent" />
       </header>
-      <div className="pole-bar" aria-hidden="true" />
 
       <main className="mx-auto max-w-6xl px-4 pt-5 pb-40 sm:px-8 lg:pb-10">
         {view === "new" && (
@@ -341,9 +341,9 @@ function Money({ lanes }: { lanes: Lane[] }) {
 function StepHead({ n, title, hint }: { n: string; title: string; hint?: string }) {
   return (
     <div className="mb-3 flex items-center gap-2.5">
-      <span className="flex h-7 w-7 flex-none items-center justify-center rounded-full bg-primary text-xs font-bold text-gold">{n}</span>
+      <span className="flex h-8 w-8 flex-none items-center justify-center rounded-full bg-primary text-sm font-bold text-gold shadow-card">{n}</span>
       <div className="min-w-0">
-        <h2 className="text-base leading-snug font-bold">{title}</h2>
+        <h2 className="text-lg leading-snug font-bold">{title}</h2>
         {hint && <p className="text-xs text-muted">{hint}</p>}
       </div>
     </div>
@@ -423,15 +423,19 @@ function NewSerial({ services, categories, lanes, preset, onSeeQueue }: { servic
             const sub = m ? m[2] : "";
             return (
               <button key={s.id} aria-pressed={on} onClick={() => setPicked((p) => (on ? p.filter((x) => x !== s.id) : [...p, s.id]))}
-                className={cx("flex flex-col rounded-3xl border bg-surface p-3 text-left transition-all active:scale-[0.98]", on ? "border-primary shadow-card ring-2 ring-primary/20" : "border-line hover:border-line-strong hover:shadow-card")}>
-                <span className={cx("relative block aspect-[5/4] w-full overflow-hidden rounded-2xl transition-colors", on ? "bg-gold/40" : "bg-primary-soft")}>
-                  <ServiceArt name={s.name} size={160} className="block h-full w-full" />
-                  {on && <span className="absolute top-2 right-2 flex h-7 w-7 items-center justify-center rounded-full bg-primary text-sm text-gold shadow-card">✓</span>}
+                className={cx("group flex flex-col rounded-[1.75rem] bg-surface p-3 text-left shadow-card ring-1 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lift active:scale-[0.98]", on ? "shadow-lift ring-2 ring-primary" : "ring-primary/5")}>
+                <span className={cx("relative block aspect-[5/4] w-full overflow-hidden rounded-[1.25rem] bg-gradient-to-br transition-colors", on ? "from-gold/50 to-gold/10" : "from-primary-soft to-white")}>
+                  <span aria-hidden="true" className="absolute inset-0 bg-[radial-gradient(circle_at_50%_38%,rgb(255_255_255/0.95),transparent_62%)]" />
+                  <span aria-hidden="true" className="absolute inset-x-8 bottom-1.5 h-2 rounded-full bg-primary/10 blur-sm" />
+                  <ServiceArt name={s.name} size={160} className="relative block h-full w-full" />
                 </span>
-                <span className="mt-3 block px-1 pb-1">
-                  <span className="block text-base leading-snug font-semibold">{main}</span>
-                  {sub && <span className="block text-xs text-muted">{sub}</span>}
-                  <span className="mt-1 block text-base font-bold text-gold-ink tabular-nums">{taka(s.price)}</span>
+                <span className="mt-3.5 flex items-end justify-between gap-2 px-1 pb-1">
+                  <span className="min-w-0">
+                    <span className="block text-[15px] leading-snug font-semibold">{main}</span>
+                    {sub && <span className="block text-xs text-muted">{sub}</span>}
+                    <span className="mt-1 block text-lg leading-tight font-bold text-primary tabular-nums">{taka(s.price)}</span>
+                  </span>
+                  <span aria-hidden="true" className={cx("flex h-9 w-9 flex-none items-center justify-center rounded-full text-lg leading-none transition-colors", on ? "bg-primary text-gold" : "bg-primary-soft text-primary group-hover:bg-gold/50")}>{on ? "✓" : "+"}</span>
                 </span>
               </button>
             );
