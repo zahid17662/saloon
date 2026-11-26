@@ -96,9 +96,9 @@ export function ServiceIcon({ name, className = "h-5 w-5" }: { name: string; cla
 const SKIN = "#E7AD86";
 const SKIN_D = "#CF9068";
 const HAIR = "#24171A";
-const NAVY = "#0B1F4B";
+const NAVY = "#101d43";
 const SHIRT_L = "#3B5FB8";
-const GOLD = "#F5C518";
+const GOLD = "#d6ad43";
 const ORANGE = "#F29A4A";
 const ORANGE_D = "#DC8238";
 const STEEL = "#D3DCEC";
@@ -252,7 +252,7 @@ function facialLook(name: string): { mask: string; eye: [string, string]; deco: 
   if (/gold/i.test(name))
     return {
       mask: "#F3D36B",
-      eye: ["#F5C518", "#FFE58A"],
+      eye: ["#d6ad43", "#FFE58A"],
       deco: (
         <>
           <path d="M70 18h14l3 8H67z" fill={GOLD} /><path d="M67 26h20v7H67z" fill={ORANGE_D} /><path d="M72 20h10" stroke="#fff" strokeOpacity=".7" strokeWidth="1.600" strokeLinecap="round" />
@@ -440,7 +440,7 @@ function art(kind: Kind, name: string): ReactNode {
           <Person
             hairFill={tint}
             front={
-              /highlight/i.test(name) ? <path d="M36 20l-3 12M44 16l-2 15M52 18l1 13M59 23l3 10" stroke="#F5C518" strokeWidth="3.200" strokeLinecap="round" /> : <Sheen />
+              /highlight/i.test(name) ? <path d="M36 20l-3 12M44 16l-2 15M52 18l1 13M59 23l3 10" stroke="#d6ad43" strokeWidth="3.200" strokeLinecap="round" /> : <Sheen />
             }
           />
           <g transform="translate(82 46) rotate(30)">

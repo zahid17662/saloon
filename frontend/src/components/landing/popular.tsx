@@ -4,7 +4,7 @@ import { ServiceArt } from "../service-icon";
 
 /** Card colours cycle so the row reads as a shelf of offers, not a list. */
 const TONES = [
-  { card: "bg-gold text-primary", pill: "bg-primary text-gold" },
+  { card: "bg-primary-soft text-primary", pill: "bg-primary text-gold" },
   { card: "bg-primary text-white", pill: "bg-gold text-primary" },
   { card: "bg-mint text-fg", pill: "bg-primary text-gold" },
   { card: "bg-peach text-fg", pill: "bg-primary text-gold" },

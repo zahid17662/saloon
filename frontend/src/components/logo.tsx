@@ -1,7 +1,7 @@
 import { useId } from "react";
 
-const NAVY = "#0B1F4B";
-const GOLD = "#F5C518";
+const NAVY = "#101d43";
+const GOLD = "#d6ad43";
 
 /**
  * Shop mark: a navy badge with a gold double ring and crossed scissors.

@@ -10,7 +10,7 @@ import { PopularServices } from "./popular";
 import { QueueJoin } from "./queue-join";
 
 /** The customer-facing home page. No login; staff and admin have their own entrances in the footer. */
-const TINTS = ["bg-gold/25", "bg-primary-soft", "bg-peach", "bg-mint"];
+const TINTS = ["bg-surface-2", "bg-primary-soft", "bg-peach", "bg-mint"];
 
 export function Landing({ menu }: { menu: PublicMenu | null }) {
   if (!menu) {

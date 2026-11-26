@@ -5,7 +5,7 @@
 export default function GlobalError({ retry }: { error: unknown; retry: () => void }) {
   return (
     <html lang="bn">
-      <body style={{ margin: 0, fontFamily: "sans-serif", background: "#f4f2ea", color: "#0b1f4b" }}>
+      <body style={{ margin: 0, fontFamily: "sans-serif", background: "#f7f6f1", color: "#101d43" }}>
         <main
           style={{
             minHeight: "100dvh",
@@ -22,7 +22,7 @@ export default function GlobalError({ retry }: { error: unknown; retry: () => vo
           <p>অ্যাপটি চালু করা যায়নি। আবার চেষ্টা করুন।</p>
           <button
             onClick={() => retry()}
-            style={{ height: 44, padding: "0 20px", borderRadius: 12, border: 0, background: "#0b1f4b", color: "#fff", fontWeight: 600 }}
+            style={{ height: 44, padding: "0 20px", borderRadius: 12, border: 0, background: "#101d43", color: "#fff", fontWeight: 600 }}
           >
             আবার চেষ্টা করুন
           </button>

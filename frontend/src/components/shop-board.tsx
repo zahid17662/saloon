@@ -67,7 +67,7 @@ export function ShopBoard({ services, categories = [] }: { services: Svc[]; cate
     <div className="min-h-dvh bg-bg text-fg">
       <header className="relative bg-gradient-to-b from-[#ecdcb4] via-[#f2e8cf] to-bg pt-[env(safe-area-inset-top)]">
         <div className="mx-auto flex max-w-6xl items-center gap-3 px-4 pt-4 sm:px-8">
-          <Logo size={54} className="flex-none drop-shadow-[0_8px_12px_rgb(11_31_75/0.25)]" />
+          <Logo size={54} className="flex-none drop-shadow-[0_8px_12px_rgb(16 29 67/0.25)]" />
           <div className="min-w-0 flex-1">
             <p className="text-sm leading-snug text-muted">{greeting}</p>
             <h1 className="font-display flex flex-col text-[17px] leading-tight font-bold tracking-[0.08em] text-primary sm:flex-row sm:gap-2 sm:text-xl">
@@ -498,9 +498,9 @@ function NewSerial({ services, categories, lanes, preset, onSeeQueue }: { servic
               const shown = line.slice(0, 4);
               return (
                 <button key={l.id} aria-pressed={on} onClick={() => setBarber(l.id)}
-                  className={cx("group relative flex flex-col overflow-hidden rounded-[28px] bg-surface text-left ring-1 transition-all", on ? "-translate-y-0.5 shadow-[0_18px_40px_-14px_rgb(11_31_75/0.45)] ring-2 ring-primary" : "ring-line shadow-card hover:ring-line-strong")}>
+                  className={cx("group relative flex flex-col overflow-hidden rounded-[28px] bg-surface text-left ring-1 transition-all", on ? "-translate-y-0.5 shadow-[0_18px_40px_-14px_rgb(16 29 67/0.45)] ring-2 ring-primary" : "ring-line shadow-card hover:ring-line-strong")}>
                   {/* navy header */}
-                  <span className="relative flex items-center gap-3 overflow-hidden bg-[linear-gradient(135deg,#0B1F4B_0%,#17347a_100%)] px-4 py-4">
+                  <span className="relative flex items-center gap-3 overflow-hidden bg-[linear-gradient(135deg,#101d43_0%,#1d2f66_100%)] px-4 py-4">
                     <svg aria-hidden="true" viewBox="0 0 120 120" className="pointer-events-none absolute -top-10 -right-8 h-36 w-36 text-gold opacity-[0.16]"><circle cx="60" cy="60" r="56" fill="none" stroke="currentColor" strokeWidth="2" /><circle cx="60" cy="60" r="38" fill="none" stroke="currentColor" strokeWidth="2" /><circle cx="60" cy="60" r="20" fill="currentColor" /></svg>
                     <BarberFace lane={l} size={56} className="ring-2 ring-gold/70" />
                     <span className="relative min-w-0 flex-1">
