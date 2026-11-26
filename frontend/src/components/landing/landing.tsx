@@ -50,16 +50,14 @@ export function Landing({ menu }: { menu: PublicMenu | null }) {
             বুক করুন
           </a>
         </div>
-        <div aria-hidden="true" className="h-px bg-gradient-to-r from-transparent via-gold/60 to-transparent" />
+        <div aria-hidden="true" className="h-px bg-line" />
       </header>
 
       <main className="mx-auto max-w-5xl space-y-12 px-4 pb-16">
         <section className="relative -mx-4 mt-0 overflow-hidden rounded-b-[2.5rem] bg-primary px-6 pt-11 text-white shadow-pop sm:mx-0 sm:mt-6 sm:rounded-[2.5rem] sm:px-12 sm:pt-0">
-          <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-[radial-gradient(55%_60%_at_82%_30%,rgb(245_197_24/0.13),transparent)]" />
           <div className="relative grid gap-8 sm:grid-cols-[1.2fr_0.8fr] sm:items-end sm:py-16">
             <div>
               <p className="flex items-center gap-3 text-[11px] font-semibold tracking-[0.3em] text-gold uppercase">
-                <span aria-hidden="true" className="h-px w-8 bg-gold/70" />
                 Gents Parlour
               </p>
               <h1 className="font-display mt-5 text-[2.6rem] leading-[1.06] font-bold tracking-tight sm:text-6xl">
@@ -71,7 +69,7 @@ export function Landing({ menu }: { menu: PublicMenu | null }) {
                 সেবা আর দাম দেখে, পছন্দের Hairdresser ও সময় বেছে আগেই বুক করুন। লাইনে দাঁড়াতে হবে না।
               </p>
               <div className="mt-7 flex flex-wrap gap-3">
-                <a href="#book" className="inline-flex h-12 items-center rounded-full bg-gold px-7 font-bold text-primary shadow-[0_12px_28px_-8px_rgb(245_197_24/0.55)] transition-transform hover:-translate-y-0.5">
+                <a href="#book" className="inline-flex h-12 items-center rounded-full bg-gold px-7 font-bold text-primary transition-transform hover:-translate-y-0.5">
                   অ্যাপয়েন্টমেন্ট নিন
                 </a>
                 <a href="#services" className="inline-flex h-12 items-center rounded-full border border-white/25 px-7 font-medium text-white transition-colors hover:bg-white/10">

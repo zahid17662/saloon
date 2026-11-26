@@ -55,7 +55,7 @@ export function ShopBoard({ services, categories = [] }: { services: Svc[]; cate
 
   return (
     <div className="min-h-dvh bg-bg text-fg">
-      <header className="relative bg-gradient-to-b from-[#ecdcb4] via-[#f2e8cf] to-bg pt-[env(safe-area-inset-top)]">
+      <header className="relative bg-bg pt-[env(safe-area-inset-top)]">
         <div className="mx-auto flex max-w-6xl items-center gap-3 px-4 pt-4 sm:px-8">
           <Logo size={46} className="flex-none" />
           <div className="min-w-0 flex-1">
@@ -167,7 +167,7 @@ function Lane({ lane: l, onAdd }: { lane: Lane; onAdd: () => void }) {
           </div>
           <div className="mt-4 flex items-end gap-4">
             <div>
-              <p className="text-6xl leading-none font-extrabold text-gold tabular-nums">{bnDigits(cur.serial)}</p>
+              <p className="text-6xl leading-none font-bold text-gold tabular-nums">{bnDigits(cur.serial)}</p>
             </div>
             <div className="min-w-0 flex-1 pb-1">
               <p className="truncate text-xl leading-snug font-bold">{cur.name}</p>

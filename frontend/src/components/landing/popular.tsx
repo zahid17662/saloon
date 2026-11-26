@@ -33,7 +33,7 @@ export function PopularServices({ menu }: { menu: PublicMenu }) {
                 <span className="mx-auto mb-4 block h-24 w-24 overflow-hidden rounded-full bg-primary-soft shadow-card">
                   <ServiceArt name={s.name} size={96} className="block" />
                 </span>
-                <span className="font-display block text-lg leading-snug font-extrabold">{s.name}</span>
+                <span className="font-display block text-lg leading-snug font-bold">{s.name}</span>
                 <span className="mt-1 block text-xs opacity-70">{catName(s.categoryId)}</span>
                 <span className={`mt-4 inline-flex rounded-full px-4 py-1.5 text-sm font-bold tabular-nums ${tone.pill}`}>{taka(s.price)}</span>
               </a>

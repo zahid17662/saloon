@@ -123,10 +123,6 @@ function tintFor(name: string): string {
   return "#F6EFE0";
 }
 
-const Star = ({ x, y, s = 1, fill = GOLD }: { x: number; y: number; s?: number; fill?: string }) => (
-  <path transform={`translate(${x} ${y}) scale(${s})`} d="M0-5 1.500-1.500 5 0 1.500 1.500 0 5-1.500 1.500-5 0-1.500-1.500z" fill={fill} />
-);
-
 /** Fist, wrist, white cuff and navy sleeve coming in from the right. Tools are drawn towards -x from the origin. */
 function Hand() {
   return (
@@ -256,7 +252,6 @@ function facialLook(name: string): { mask: string; eye: [string, string]; deco: 
       deco: (
         <>
           <path d="M70 18h14l3 8H67z" fill={GOLD} /><path d="M67 26h20v7H67z" fill={ORANGE_D} /><path d="M72 20h10" stroke="#fff" strokeOpacity=".7" strokeWidth="1.600" strokeLinecap="round" />
-          <Star x={14} y={26} s={1.400} /><Star x={22} y={44} s={0.9} />
         </>
       ),
     };
@@ -269,7 +264,6 @@ function facialLook(name: string): { mask: string; eye: [string, string]; deco: 
           <g transform="translate(77 28)">
             <path d="M-11-4-6-11h12l5 7-11 15z" fill="#8CC8FF" /><path d="M-11-4h22L0 11z" fill="#B9E0FF" /><path d="M-6-11 0-4l6-7M0-4v15" stroke="#fff" strokeOpacity=".8" strokeWidth="1.300" fill="none" />
           </g>
-          <Star x={15} y={24} s={1.400} fill="#9AD3FF" /><Star x={20} y={46} s={0.9} fill="#fff" />
         </>
       ),
     };
@@ -279,7 +273,6 @@ function facialLook(name: string): { mask: string; eye: [string, string]; deco: 
       eye: [STEEL_D, STEEL],
       deco: (
         <>
-          <Star x={76} y={24} s={1.900} fill={STEEL_D} /><Star x={84} y={42} s={1.100} fill={STEEL} /><Star x={15} y={28} s={1.300} fill={STEEL_D} />
           <path d="M31 50q4 6 8 7" fill="none" stroke="#fff" strokeOpacity=".7" strokeWidth="2.500" strokeLinecap="round" />
         </>
       ),
@@ -330,7 +323,6 @@ function facialLook(name: string): { mask: string; eye: [string, string]; deco: 
         <g stroke={GOLD} strokeWidth="2.800" strokeLinecap="round">
           <path d="M46 4v7M24 12l4 5M68 12l-4 5M10 30l7 2M82 30l-7 2" />
         </g>
-        <Star x={16} y={52} s={1.200} /><Star x={78} y={52} s={1.200} />
       </>
     ),
   };
@@ -348,7 +340,6 @@ function art(kind: Kind, name: string): ReactNode {
             <Scissors s={0.85} />
             <Hand />
           </g>
-          <Star x={14} y={26} s={1.300} />
         </>
       );
     case "clipper":
@@ -366,7 +357,6 @@ function art(kind: Kind, name: string): ReactNode {
             </g>
             <Hand />
           </g>
-          <Star x={14} y={26} s={1.300} />
         </>
       );
     case "beard":
@@ -381,7 +371,6 @@ function art(kind: Kind, name: string): ReactNode {
             {[-37, -34, -31].map((x) => <path key={x} d={`M${x}-7v14`} stroke={STEEL_D} strokeWidth="1.400" />)}
             <Hand />
           </g>
-          <Star x={14} y={28} s={1.300} />
         </>
       );
     case "mustache":
@@ -394,7 +383,6 @@ function art(kind: Kind, name: string): ReactNode {
             <Hand />
           </g>
           <g transform="translate(26 80) rotate(-12)"><Comb w={22} /></g>
-          <Star x={14} y={28} s={1.300} />
         </>
       );
     case "wash":
@@ -431,7 +419,6 @@ function art(kind: Kind, name: string): ReactNode {
             <path d="M-44-7h-12M-44 0h-15M-44 7h-12" stroke={STEEL_D} strokeWidth="2.400" strokeLinecap="round" />
             <Hand />
           </g>
-          <Star x={14} y={34} s={1.300} />
         </>
       );
     case "color":
@@ -461,10 +448,6 @@ function art(kind: Kind, name: string): ReactNode {
       return (
         <>
           <Person hair="quiff" front={<Sheen />} />
-          <Star x={17} y={20} s={1.800} />
-          <Star x={77} y={16} s={1.400} />
-          <Star x={76} y={44} s={1.100} fill="#fff" />
-          <Star x={14} y={50} s={1} fill="#fff" />
         </>
       );
     case "facial": {
@@ -503,7 +486,6 @@ function art(kind: Kind, name: string): ReactNode {
           </g>
           <path transform="translate(68 40)" d="M0-5Q5 1 0 5-5 1 0-5z" fill={GOLD} />
           <path transform="translate(64 50)" d="M0-4Q4 .5 0 4-4 .5 0-4z" fill={GOLD} />
-          <Star x={16} y={24} s={1.500} />
         </>
       );
     case "straight":
@@ -516,7 +498,6 @@ function art(kind: Kind, name: string): ReactNode {
             <rect x="-42" y="-8" width="26" height="2.600" rx="1.300" fill={STEEL} />
             <Hand />
           </g>
-          <Star x={14} y={30} s={1.300} />
         </>
       );
     case "massage":
@@ -541,7 +522,6 @@ function art(kind: Kind, name: string): ReactNode {
           <path d="M16 84h64" stroke="#E4EAF6" strokeWidth="3" />
           <g transform="translate(22 22) rotate(-24) scale(.7)"><Scissors /></g>
           <g transform="translate(88 20) rotate(14)"><Comb w={26} /></g>
-          <Star x={50} y={6} s={1.300} />
         </>
       );
   }
