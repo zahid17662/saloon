@@ -159,6 +159,7 @@ export function Landing({ menu }: { menu: PublicMenu | null }) {
       <footer className="border-t border-line bg-surface">
         <div className="mx-auto flex max-w-5xl flex-col gap-4 px-4 py-8 sm:flex-row sm:items-end sm:justify-between">
           <div className="space-y-2 text-sm text-muted">
+            <Logo size={104} className="mb-3" />
             <div className="font-semibold text-fg">{name}</div>
             {shop.address && (
               <div className="flex items-center gap-2">
