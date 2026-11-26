@@ -401,14 +401,15 @@ function NewSerial({ services, categories, lanes, preset, onSeeQueue }: { servic
           {chosen.length > 0 && <button onClick={() => { setPicked([]); setBarber(null); }} className="mt-1.5 rounded-full border border-line-strong px-3 py-1 text-xs font-medium text-muted">মুছে ফেলুন</button>}
         </div>
         {categories.length > 1 && (
-          <div role="tablist" aria-label="সার্ভিসের ধরন" className="-mx-4 mb-4 flex gap-2 overflow-x-auto px-4 pb-1 sm:mx-0 sm:px-0">
+          <div role="tablist" aria-label="সার্ভিসের ধরন" className="-mx-4 mb-5 flex gap-7 overflow-x-auto border-b border-line px-4 [scrollbar-width:none] sm:mx-0 sm:px-0 [&::-webkit-scrollbar]:hidden">
             {categories.map((c) => {
               const n = picked.filter((id) => services.find((s) => s.id === id)?.categoryId === c.id).length;
+              const sel = activeCat === c.id;
               return (
-                <button key={c.id} role="tab" aria-selected={activeCat === c.id} onClick={() => setCat(c.id)}
-                  className={cx("flex h-10 flex-none items-center gap-1.5 rounded-full border px-4 text-sm font-semibold whitespace-nowrap transition-colors", activeCat === c.id ? "border-primary bg-primary text-gold" : "border-line-strong bg-surface text-muted hover:text-fg")}>
+                <button key={c.id} role="tab" aria-selected={sel} onClick={() => setCat(c.id)}
+                  className={cx("relative -mb-px flex-none py-3 text-[15px] font-semibold whitespace-nowrap transition-colors after:absolute after:inset-x-0 after:bottom-0 after:h-[3px] after:rounded-full after:transition-colors", sel ? "text-primary after:bg-gold" : "text-muted after:bg-transparent hover:text-fg")}>
                   {c.name}
-                  {n > 0 && <span className={cx("flex h-5 min-w-5 items-center justify-center rounded-full px-1 text-[11px] font-bold", activeCat === c.id ? "bg-gold text-primary" : "bg-primary text-gold")}>{bnDigits(n)}</span>}
+                  {n > 0 && <><span aria-hidden="true" className="ml-2 inline-block h-2 w-2 rounded-full bg-gold align-middle" /><span className="sr-only"> ({bnDigits(n)}টি বাছাই করা)</span></>}
                 </button>
               );
             })}
