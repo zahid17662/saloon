@@ -5,6 +5,7 @@ import { CalendarIcon, PhoneIcon, PinIcon, ScissorsIcon } from "../icons";
 import { Logo } from "../logo";
 import { HairdresserPortrait, ServiceArt } from "../service-icon";
 import { BookingForm } from "./booking-form";
+import { ParlourScene } from "./parlour-scene";
 import { PopularServices } from "./popular";
 import { QueueJoin } from "./queue-join";
 
@@ -90,10 +91,10 @@ export function Landing({ menu }: { menu: PublicMenu | null }) {
                 ))}
               </dl>
             </div>
-            <div className="relative mx-auto mt-4 w-[78%] max-w-sm sm:mt-0 sm:w-full">
-              <div aria-hidden="true" className="absolute inset-x-0 top-6 bottom-0 rounded-t-full border border-gold/30" />
-              <div className="relative mx-3 overflow-hidden rounded-t-full bg-gradient-to-b from-gold to-gold/70 pt-10">
-                <ServiceArt name="Hair Cutting" size={400} className="block h-auto w-full" />
+            <div className="relative mt-6 sm:mt-0">
+              <div aria-hidden="true" className="absolute -inset-x-2 top-5 bottom-0 rounded-t-[2.25rem] border border-gold/30" />
+              <div className="relative overflow-hidden rounded-t-[2rem] bg-[#F7F1DC] shadow-[0_-18px_40px_-22px_rgb(0_0_0/0.5)] ring-1 ring-gold/40">
+                <ParlourScene className="block h-auto w-full" />
               </div>
             </div>
           </div>
