@@ -58,34 +58,34 @@ export function Dashboard() {
       </div>
 
       {/* One quiet card: headline total, three small figures, and the 14-day line. */}
-      <section className="rounded-3xl bg-surface p-5 shadow-card sm:p-6 xl:grid xl:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] xl:gap-10">
+      <section className="rounded-3xl bg-primary p-5 text-white shadow-card sm:p-6 xl:grid xl:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] xl:gap-10">
         <div>
         <div className="flex items-start justify-between gap-3">
           <div>
-            <p className="text-sm text-muted">মোট বিক্রি</p>
-            <p className="mt-1 text-[34px] leading-none font-bold tabular-nums text-fg sm:text-4xl">{taka(t.total)}</p>
+            <p className="text-sm text-white/70">মোট বিক্রি</p>
+            <p className="mt-1 text-[34px] leading-none font-bold tabular-nums sm:text-4xl">{taka(t.total)}</p>
           </div>
-          <TrendPill value={pct(t.total, prev.total)} />
+          <TrendPill value={pct(t.total, prev.total)} onDark />
         </div>
-        <p className="mt-1.5 text-xs text-subtle">{vsLabel}</p>
-        <dl className="mt-5 grid grid-cols-3 gap-3 border-t border-line pt-4">
+        <p className="mt-1.5 text-xs text-white/60">{vsLabel}</p>
+        <dl className="mt-5 grid grid-cols-3 gap-3 border-t border-white/15 pt-4">
           <div>
-            <dt className="text-xs text-muted">মালিকের ভাগ</dt>
-            <dd className="mt-0.5 text-base font-semibold tabular-nums text-gold-ink sm:text-lg">{taka(t.ownerShare)}</dd>
+            <dt className="text-xs text-white/60">মালিকের ভাগ</dt>
+            <dd className="mt-0.5 text-base font-semibold tabular-nums text-gold sm:text-lg">{taka(t.ownerShare)}</dd>
           </div>
           <div>
-            <dt className="text-xs text-muted">কাস্টমার</dt>
-            <dd className="mt-0.5 text-base font-semibold tabular-nums text-fg sm:text-lg">{bnDigits(t.count)}</dd>
+            <dt className="text-xs text-white/60">কাস্টমার</dt>
+            <dd className="mt-0.5 text-base font-semibold tabular-nums sm:text-lg">{bnDigits(t.count)}</dd>
           </div>
           <div>
-            <dt className="text-xs text-muted">গড় বিল</dt>
-            <dd className="mt-0.5 text-base font-semibold tabular-nums text-fg sm:text-lg">{taka(avg)}</dd>
+            <dt className="text-xs text-white/60">গড় বিল</dt>
+            <dd className="mt-0.5 text-base font-semibold tabular-nums sm:text-lg">{taka(avg)}</dd>
           </div>
         </dl>
         </div>
-        <div className="mt-4 border-t border-line pt-3 xl:mt-0 xl:border-t-0 xl:border-l xl:pt-0 xl:pl-10">
-          <p className="mb-1 text-xs text-subtle">গত ১৪ দিন</p>
-          <SalesChart sales={all} bare />
+        <div className="mt-4 border-t border-white/15 pt-3 xl:mt-0 xl:border-t-0 xl:border-l xl:pt-0 xl:pl-10">
+          <p className="mb-1 text-xs text-white/60">গত ১৪ দিন</p>
+          <SalesChart sales={all} bare dark />
         </div>
       </section>
 
@@ -144,10 +144,13 @@ export function Dashboard() {
                 <ul className="divide-y divide-line">
                   {top.map((x, i) => (
                     <li key={x.name} className="flex items-center gap-3 py-2.5">
-                      <span className="w-4 text-sm font-semibold text-subtle tabular-nums">{bnDigits(i + 1)}</span>
+                      <span className={cx("w-4 text-sm font-bold tabular-nums", i === 0 ? "text-gold-ink" : "text-subtle")}>{bnDigits(i + 1)}</span>
                       <div className="min-w-0 flex-1">
                         <div className="truncate text-sm font-medium text-fg">{x.name}</div>
                         <div className="text-xs text-muted">{bnDigits(x.qty)} বার</div>
+                        <div className="mt-1.5 h-1 w-full overflow-hidden rounded-full bg-primary-soft">
+                          <div className="h-full rounded-full bg-gold" style={{ width: `${t.total > 0 ? Math.max(4, Math.round((x.revenue / t.total) * 100)) : 0}%` }} />
+                        </div>
                       </div>
                       <div className="text-right">
                         <div className="text-sm font-semibold tabular-nums text-fg">{taka(x.revenue)}</div>

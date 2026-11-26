@@ -29,7 +29,10 @@ function smooth(pts: [number, number][]) {
 }
 
 /** Last 14 days of sales as a soft area chart (like the "Customer Orders" card). */
-export function SalesChart({ sales, bare }: { sales: Sale[]; bare?: boolean }) {
+export function SalesChart({ sales, bare, dark }: { sales: Sale[]; bare?: boolean; dark?: boolean }) {
+  const ink = dark ? "var(--color-gold)" : "var(--color-primary)";
+  const grid = dark ? "rgb(255 255 255 / 0.14)" : "var(--color-line)";
+  const label = dark ? "rgb(255 255 255 / 0.55)" : "var(--color-subtle)";
   const today = todayKey();
   const keys = Array.from({ length: DAYS }, (_, i) => shiftDays(today, i - DAYS + 1));
   const totals = new Map(keys.map((k) => [k, 0]));
@@ -76,8 +79,8 @@ export function SalesChart({ sales, bare }: { sales: Sale[]; bare?: boolean }) {
       >
         <defs>
           <linearGradient id="salesFill" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="var(--color-primary)" stopOpacity="0.22" />
-            <stop offset="100%" stopColor="var(--color-primary)" stopOpacity="0.02" />
+            <stop offset="0%" stopColor={ink} stopOpacity={dark ? 0.35 : 0.22} />
+            <stop offset="100%" stopColor={ink} stopOpacity="0.02" />
           </linearGradient>
         </defs>
 
@@ -89,7 +92,7 @@ export function SalesChart({ sales, bare }: { sales: Sale[]; bare?: boolean }) {
             x2={W - PAD.right}
             y1={PAD.top + (1 - f) * (H - PAD.top - PAD.bottom)}
             y2={PAD.top + (1 - f) * (H - PAD.top - PAD.bottom)}
-            stroke="var(--color-line)"
+            stroke={grid}
             strokeDasharray="4 6"
           />
         ))}
@@ -101,18 +104,18 @@ export function SalesChart({ sales, bare }: { sales: Sale[]; bare?: boolean }) {
           width={28}
           height={H - PAD.top - PAD.bottom + 6}
           rx={14}
-          fill="var(--color-primary)"
-          opacity={0.08}
+          fill={ink}
+          opacity={dark ? 0.12 : 0.08}
         />
 
         <path d={area} fill="url(#salesFill)" />
-        <path d={line} fill="none" stroke="var(--color-primary)" strokeWidth={3} strokeLinecap="round" />
+        <path d={line} fill="none" stroke={ink} strokeWidth={3} strokeLinecap="round" />
 
         {/* Focus point + tooltip bubble */}
-        <circle cx={x(focus)} cy={y(values[focus])} r={6} fill="var(--color-surface)" stroke="var(--color-primary)" strokeWidth={3} />
+        <circle cx={x(focus)} cy={y(values[focus])} r={6} fill={dark ? "var(--color-primary)" : "var(--color-surface)"} stroke={ink} strokeWidth={3} />
         <g transform={`translate(${Math.min(Math.max(x(focus), 44), W - 44)}, ${Math.max(y(values[focus]) - 26, 14)})`}>
-          <rect x={-40} y={-15} width={80} height={28} rx={14} fill="var(--color-fg)" />
-          <text textAnchor="middle" y={4} fontSize={12} fontWeight={600} fill="#fff">
+          <rect x={-40} y={-15} width={80} height={28} rx={14} fill={dark ? "var(--color-gold)" : "var(--color-fg)"} />
+          <text textAnchor="middle" y={4} fontSize={12} fontWeight={600} fill={dark ? "var(--color-primary)" : "#fff"}>
             {taka(values[focus])}
           </text>
         </g>
@@ -120,7 +123,7 @@ export function SalesChart({ sales, bare }: { sales: Sale[]; bare?: boolean }) {
         {/* X labels: every other day */}
         {keys.map((k, i) =>
           i % 2 === (DAYS - 1) % 2 ? (
-            <text key={k} x={x(i)} y={H - 8} textAnchor="middle" fontSize={11} fill="var(--color-subtle)">
+            <text key={k} x={x(i)} y={H - 8} textAnchor="middle" fontSize={11} fill={label}>
               {bnDigits(Number(k.slice(8)))}
             </text>
           ) : null,
