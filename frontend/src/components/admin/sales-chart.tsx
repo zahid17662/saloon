@@ -9,8 +9,8 @@ import type { Sale } from "@/lib/types";
 
 const DAYS = 14;
 const W = 640;
-const H = 220;
-const PAD = { top: 36, right: 12, bottom: 28, left: 12 };
+const H = 170;
+const PAD = { top: 34, right: 12, bottom: 28, left: 12 };
 
 /** Smooth path through points (Catmull-Rom converted to cubic Béziers). */
 function smooth(pts: [number, number][]) {
@@ -58,7 +58,7 @@ export function SalesChart({ sales }: { sales: Sale[] }) {
     <>
       <CardHeader title="দৈনিক বিক্রি" sub={`${fmtDateKey(keys[0])} – ${fmtDateKey(today)}`} />
       <div className="mb-2 flex items-center gap-3">
-        <span className="text-[28px] leading-none font-bold tabular-nums text-fg">{taka(sum)}</span>
+        <span className="text-2xl leading-none font-bold tabular-nums text-fg">{taka(sum)}</span>
         <TrendPill value={trend} />
         <span className="text-xs text-muted">গত ১৪ দিন</span>
       </div>

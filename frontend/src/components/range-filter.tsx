@@ -22,17 +22,15 @@ export function RangeFilter({ state }: { state: ReturnType<typeof useDateRange> 
   const { preset, setPreset, custom, setCustom } = state;
   return (
     <div className="flex flex-wrap items-center gap-2">
-      <div className="flex flex-wrap gap-2" role="group" aria-label="সময়সীমা">
+      <div className="flex rounded-full bg-surface p-1 ring-1 ring-line" role="group" aria-label="সময়সীমা">
         {PRESETS.map((p) => (
           <button
             key={p.id}
             onClick={() => setPreset(p.id)}
             aria-pressed={preset === p.id}
             className={cx(
-              "rounded-full border px-4 py-2 text-sm transition-colors",
-              preset === p.id
-                ? "border-primary bg-primary font-semibold text-white shadow-[0_4px_14px_rgb(74_108_240/0.25)]"
-                : "border-line bg-surface text-muted hover:text-fg",
+              "h-8 rounded-full px-3.5 text-[13px] whitespace-nowrap transition-colors",
+              preset === p.id ? "bg-primary font-semibold text-gold" : "text-muted hover:text-fg",
             )}
           >
             {p.label}

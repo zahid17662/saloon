@@ -74,7 +74,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
       {/* Desktop sidebar — floating white panel, icons in circles, blue active circle */}
       <aside className="fixed inset-y-4 left-4 hidden w-60 flex-col rounded-3xl bg-surface p-4 shadow-card lg:flex">
         <div className="mb-8 flex items-center gap-3 px-1">
-          <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-primary text-white shadow-[0_6px_18px_rgb(59_130_246/0.35)]">
+          <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-primary text-gold shadow-[0_6px_18px_rgb(16_29_67/0.25)]">
             <ScissorsIcon className="h-5 w-5" />
           </div>
           <div className="min-w-0">
@@ -91,18 +91,13 @@ export function AdminShell({ children }: { children: ReactNode }) {
                 href={href}
                 aria-current={on ? "page" : undefined}
                 className={cx(
-                  "group flex items-center gap-3 rounded-full py-1.5 pr-3 pl-1.5 text-sm transition-colors",
-                  on ? "bg-primary-soft font-semibold text-fg" : "text-muted hover:bg-surface-2 hover:text-fg",
+                  "relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-colors",
+                  on
+                    ? "bg-primary-soft font-semibold text-primary before:absolute before:inset-y-2 before:left-0 before:w-[3px] before:rounded-full before:bg-gold"
+                    : "text-muted hover:bg-surface-2 hover:text-fg",
                 )}
               >
-                <span
-                  className={cx(
-                    "flex h-9 w-9 items-center justify-center rounded-full transition-colors",
-                    on ? "bg-primary text-white" : "bg-surface-2 text-muted group-hover:text-fg",
-                  )}
-                >
-                  <Icon className="h-[18px] w-[18px]" />
-                </span>
+                <Icon className="h-[18px] w-[18px]" />
                 {label}
               </Link>
             );
@@ -111,20 +106,16 @@ export function AdminShell({ children }: { children: ReactNode }) {
         <div className="space-y-1 border-t border-line pt-3">
           <Link
             href="/staff"
-            className="flex items-center gap-3 rounded-full py-1.5 pr-3 pl-1.5 text-sm text-muted hover:bg-surface-2 hover:text-fg"
+            className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-muted hover:bg-surface-2 hover:text-fg"
           >
-            <span className="flex h-9 w-9 items-center justify-center rounded-full bg-surface-2">
-              <HomeIcon className="h-[18px] w-[18px]" />
-            </span>
+            <HomeIcon className="h-[18px] w-[18px]" />
             Hairdresser-এর স্ক্রিন
           </Link>
           <button
             onClick={logout}
-            className="flex w-full items-center gap-3 rounded-full py-1.5 pr-3 pl-1.5 text-sm text-muted hover:bg-surface-2 hover:text-fg"
+            className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-muted hover:bg-surface-2 hover:text-fg"
           >
-            <span className="flex h-9 w-9 items-center justify-center rounded-full bg-surface-2">
-              <LogoutIcon className="h-[18px] w-[18px]" />
-            </span>
+            <LogoutIcon className="h-[18px] w-[18px]" />
             লগআউট
           </button>
         </div>
@@ -149,7 +140,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
         </div>
       </header>
 
-      <main id="main" className="mx-auto max-w-7xl p-4 pb-[calc(6rem+env(safe-area-inset-bottom))] sm:p-6 lg:py-8 lg:pb-8">{children}</main>
+      <main id="main" className="mx-auto max-w-7xl p-4 pb-[calc(5rem+env(safe-area-inset-bottom))] sm:p-6 lg:py-8 lg:pb-8">{children}</main>
 
       {/* Mobile bottom tab bar: four daily screens + "আরও" for the rest */}
       <nav aria-label="নিচের মেনু" className="fixed inset-x-0 bottom-0 z-30 border-t border-line bg-surface/95 pb-[env(safe-area-inset-bottom)] backdrop-blur lg:hidden">
@@ -158,16 +149,18 @@ export function AdminShell({ children }: { children: ReactNode }) {
             const on = active(href);
             return (
               <li key={href}>
-                <Link href={href} aria-current={on ? "page" : undefined} className={cx("flex min-h-14 flex-col items-center justify-center gap-0.5 px-1 text-[11px] leading-snug", on ? "font-semibold text-primary" : "text-muted")}>
-                  <span className={cx("flex h-7 w-12 items-center justify-center rounded-full", on && "bg-primary-soft")}><Icon className="h-5 w-5" /></span>
+                <Link href={href} aria-current={on ? "page" : undefined} className={cx("relative flex h-14 flex-col items-center justify-center gap-1 px-1 text-[11px] leading-none", on ? "font-semibold text-primary" : "text-muted")}>
+                  <span aria-hidden="true" className={cx("absolute top-0 h-[3px] w-8 rounded-b-full", on ? "bg-gold" : "bg-transparent")} />
+                  <Icon className="h-5 w-5" />
                   <span className="max-w-full truncate">{label.replace("Hairdresser-এর ", "").replace("অ্যাপয়েন্টমেন্ট", "বুকিং")}</span>
                 </Link>
               </li>
             );
           })}
           <li>
-            <button onClick={() => setMore(true)} aria-haspopup="dialog" className={cx("flex min-h-14 w-full flex-col items-center justify-center gap-0.5 px-1 text-[11px] leading-snug", NAV.some((n) => !TABS.includes(n.href) && active(n.href)) ? "font-semibold text-primary" : "text-muted")}>
-              <span className="flex h-7 w-12 items-center justify-center rounded-full"><ListIcon className="h-5 w-5" /></span>
+            <button onClick={() => setMore(true)} aria-haspopup="dialog" className={cx("relative flex h-14 w-full flex-col items-center justify-center gap-1 px-1 text-[11px] leading-none", NAV.some((n) => !TABS.includes(n.href) && active(n.href)) ? "font-semibold text-primary" : "text-muted")}>
+              <span aria-hidden="true" className={cx("absolute top-0 h-[3px] w-8 rounded-b-full", NAV.some((n) => !TABS.includes(n.href) && active(n.href)) ? "bg-gold" : "bg-transparent")} />
+              <ListIcon className="h-5 w-5" />
               আরও
             </button>
           </li>
