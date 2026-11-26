@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { Logo } from "../logo";
 import { PhoneIcon, PinIcon } from "../icons";
@@ -86,9 +87,16 @@ export function SiteFooter({ menu, name }: { menu: PublicMenu; name: string }) {
           </div>
         </div>
 
-        <div className="mt-10 flex flex-wrap items-center justify-between gap-3 border-t border-white/15 pt-6 text-xs">
+        <div className="mt-10 flex flex-wrap items-center justify-between gap-x-6 gap-y-4 border-t border-white/15 pt-6 text-xs">
           <p>© {bnDigits(new Date().getFullYear())} {name}</p>
-          <Link href="/staff" className="transition-colors hover:text-white">স্টাফ লগইন</Link>
+          <div className="flex items-center gap-5">
+            <span className="flex items-center gap-2">
+              <span className="text-white/50">Developed by</span>
+              <Image src="/eloris-labs.png" alt="" width={18} height={18} className="h-[18px] w-auto" />
+              <span className="font-display text-[13px] font-semibold tracking-[0.12em] text-white">ELORIS LABS</span>
+            </span>
+            <Link href="/staff" className="transition-colors hover:text-white">স্টাফ লগইন</Link>
+          </div>
         </div>
       </div>
     </footer>
