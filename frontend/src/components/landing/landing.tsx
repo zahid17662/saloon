@@ -50,16 +50,16 @@ export function Landing({ menu }: { menu: PublicMenu | null }) {
           <div aria-hidden="true" className="absolute inset-x-0 bottom-0 -z-10 h-px bg-gradient-to-r from-transparent via-gold/70 to-transparent" />
 
           <div className="mx-auto w-full max-w-6xl px-4 pt-16 pb-9">
-            <p className="flex items-center gap-3 text-[11px] font-semibold tracking-[0.3em] text-gold uppercase">
+            <p className="flex items-center gap-3 text-xs font-semibold text-gold">
               <span aria-hidden="true" className="h-px w-8 bg-gold" />
-              Gents Parlour · সাভার
+              জেন্টস পার্লার · সাভার
             </p>
-            <h1 id="hero-h" className="font-display mt-3 text-[2.25rem] leading-[1.08] font-bold tracking-tight text-white sm:text-5xl">
-              Look Good,
+            <h1 id="hero-h" className="font-serif-bn mt-3 text-[2rem] leading-[1.3] font-bold text-white sm:text-5xl sm:leading-[1.25]">
+              ভালো দেখুন,
               <br />
-              <span className="text-gold">Feel Confident</span>
+              <span className="text-gold">আত্মবিশ্বাসী থাকুন</span>
             </h1>
-            <p className="mt-3 text-sm text-white/70">Walk-in স্বাগত · অনলাইনে সিরিয়াল ও আগাম বুকিং</p>
+            <p className="mt-3 max-w-md text-sm leading-relaxed text-white/75">ওয়াক-ইন স্বাগত। অনলাইনে সিরিয়াল নিন, অথবা আগাম বুকিং করুন।</p>
             <div className="mt-6 flex items-center gap-3">
               <Link
                 href="/book"

@@ -23,7 +23,7 @@ export function SiteFooter({ menu, name }: { menu: PublicMenu; name: string }) {
               <Logo size={46} />
               <div>
                 <div className="font-display text-sm font-semibold tracking-[0.08em] text-white">{name}</div>
-                <div className="text-xs text-gold">Look Good, Feel Confident</div>
+                <div className="text-xs text-gold">ভালো দেখুন, আত্মবিশ্বাসী থাকুন</div>
               </div>
             </div>
             <div className="mt-5 space-y-2.5 text-sm">
@@ -87,15 +87,18 @@ export function SiteFooter({ menu, name }: { menu: PublicMenu; name: string }) {
           </div>
         </div>
 
-        <div className="mt-10 flex flex-wrap items-center justify-between gap-x-6 gap-y-4 border-t border-white/15 pt-6 text-xs">
-          <p>© {bnDigits(new Date().getFullYear())} {name}</p>
-          <div className="flex items-center gap-5">
-            <span className="flex items-center gap-2">
-              <span className="text-white/50">Developed by</span>
-              <Image src="/eloris-labs.png" alt="" width={18} height={18} className="h-[18px] w-auto" />
-              <span className="font-display text-[13px] font-semibold tracking-[0.12em] text-white">ELORIS LABS</span>
+        <div className="mt-10 flex flex-col items-center gap-5 border-t border-white/15 pt-6 sm:flex-row sm:justify-between">
+          <p className="text-center text-xs sm:text-left">
+            © {bnDigits(new Date().getFullYear())} {name}। সর্বস্বত্ব সংরক্ষিত।
+          </p>
+          <div className="inline-flex items-center gap-3 rounded-full border border-white/15 bg-white/[0.06] py-1.5 pr-5 pl-1.5">
+            <span className="flex h-9 w-9 flex-none items-center justify-center rounded-full bg-white">
+              <Image src="/eloris-labs.png" alt="" width={24} height={24} className="h-6 w-6" />
             </span>
-            <Link href="/staff" className="transition-colors hover:text-white">স্টাফ লগইন</Link>
+            <span className="leading-tight">
+              <span className="block text-[10px] tracking-[0.22em] text-white/50 uppercase">Developed by</span>
+              <span className="font-display block text-sm font-semibold tracking-wide text-white">Eloris Labs</span>
+            </span>
           </div>
         </div>
       </div>

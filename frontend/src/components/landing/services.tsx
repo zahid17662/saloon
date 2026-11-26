@@ -7,7 +7,7 @@ import { taka } from "@/lib/money";
 import { categoryPhoto } from "@/lib/category-photo";
 import type { PublicMenu } from "@/lib/types";
 import { BackIcon } from "../icons";
-import { ServiceArt } from "../service-icon";
+import { ServicePhoto } from "../service-photo";
 
 /** Categories as photo tiles; opening one shows that category's services, like the shop screen. */
 export function Services({ menu }: { menu: PublicMenu }) {
@@ -69,7 +69,7 @@ export function Services({ menu }: { menu: PublicMenu }) {
               className="group flex h-full flex-col rounded-3xl bg-surface p-2.5 shadow-card ring-1 ring-primary/5 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lift"
             >
               <span className="relative block aspect-[16/10] w-full overflow-hidden rounded-2xl bg-gradient-to-br from-primary-soft to-white">
-                <ServiceArt name={s.name} size={160} className="relative block h-full w-full" />
+                <ServicePhoto name={s.name} />
               </span>
               <span className="mt-2.5 block px-1 text-[15px] leading-snug font-semibold break-words text-fg">{s.name}</span>
               <span className="mt-auto flex items-center justify-between gap-2 px-1 pt-1 pb-0.5">

@@ -7,7 +7,8 @@ import { Logo } from "./logo";
 import { bnDigits, taka } from "@/lib/money";
 import { aheadOf, etaMin, finish, isFree, join, MIN_PER_CUT, removeTicket, resetDemo, setPhoto, useQueue, type Lane, type Source } from "@/lib/queue";
 import { BackIcon, ListIcon, PlusIcon, ReceiptIcon, ScissorsIcon, UsersIcon, WalletIcon } from "./icons";
-import { ServiceArt, ServiceIcon } from "./service-icon";
+import { ServiceIcon } from "./service-icon";
+import { ServicePhoto } from "./service-photo";
 import { cx } from "./ui";
 import { BarberFace, squarePhoto } from "./barber-face";
 
@@ -485,8 +486,7 @@ function NewSerial({ services, categories, lanes, preset, onSeeQueue }: { servic
                   <button key={s.id} aria-pressed={on} onClick={() => setPicked((p) => (on ? p.filter((x) => x !== s.id) : [...p, s.id]))}
                     className={cx("group flex flex-col rounded-3xl bg-surface p-2.5 text-left shadow-card ring-1 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lift active:scale-[0.98]", on ? "shadow-lift ring-2 ring-primary" : "ring-primary/5")}>
                     <span className={cx("relative block aspect-[16/10] w-full overflow-hidden rounded-2xl bg-gradient-to-br transition-colors", on ? "from-gold/40 to-gold/10" : "from-primary-soft to-white")}>
-                      <span aria-hidden="true" className="absolute inset-0 bg-[radial-gradient(circle_at_50%_38%,rgb(255_255_255/0.95),transparent_62%)]" />
-                      <ServiceArt name={s.name} size={160} className="relative block h-full w-full" />
+                      <ServicePhoto name={s.name} />
                     </span>
                     <span className="mt-2.5 block px-1">
                       <span className="block text-[15px] leading-snug font-semibold">{main}</span>

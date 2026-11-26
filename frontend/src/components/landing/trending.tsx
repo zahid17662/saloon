@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { taka } from "@/lib/money";
 import type { PublicMenu } from "@/lib/types";
-import { ServiceArt } from "../service-icon";
+import { ServicePhoto } from "../service-photo";
 
 /**
  * A short, hand-picked row of services the shop wants to show first: one from each category,
@@ -33,7 +33,7 @@ export function Trending({ menu }: { menu: PublicMenu }) {
             className="group flex h-full flex-col rounded-3xl bg-surface p-2.5 shadow-card ring-1 ring-primary/5 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lift"
           >
             <span className="relative block aspect-[16/10] w-full overflow-hidden rounded-2xl bg-gradient-to-br from-primary-soft to-white">
-              <ServiceArt name={s.name} size={160} className="relative block h-full w-full" />
+              <ServicePhoto name={s.name} />
             </span>
             <span className="mt-2.5 block px-1 text-[11px] font-semibold tracking-wide text-muted uppercase">{catName(s.categoryId)}</span>
             <span className="block px-1 text-[15px] leading-snug font-semibold break-words text-fg">{s.name}</span>
