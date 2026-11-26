@@ -1,11 +1,12 @@
 "use client";
 
 import Image from "next/image";
+import { categoryPhoto } from "@/lib/category-photo";
 import { useRef, useState } from "react";
 import { Logo } from "./logo";
 import { bnDigits, taka } from "@/lib/money";
 import { aheadOf, etaMin, finish, isFree, join, MIN_PER_CUT, removeTicket, resetDemo, setPhoto, useQueue, type Lane, type Source } from "@/lib/queue";
-import { ListIcon, PlusIcon, ReceiptIcon, ScissorsIcon, UsersIcon, WalletIcon } from "./icons";
+import { BackIcon, ListIcon, PlusIcon, ReceiptIcon, ScissorsIcon, UsersIcon, WalletIcon } from "./icons";
 import { ServiceArt, ServiceIcon } from "./service-icon";
 import { cx } from "./ui";
 import { BarberFace, squarePhoto } from "./barber-face";
@@ -380,8 +381,9 @@ function StepHead({ n, title, hint }: { n: string; title: string; hint?: string 
 function NewSerial({ services, categories, lanes, preset, onSeeQueue }: { services: Svc[]; categories: Cat[]; lanes: Lane[]; preset?: number; onSeeQueue: (barberId?: number) => void }) {
   const [picked, setPicked] = useState<number[]>([]);
   const [barber, setBarber] = useState<number | "any" | null>(preset ?? null);
-  const [cat, setCat] = useState(0);
-  const activeCat = categories.length > 1 ? (categories.some((c) => c.id === cat) ? cat : categories[0].id) : 0;
+  // null = show the category tiles; a number = that category's services are open.
+  const [cat, setCat] = useState<number | null>(categories.length > 1 ? null : (categories[0]?.id ?? 0));
+  const openCat = cat !== null ? categories.find((c) => c.id === cat) : undefined;
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [note, setNote] = useState("");
@@ -426,46 +428,80 @@ function NewSerial({ services, categories, lanes, preset, onSeeQueue }: { servic
           <StepHead n="১" title="কী সার্ভিস নেবেন?" hint="এক বা একাধিক সার্ভিস বেছে নিন" />
           {chosen.length > 0 && <button onClick={() => { setPicked([]); setBarber(null); }} className="mt-1.5 rounded-full border border-line-strong px-3 py-1 text-xs font-medium text-muted">মুছে ফেলুন</button>}
         </div>
-        {categories.length > 1 && (
-          <div role="tablist" aria-label="সার্ভিসের ধরন" className="-mx-4 mb-5 flex gap-7 overflow-x-auto border-b border-line px-4 [scrollbar-width:none] sm:mx-0 sm:px-0 [&::-webkit-scrollbar]:hidden">
+        {categories.length > 1 && !openCat ? (
+          <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
             {categories.map((c) => {
               const n = picked.filter((id) => services.find((s) => s.id === id)?.categoryId === c.id).length;
-              const sel = activeCat === c.id;
               return (
-                <button key={c.id} role="tab" aria-selected={sel} onClick={() => setCat(c.id)}
-                  className={cx("relative -mb-px flex-none py-3 text-[15px] font-semibold whitespace-nowrap transition-colors after:absolute after:inset-x-0 after:bottom-0 after:h-[3px] after:rounded-full after:transition-colors", sel ? "text-primary after:bg-gold" : "text-muted after:bg-transparent hover:text-fg")}>
-                  {c.name}
-                  {n > 0 && <><span aria-hidden="true" className="ml-2 inline-block h-2 w-2 rounded-full bg-gold align-middle" /><span className="sr-only"> ({bnDigits(n)}টি বাছাই করা)</span></>}
-                </button>
+                <li key={c.id}>
+                  <button
+                    onClick={() => setCat(c.id)}
+                    className="group relative block w-full overflow-hidden rounded-2xl ring-1 ring-line transition-all hover:ring-line-strong"
+                  >
+                    <span className="relative block aspect-[16/11]">
+                      <Image
+                        src={categoryPhoto(c.name)}
+                        alt=""
+                        fill
+                        sizes="(min-width: 1024px) 20vw, (min-width: 640px) 33vw, 50vw"
+                        className="object-cover transition-transform duration-300 group-hover:scale-105"
+                      />
+                      <span aria-hidden="true" className="absolute inset-0 bg-gradient-to-t from-primary/85 via-primary/35 to-transparent" />
+                      <span className="absolute inset-x-2 bottom-2.5 block text-center text-[13px] leading-tight font-semibold tracking-wide text-white">
+                        {c.name}
+                      </span>
+                      {n > 0 && (
+                        <span className="absolute top-2 right-2 flex h-6 min-w-6 items-center justify-center rounded-full bg-gold px-1.5 text-xs font-bold text-primary tabular-nums">
+                          {bnDigits(n)}
+                        </span>
+                      )}
+                    </span>
+                  </button>
+                </li>
               );
             })}
-          </div>
+          </ul>
+        ) : (
+          <>
+            {categories.length > 1 && (
+              <div className="mb-4 flex items-center gap-3">
+                <button
+                  onClick={() => setCat(null)}
+                  className="inline-flex h-9 items-center gap-1.5 rounded-full px-3 text-sm font-medium text-primary transition-colors hover:bg-primary-soft"
+                >
+                  <BackIcon className="h-4 w-4" />
+                  সব ক্যাটাগরি
+                </button>
+                <span className="text-sm font-semibold text-fg">{openCat?.name}</span>
+              </div>
+            )}
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+              {services.filter((s) => !openCat || s.categoryId === openCat.id).map((s) => {
+                const on = picked.includes(s.id);
+                const m = s.name.match(/^(.*?)\s*\((.+)\)$/);
+                const main = m ? m[1] : s.name;
+                const sub = m ? m[2] : "";
+                return (
+                  <button key={s.id} aria-pressed={on} onClick={() => setPicked((p) => (on ? p.filter((x) => x !== s.id) : [...p, s.id]))}
+                    className={cx("group flex flex-col rounded-3xl bg-surface p-2.5 text-left shadow-card ring-1 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lift active:scale-[0.98]", on ? "shadow-lift ring-2 ring-primary" : "ring-primary/5")}>
+                    <span className={cx("relative block aspect-[16/10] w-full overflow-hidden rounded-2xl bg-gradient-to-br transition-colors", on ? "from-gold/40 to-gold/10" : "from-primary-soft to-white")}>
+                      <span aria-hidden="true" className="absolute inset-0 bg-[radial-gradient(circle_at_50%_38%,rgb(255_255_255/0.95),transparent_62%)]" />
+                      <ServiceArt name={s.name} size={160} className="relative block h-full w-full" />
+                    </span>
+                    <span className="mt-2.5 block px-1">
+                      <span className="block text-[15px] leading-snug font-semibold">{main}</span>
+                      {sub && <span className="block text-xs leading-snug text-muted">{sub}</span>}
+                    </span>
+                    <span className="mt-1 flex items-center justify-between gap-2 px-1 pb-0.5">
+                      <span className="text-base leading-none font-bold text-gold-ink tabular-nums">{taka(s.price)}</span>
+                      <span aria-hidden="true" className={cx("flex h-7 w-7 flex-none items-center justify-center rounded-full text-base leading-none transition-colors", on ? "bg-primary text-gold" : "bg-primary-soft text-primary group-hover:bg-primary/15")}>{on ? "✓" : "+"}</span>
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </>
         )}
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-          {services.filter((s) => activeCat === 0 || s.categoryId === activeCat).map((s) => {
-            const on = picked.includes(s.id);
-            const m = s.name.match(/^(.*?)\s*\((.+)\)$/);
-            const main = m ? m[1] : s.name;
-            const sub = m ? m[2] : "";
-            return (
-              <button key={s.id} aria-pressed={on} onClick={() => setPicked((p) => (on ? p.filter((x) => x !== s.id) : [...p, s.id]))}
-                className={cx("group flex flex-col rounded-3xl bg-surface p-2.5 text-left shadow-card ring-1 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lift active:scale-[0.98]", on ? "shadow-lift ring-2 ring-primary" : "ring-primary/5")}>
-                <span className={cx("relative block aspect-[16/10] w-full overflow-hidden rounded-2xl bg-gradient-to-br transition-colors", on ? "from-gold/40 to-gold/10" : "from-primary-soft to-white")}>
-                  <span aria-hidden="true" className="absolute inset-0 bg-[radial-gradient(circle_at_50%_38%,rgb(255_255_255/0.95),transparent_62%)]" />
-                  <ServiceArt name={s.name} size={160} className="relative block h-full w-full" />
-                </span>
-                <span className="mt-2.5 block px-1">
-                  <span className="block text-[15px] leading-snug font-semibold">{main}</span>
-                  {sub && <span className="block text-xs leading-snug text-muted">{sub}</span>}
-                </span>
-                <span className="mt-1 flex items-center justify-between gap-2 px-1 pb-0.5">
-                  <span className="text-base leading-none font-bold text-gold-ink tabular-nums">{taka(s.price)}</span>
-                  <span aria-hidden="true" className={cx("flex h-7 w-7 flex-none items-center justify-center rounded-full text-base leading-none transition-colors", on ? "bg-primary text-gold" : "bg-primary-soft text-primary group-hover:bg-primary/15")}>{on ? "✓" : "+"}</span>
-                </span>
-              </button>
-            );
-          })}
-        </div>
         {chosen.length > 0 && (
           <p className="mt-3 text-sm text-muted">{bnDigits(chosen.length)}টি সার্ভিস · মোট <b className="text-fg">{taka(price)}</b></p>
         )}

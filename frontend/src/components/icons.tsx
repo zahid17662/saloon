@@ -73,6 +73,12 @@ export const UsersIcon = ({ className }: P) => (
     <path d="M2 21v-1a6 6 0 0112 0v1M16 4a4 4 0 010 8M22 21v-1a6 6 0 00-4-5.7" />
   </svg>
 );
+export const UserIcon = ({ className }: P) => (
+  <svg {...base} className={className}>
+    <circle cx="12" cy="8" r="4" />
+    <path d="M4 21v-1a8 8 0 0116 0v1" />
+  </svg>
+);
 export const ListIcon = ({ className }: P) => (
   <svg {...base} className={className}>
     <path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01" />

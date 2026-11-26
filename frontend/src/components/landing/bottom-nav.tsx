@@ -2,16 +2,15 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { CalendarIcon, HomeIcon, PinIcon, ScissorsIcon } from "../icons";
+import { CalendarIcon, HomeIcon, ScissorsIcon, UserIcon } from "../icons";
 import { cx } from "../ui";
 
 const ANCHORS = [
   { id: "top", label: "হোম", Icon: HomeIcon },
   { id: "services", label: "সেবা", Icon: ScissorsIcon },
-  { id: "location", label: "লোকেশন", Icon: PinIcon },
 ] as const;
 
-/** Phone-only bar: the two stops on this page, plus booking and the live serial screen. */
+/** Phone-only bar: two stops on this page, booking, and the customer's own screen. */
 export function BottomNav() {
   const [active, setActive] = useState<string>("top");
 
@@ -56,6 +55,12 @@ export function BottomNav() {
           <Link href="/book" className={cx(item, "text-muted")}>
             <CalendarIcon className="h-5 w-5" />
             বুক করুন
+          </Link>
+        </li>
+        <li>
+          <Link href="/track" className={cx(item, "text-muted")}>
+            <UserIcon className="h-5 w-5" />
+            অ্যাকাউন্ট
           </Link>
         </li>
       </ul>
