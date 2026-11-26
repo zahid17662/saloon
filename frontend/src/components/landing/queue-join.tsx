@@ -7,6 +7,7 @@ import { bnDigits, taka } from "@/lib/money";
 import { aheadOf, etaMin, isFree, join, useQueue } from "@/lib/queue";
 import type { PublicMenu } from "@/lib/types";
 import { cx } from "../ui";
+import { useBooking } from "./booking-context";
 
 /** "Join the line now": pick a service and a barber; a free barber serves you directly, otherwise you join his queue. */
 export function QueueJoin({ menu }: { menu: PublicMenu }) {
@@ -17,6 +18,14 @@ export function QueueJoin({ menu }: { menu: PublicMenu }) {
   const [chosen, setChosen] = useState<number | "any" | null>(null);
   const [error, setError] = useState("");
   const [res, setRes] = useState<{ barberId: number; serial: number; direct: boolean } | null>(null);
+  const { preset } = useBooking();
+  const [seen, setSeen] = useState<number | null>(null);
+
+  // A service card higher up the page can preselect itself here (adjust state during render).
+  if (preset !== seen) {
+    setSeen(preset);
+    if (preset) setServiceId(preset);
+  }
 
   const free = q.lanes.find(isFree);
   const sel = chosen ?? free?.id ?? "any";
