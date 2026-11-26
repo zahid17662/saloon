@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { bnDigits, taka } from "@/lib/money";
 import type { PublicMenu } from "@/lib/types";
@@ -5,7 +6,6 @@ import { CalendarIcon, PhoneIcon, PinIcon, ScissorsIcon } from "../icons";
 import { Logo } from "../logo";
 import { HairdresserPortrait, ServiceArt } from "../service-icon";
 import { BookingForm } from "./booking-form";
-import { ParlourScene } from "./parlour-scene";
 import { PopularServices } from "./popular";
 import { QueueJoin } from "./queue-join";
 
@@ -56,8 +56,8 @@ export function Landing({ menu }: { menu: PublicMenu | null }) {
       <main className="mx-auto max-w-5xl space-y-12 px-4 pb-16">
         <section className="relative -mx-4 mt-0 overflow-hidden rounded-b-[2.5rem] bg-primary px-6 pt-11 text-white shadow-pop sm:mx-0 sm:mt-6 sm:rounded-[2.5rem] sm:px-12 sm:pt-0">
           <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-[radial-gradient(55%_60%_at_82%_30%,rgb(245_197_24/0.13),transparent)]" />
-          <div className="relative grid items-end gap-2 sm:grid-cols-[1.15fr_0.85fr] sm:gap-6">
-            <div className="sm:py-16">
+          <div className="relative grid gap-8 sm:grid-cols-[1.2fr_0.8fr] sm:items-end sm:py-16">
+            <div>
               <p className="flex items-center gap-3 text-[11px] font-semibold tracking-[0.3em] text-gold uppercase">
                 <span aria-hidden="true" className="h-px w-8 bg-gold/70" />
                 Gents Parlour
@@ -78,25 +78,22 @@ export function Landing({ menu }: { menu: PublicMenu | null }) {
                   সেবা ও দাম
                 </a>
               </div>
-              <dl className="mt-9 flex gap-8 border-t border-white/10 pt-5">
-                {[
-                  { k: "সেবা", v: bnDigits(menu.services.length) },
-                  { k: "Hairdresser", v: bnDigits(menu.barbers.length) },
-                  { k: "লাইভ কিউ", v: "চালু" },
-                ].map((x) => (
-                  <div key={x.k}>
-                    <dt className="text-xs text-white/55">{x.k}</dt>
-                    <dd className="font-display mt-0.5 text-2xl font-bold text-gold">{x.v}</dd>
-                  </div>
-                ))}
-              </dl>
             </div>
-            <div className="relative mt-6 sm:mt-0">
-              <div aria-hidden="true" className="absolute -inset-x-2 top-5 bottom-0 rounded-t-[2.25rem] border border-gold/30" />
-              <div className="relative overflow-hidden rounded-t-[2rem] bg-[#F7F1DC] shadow-[0_-18px_40px_-22px_rgb(0_0_0/0.5)] ring-1 ring-gold/40">
-                <ParlourScene className="block h-auto w-full" />
-              </div>
-            </div>
+            <dl className="flex gap-8 border-t border-white/10 pt-5 sm:flex-col sm:gap-5 sm:border-t-0 sm:border-l sm:py-2 sm:pl-10">
+              {[
+                { k: "সেবা", v: bnDigits(menu.services.length) },
+                { k: "Hairdresser", v: bnDigits(menu.barbers.length) },
+                { k: "লাইভ কিউ", v: "চালু" },
+              ].map((x) => (
+                <div key={x.k}>
+                  <dt className="text-xs text-white/55">{x.k}</dt>
+                  <dd className="font-display mt-0.5 text-2xl font-bold text-gold">{x.v}</dd>
+                </div>
+              ))}
+            </dl>
+          </div>
+          <div className="relative -mx-6 mt-9 border-t border-gold/40 sm:-mx-12 sm:mt-0">
+            <Image src="/hero-parlour.jpg" alt="পার্লারের ভেতরের ছবি" width={1600} height={502} sizes="(min-width: 1024px) 1024px, 100vw" priority className="block aspect-[4/3] w-full object-cover object-[58%_50%] sm:aspect-[1600/502]" />
           </div>
         </section>
 
