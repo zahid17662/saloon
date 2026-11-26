@@ -5,6 +5,7 @@
   "description": "Dev meta-repo. Client/ deploys to Vercel (frontend repo), Server/ deploys to Render (backend repo). Each is an independent package; there are no npm workspaces.",
   "scripts": {
     "install:all": "npm install --prefix Client && npm install --prefix Server",
+    "dev": "node scripts/dev.mjs",
     "dev:api": "npm run dev --prefix Server",
     "dev:web": "npm run dev --prefix Client",
     "typecheck": "npm run typecheck --prefix Client && npm run typecheck --prefix Server",
