@@ -8,7 +8,6 @@ import { ReceiptIcon, ScissorsIcon, UsersIcon } from "./icons";
 import { ServiceArt, ServiceIcon } from "./service-icon";
 import { cx } from "./ui";
 import { BarberFace, squarePhoto } from "./barber-face";
-import { HomeIcon, ShopHome } from "./shop-home";
 
 type Svc = { id: number; name: string; price: number; categoryId?: number };
 type Cat = { id: number; name: string };
@@ -27,12 +26,11 @@ const SRC: Record<Source, { t: string; dot: string }> = {
   advance: { t: "আগাম", dot: "bg-primary" },
 };
 
-type View = "home" | "new" | "queue" | "money";
-const TABS: { id: View; label: string; Icon: typeof HomeIcon }[] = [
-  { id: "home", label: "হোম", Icon: HomeIcon },
-  { id: "new", label: "নতুন সিরিয়াল", Icon: ScissorsIcon },
-  { id: "queue", label: "চলমান কিউ", Icon: UsersIcon },
-  { id: "money", label: "আজকের হিসাব", Icon: ReceiptIcon },
+type View = "new" | "queue" | "money";
+const TABS: { id: View; label: string; icon: string }[] = [
+  { id: "new", label: "নতুন সিরিয়াল", icon: "＋" },
+  { id: "queue", label: "চলমান কিউ", icon: "☰" },
+  { id: "money", label: "আজকের হিসাব", icon: "৳" },
 ];
 
 /** Shop dashboard. Phone: bottom tab bar. Desktop: tabs in the header.
@@ -40,22 +38,13 @@ const TABS: { id: View; label: string; Icon: typeof HomeIcon }[] = [
 export function ShopBoard({ services, categories = [] }: { services: Svc[]; categories?: Cat[] }) {
   const q = useQueue();
   const svcs = services.length ? services : FALLBACK;
-  const [view, setView] = useState<View>("home");
+  const [view, setView] = useState<View>("new");
   const [tab, setTab] = useState<number>(1);
   const [preset, setPreset] = useState<number | undefined>();
   const waiting = q.lanes.reduce((n, l) => n + l.waiting.length, 0);
 
-  const deskNav = (light: boolean) => (
-    <nav className="ml-2 hidden gap-1 lg:flex" aria-label="বিভাগ">
-      {TABS.map((t) => (
-        <button key={t.id} onClick={() => setView(t.id)} aria-current={view === t.id} className={cx("h-10 rounded-full px-5 text-sm font-semibold transition-colors", view === t.id ? (light ? "bg-primary text-gold" : "bg-gold text-primary") : light ? "text-primary/75 hover:bg-primary/10" : "text-white/70 hover:bg-white/10 hover:text-white")}>{t.label}</button>
-      ))}
-    </nav>
-  );
-
   return (
     <div className="min-h-dvh bg-bg text-fg">
-      {view !== "home" && (
       <header className="sticky top-0 z-30 bg-primary pt-[env(safe-area-inset-top)] text-white shadow-[0_10px_24px_-14px_rgb(11_31_75/0.7)]">
         <div className="mx-auto flex h-16 max-w-6xl items-center gap-3 px-4 sm:px-8">
           <Logo size={36} />
@@ -64,17 +53,16 @@ export function ShopBoard({ services, categories = [] }: { services: Svc[]; cate
             <p className="mt-0.5 text-xs leading-snug text-white/65">{bnDigits(waiting)} জন অপেক্ষায়</p>
           </div>
           <span className="flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1.5 text-xs font-semibold text-gold"><span className="h-2 w-2 animate-pulse rounded-full bg-gold" />লাইভ</span>
-          {deskNav(false)}
+          <nav className="ml-2 hidden gap-1 lg:flex" aria-label="বিভাগ">
+            {TABS.map((t) => (
+              <button key={t.id} onClick={() => setView(t.id)} aria-current={view === t.id} className={cx("h-10 rounded-full px-5 text-sm font-semibold transition-colors", view === t.id ? "bg-gold text-primary" : "text-white/70 hover:bg-white/10 hover:text-white")}>{t.label}</button>
+            ))}
+          </nav>
         </div>
         <div aria-hidden="true" className="h-px bg-gradient-to-r from-transparent via-gold/70 to-transparent" />
       </header>
-      )}
 
-      <main className={cx("pb-40 lg:pb-10", view !== "home" && "mx-auto max-w-6xl px-4 pt-5 sm:px-8")}>
-        {view === "home" && (
-          <ShopHome lanes={q.lanes} nav={deskNav(true)} onGo={setView} onLane={(id) => { setTab(id); setView("queue"); }} />
-        )}
-
+      <main className="mx-auto max-w-6xl px-4 pt-5 pb-40 sm:px-8 lg:pb-10">
         {view === "new" && (
           <NewSerial key={preset ?? "x"} services={svcs} categories={categories} lanes={q.lanes} preset={preset} onSeeQueue={(id) => { if (id) setTab(id); setView("queue"); }} />
         )}
@@ -106,10 +94,10 @@ export function ShopBoard({ services, categories = [] }: { services: Svc[]; cate
       </main>
 
       <nav className="fixed inset-x-0 bottom-0 z-30 px-4 pb-[max(1rem,env(safe-area-inset-bottom))] lg:hidden" aria-label="বিভাগ">
-        <div className="mx-auto grid max-w-md grid-cols-4 gap-1 rounded-full border border-line bg-surface/95 p-1.5 shadow-pop backdrop-blur">
+        <div className="mx-auto grid max-w-md grid-cols-3 gap-1 rounded-full border border-line bg-surface/95 p-1.5 shadow-pop backdrop-blur">
           {TABS.map((t) => (
             <button key={t.id} onClick={() => setView(t.id)} aria-current={view === t.id} className={cx("flex min-w-0 flex-col items-center justify-center gap-0.5 rounded-full py-2 text-[11px] font-semibold transition-colors sm:text-xs", view === t.id ? "bg-primary text-gold" : "text-muted")}>
-              <t.Icon className="h-5 w-5" />{t.label}
+              <span className="text-lg leading-none">{t.icon}</span>{t.label}
             </button>
           ))}
         </div>
