@@ -2,12 +2,12 @@
 
 import { useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { taka } from "@/lib/money";
 import { categoryPhoto } from "@/lib/category-photo";
 import type { PublicMenu } from "@/lib/types";
 import { BackIcon } from "../icons";
 import { ServiceArt } from "../service-icon";
-import { useBooking } from "./booking-context";
 
 /** Categories as photo tiles; opening one shows that category's services, like the shop screen. */
 export function Services({ menu }: { menu: PublicMenu }) {
@@ -16,7 +16,6 @@ export function Services({ menu }: { menu: PublicMenu }) {
     .filter((g) => g.items.length > 0);
   const [open, setOpen] = useState<number | null>(null);
   const cur = groups.find((g) => g.id === open);
-  const { pick } = useBooking();
 
   if (groups.length === 0) return <p className="py-6 text-center text-sm text-muted">সেবার তালিকা শীঘ্রই যোগ হবে।</p>;
 
@@ -65,21 +64,21 @@ export function Services({ menu }: { menu: PublicMenu }) {
       <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
         {cur.items.map((s) => (
           <li key={s.id}>
-            <button
-              onClick={() => pick(s.id)}
-              className="group flex w-full flex-col rounded-3xl bg-surface p-2.5 text-left shadow-card ring-1 ring-primary/5 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lift active:scale-[0.98]"
+            <Link
+              href={`/book?service=${s.id}`}
+              className="group flex h-full flex-col rounded-3xl bg-surface p-2.5 shadow-card ring-1 ring-primary/5 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lift"
             >
               <span className="relative block aspect-[16/10] w-full overflow-hidden rounded-2xl bg-gradient-to-br from-primary-soft to-white">
                 <ServiceArt name={s.name} size={160} className="relative block h-full w-full" />
               </span>
               <span className="mt-2.5 block px-1 text-[15px] leading-snug font-semibold break-words text-fg">{s.name}</span>
-              <span className="mt-1 flex items-center justify-between gap-2 px-1 pb-0.5">
+              <span className="mt-auto flex items-center justify-between gap-2 px-1 pt-1 pb-0.5">
                 <span className="text-base leading-none font-bold text-gold-ink tabular-nums">{taka(s.price)}</span>
                 <span aria-hidden="true" className="rounded-full bg-primary-soft px-2.5 py-1 text-xs font-semibold text-primary transition-colors group-hover:bg-primary group-hover:text-gold">
                   বুক
                 </span>
               </span>
-            </button>
+            </Link>
           </li>
         ))}
       </ul>

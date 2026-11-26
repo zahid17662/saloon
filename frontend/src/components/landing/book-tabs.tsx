@@ -7,12 +7,12 @@ import { BookingForm } from "./booking-form";
 import { QueueJoin } from "./queue-join";
 
 const TABS = [
-  { id: "now", label: "এখনই লাইনে", hint: "পছন্দের Hairdresser বেছে নিন। তিনি ফাঁকা থাকলে সরাসরি কাটবেন, না হলে তাঁর সারিতে সিরিয়াল পাবেন।" },
-  { id: "later", label: "আগাম বুকিং", hint: "নির্দিষ্ট সময়ে আসতে চাইলে বুক করুন। Hairdresser নিশ্চিত করবেন।" },
+  { id: "now", label: "এখনই লাইনে", hint: "সার্ভিস আর Hairdresser বেছে নিন। 'যে কেউ' বাছলে যিনি আগে ফাঁকা হবেন তিনিই কাটবেন।" },
+  { id: "later", label: "আগাম বুকিং", hint: "নির্দিষ্ট দিনে ও সময়ে আসতে চাইলে বুক করুন। Hairdresser নিশ্চিত করবেন।" },
 ] as const;
 
-/** One booking form at a time, so the home page stays short. */
-export function BookTabs({ menu }: { menu: PublicMenu }) {
+/** One booking form at a time. */
+export function BookTabs({ menu, preset }: { menu: PublicMenu; preset?: number }) {
   const [tab, setTab] = useState<(typeof TABS)[number]["id"]>("now");
   const cur = TABS.find((t) => t.id === tab) ?? TABS[0];
   return (
@@ -34,7 +34,7 @@ export function BookTabs({ menu }: { menu: PublicMenu }) {
         ))}
       </div>
       <p className="mt-4 mb-4 text-sm text-muted">{cur.hint}</p>
-      {tab === "now" ? <QueueJoin menu={menu} /> : <BookingForm menu={menu} />}
+      {tab === "now" ? <QueueJoin menu={menu} preset={preset} /> : <BookingForm menu={menu} preset={preset} />}
     </div>
   );
 }

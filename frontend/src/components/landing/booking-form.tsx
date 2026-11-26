@@ -17,8 +17,8 @@ const weekdayFmt = new Intl.DateTimeFormat("bn-BD", { timeZone: "Asia/Dhaka", we
 const dayNumFmt = new Intl.DateTimeFormat("bn-BD", { timeZone: "Asia/Dhaka", day: "2-digit" });
 
 /** Customer booking form: pick services, a barber, a day and a free time, then leave name and phone. */
-export function BookingForm({ menu }: { menu: PublicMenu }) {
-  const [picked, setPicked] = useState<number[]>([]);
+export function BookingForm({ menu, preset }: { menu: PublicMenu; preset?: number }) {
+  const [picked, setPicked] = useState<number[]>(preset ? [preset] : []);
   const [barber, setBarber] = useState<string>(ANY);
   const [date, setDate] = useState(todayKey());
   const [time, setTime] = useState("");
