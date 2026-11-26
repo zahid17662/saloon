@@ -355,6 +355,7 @@ function NewSerial({ services, categories, lanes, preset, onSeeQueue }: { servic
   const [picked, setPicked] = useState<number[]>([]);
   const [barber, setBarber] = useState<number | "any" | null>(preset ?? null);
   const [cat, setCat] = useState(0);
+  const activeCat = categories.length > 1 ? (categories.some((c) => c.id === cat) ? cat : categories[0].id) : 0;
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [note, setNote] = useState("");
@@ -400,27 +401,37 @@ function NewSerial({ services, categories, lanes, preset, onSeeQueue }: { servic
           {chosen.length > 0 && <button onClick={() => { setPicked([]); setBarber(null); }} className="mt-1.5 rounded-full border border-line-strong px-3 py-1 text-xs font-medium text-muted">মুছে ফেলুন</button>}
         </div>
         {categories.length > 1 && (
-          <div role="tablist" aria-label="সার্ভিসের ধরন" className="-mx-4 mb-3 flex gap-2 overflow-x-auto px-4 pb-1 sm:mx-0 sm:px-0">
-            {[{ id: 0, name: "সব" }, ...categories].map((c) => (
-              <button key={c.id} role="tab" aria-selected={cat === c.id} onClick={() => setCat(c.id)}
-                className={cx("h-9 flex-none rounded-full border px-3.5 text-[13px] font-semibold whitespace-nowrap transition-colors", cat === c.id ? "border-primary bg-primary text-gold" : "border-line-strong bg-surface text-muted hover:text-fg")}>{c.name}</button>
-            ))}
+          <div role="tablist" aria-label="সার্ভিসের ধরন" className="-mx-4 mb-4 flex gap-2 overflow-x-auto px-4 pb-1 sm:mx-0 sm:px-0">
+            {categories.map((c) => {
+              const n = picked.filter((id) => services.find((s) => s.id === id)?.categoryId === c.id).length;
+              return (
+                <button key={c.id} role="tab" aria-selected={activeCat === c.id} onClick={() => setCat(c.id)}
+                  className={cx("flex h-10 flex-none items-center gap-1.5 rounded-full border px-4 text-sm font-semibold whitespace-nowrap transition-colors", activeCat === c.id ? "border-primary bg-primary text-gold" : "border-line-strong bg-surface text-muted hover:text-fg")}>
+                  {c.name}
+                  {n > 0 && <span className={cx("flex h-5 min-w-5 items-center justify-center rounded-full px-1 text-[11px] font-bold", activeCat === c.id ? "bg-gold text-primary" : "bg-primary text-gold")}>{bnDigits(n)}</span>}
+                </button>
+              );
+            })}
           </div>
         )}
-        <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-          {services.filter((s) => cat === 0 || s.categoryId === cat).map((s) => {
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+          {services.filter((s) => activeCat === 0 || s.categoryId === activeCat).map((s) => {
             const on = picked.includes(s.id);
+            const m = s.name.match(/^(.*?)\s*\((.+)\)$/);
+            const main = m ? m[1] : s.name;
+            const sub = m ? m[2] : "";
             return (
               <button key={s.id} aria-pressed={on} onClick={() => setPicked((p) => (on ? p.filter((x) => x !== s.id) : [...p, s.id]))}
-                className={cx("flex items-center gap-3 rounded-2xl border bg-surface p-3 text-left transition-colors", on ? "border-primary ring-2 ring-primary/15" : "border-line hover:border-line-strong")}>
-                <span className={cx("h-14 w-14 flex-none overflow-hidden rounded-2xl transition-colors", on ? "bg-gold/40" : "bg-primary-soft")}>
-                  <ServiceArt name={s.name} size={56} className="block" />
+                className={cx("flex flex-col rounded-3xl border bg-surface p-3 text-left transition-all active:scale-[0.98]", on ? "border-primary shadow-card ring-2 ring-primary/20" : "border-line hover:border-line-strong hover:shadow-card")}>
+                <span className={cx("relative block aspect-[5/4] w-full overflow-hidden rounded-2xl transition-colors", on ? "bg-gold/40" : "bg-primary-soft")}>
+                  <ServiceArt name={s.name} size={160} className="block h-full w-full" />
+                  {on && <span className="absolute top-2 right-2 flex h-7 w-7 items-center justify-center rounded-full bg-primary text-sm text-gold shadow-card">✓</span>}
                 </span>
-                <span className="min-w-0 flex-1">
-                  <span className="block text-[15px] leading-snug font-semibold break-words">{s.name}</span>
-                  <span className="mt-0.5 block text-sm font-bold text-gold-ink tabular-nums">{taka(s.price)}</span>
+                <span className="mt-3 block px-1 pb-1">
+                  <span className="block text-base leading-snug font-semibold">{main}</span>
+                  {sub && <span className="block text-xs text-muted">{sub}</span>}
+                  <span className="mt-1 block text-base font-bold text-gold-ink tabular-nums">{taka(s.price)}</span>
                 </span>
-                <span className={cx("flex h-6 w-6 flex-none items-center justify-center rounded-full border-2 text-[11px] transition-colors", on ? "border-primary bg-primary text-gold" : "border-line-strong text-transparent")}>✓</span>
               </button>
             );
           })}
