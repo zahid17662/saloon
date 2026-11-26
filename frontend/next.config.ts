@@ -35,6 +35,8 @@ const securityHeaders = [
 // where netlify.toml variables are not available.
 const nextConfig: NextConfig = {
   env: { PREVIEW_MODE: process.env.PREVIEW_MODE ?? "" },
+  // The round "N" bubble is the dev-only Next.js indicator; hide it so screenshots and local runs match production.
+  devIndicators: false,
   cacheComponents: true,
   partialPrefetching: true,
   async headers() {

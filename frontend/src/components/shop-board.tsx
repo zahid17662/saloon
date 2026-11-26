@@ -5,7 +5,7 @@ import { useRef, useState } from "react";
 import { Logo } from "./logo";
 import { bnDigits, taka } from "@/lib/money";
 import { aheadOf, etaMin, finish, isFree, join, MIN_PER_CUT, removeTicket, resetDemo, setPhoto, useQueue, type Lane, type Source } from "@/lib/queue";
-import { ReceiptIcon, ScissorsIcon, UsersIcon } from "./icons";
+import { ListIcon, PlusIcon, ReceiptIcon, ScissorsIcon, UsersIcon, WalletIcon } from "./icons";
 import { ServiceArt, ServiceIcon } from "./service-icon";
 import { cx } from "./ui";
 import { BarberFace, squarePhoto } from "./barber-face";
@@ -37,10 +37,10 @@ const FADE = {
 
 
 type View = "new" | "queue" | "money";
-const TABS: { id: View; label: string; icon: string }[] = [
-  { id: "new", label: "নতুন সিরিয়াল", icon: "＋" },
-  { id: "queue", label: "চলমান কিউ", icon: "☰" },
-  { id: "money", label: "আজকের হিসাব", icon: "৳" },
+const TABS: { id: View; label: string; Icon: typeof PlusIcon }[] = [
+  { id: "new", label: "নতুন সিরিয়াল", Icon: PlusIcon },
+  { id: "queue", label: "চলমান কিউ", Icon: ListIcon },
+  { id: "money", label: "আজকের হিসাব", Icon: WalletIcon },
 ];
 
 /** Shop dashboard. Phone: bottom tab bar. Desktop: tabs in the header.
@@ -83,7 +83,7 @@ export function ShopBoard({ services, categories = [] }: { services: Svc[]; cate
         )}
       </header>
 
-      <main className="mx-auto max-w-6xl px-4 pt-5 pb-40 sm:px-8 lg:pb-10">
+      <main className="mx-auto max-w-6xl px-4 pt-5 pb-36 sm:px-8 lg:pb-10">
         {view === "new" && (
           <NewSerial key={preset ?? "x"} services={svcs} categories={categories} lanes={q.lanes} preset={preset} onSeeQueue={(id) => { if (id) setTab(id); setView("queue"); }} />
         )}
@@ -114,13 +114,18 @@ export function ShopBoard({ services, categories = [] }: { services: Svc[]; cate
         <button onClick={resetDemo} className="mx-auto mt-8 block text-xs text-muted underline">ডেমো ডেটা রিসেট</button>
       </main>
 
-      <nav className="fixed inset-x-0 bottom-0 z-30 px-4 pb-[max(1rem,env(safe-area-inset-bottom))] lg:hidden" aria-label="বিভাগ">
-        <div className="mx-auto grid max-w-md grid-cols-3 gap-1 rounded-full border border-line bg-surface/95 p-1.5 shadow-pop backdrop-blur">
-          {TABS.map((t) => (
-            <button key={t.id} onClick={() => setView(t.id)} aria-current={view === t.id} className={cx("flex min-w-0 flex-col items-center justify-center gap-0.5 rounded-full py-2 text-[11px] font-semibold transition-colors sm:text-xs", view === t.id ? "bg-primary text-gold" : "text-muted")}>
-              <span className="text-lg leading-none">{t.icon}</span>{t.label}
-            </button>
-          ))}
+      <nav className="fixed inset-x-0 bottom-0 z-30 border-t border-line bg-surface/95 pb-[env(safe-area-inset-bottom)] backdrop-blur lg:hidden" aria-label="বিভাগ">
+        <div className="mx-auto grid max-w-md grid-cols-3">
+          {TABS.map((t) => {
+            const on = view === t.id;
+            return (
+              <button key={t.id} onClick={() => setView(t.id)} aria-current={on ? "page" : undefined} className={cx("relative flex h-14 min-w-0 flex-col items-center justify-center gap-1 text-[11px] font-semibold transition-colors", on ? "text-primary" : "text-muted")}>
+                <span aria-hidden="true" className={cx("absolute top-0 h-[3px] w-10 rounded-b-full transition-colors", on ? "bg-gold" : "bg-transparent")} />
+                <t.Icon className="h-5 w-5" />
+                {t.label}
+              </button>
+            );
+          })}
         </div>
       </nav>
     </div>
@@ -586,7 +591,7 @@ function NewSerial({ services, categories, lanes, preset, onSeeQueue }: { servic
       )}
 
       {chosen.length > 0 && (
-        <div className="fixed inset-x-0 bottom-[calc(5.5rem+env(safe-area-inset-bottom))] z-20 px-4 lg:hidden">
+        <div className="fixed inset-x-0 bottom-[calc(3.5rem+env(safe-area-inset-bottom)+0.5rem)] z-20 px-4 lg:hidden">
           <div className="mx-auto flex max-w-md items-center gap-3 rounded-2xl border border-line bg-surface/95 px-3.5 py-2.5 shadow-pop backdrop-blur">
             <div className="min-w-0 flex-1 text-sm"><div className="truncate text-muted">{bnDigits(chosen.length)}টি সার্ভিস{target ? ` · ${target.name}` : ""}</div><div className="font-bold">{taka(price)}</div></div>
             {target ? (
