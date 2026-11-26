@@ -246,6 +246,96 @@ function Person({ hair = "short", hairFill = HAIR, beard, stache, closed, shirt 
 
 const Sheen = () => <path d="M34 24q11-7 25-2" fill="none" stroke="#fff" strokeOpacity=".7" strokeWidth="3" strokeLinecap="round" />;
 
+/** Each facial gets its own mask colour, eye pads and a symbol, so Gold, Diamond, Fruit, Hydra... are told apart at a glance. */
+function facialLook(name: string): { mask: string; eye: [string, string]; deco: ReactNode } {
+  const tint = tintFor(name);
+  if (/gold/i.test(name))
+    return {
+      mask: "#F3D36B",
+      eye: ["#F5C518", "#FFE58A"],
+      deco: (
+        <>
+          <path d="M70 18h14l3 8H67z" fill={GOLD} /><path d="M67 26h20v7H67z" fill={ORANGE_D} /><path d="M72 20h10" stroke="#fff" strokeOpacity=".7" strokeWidth="1.600" strokeLinecap="round" />
+          <Star x={14} y={26} s={1.400} /><Star x={22} y={44} s={0.9} />
+        </>
+      ),
+    };
+  if (/diamond/i.test(name))
+    return {
+      mask: "#CFE6FF",
+      eye: ["#9AD3FF", "#E3F3FF"],
+      deco: (
+        <>
+          <g transform="translate(77 28)">
+            <path d="M-11-4-6-11h12l5 7-11 15z" fill="#8CC8FF" /><path d="M-11-4h22L0 11z" fill="#B9E0FF" /><path d="M-6-11 0-4l6-7M0-4v15" stroke="#fff" strokeOpacity=".8" strokeWidth="1.300" fill="none" />
+          </g>
+          <Star x={15} y={24} s={1.400} fill="#9AD3FF" /><Star x={20} y={46} s={0.9} fill="#fff" />
+        </>
+      ),
+    };
+  if (/silver/i.test(name))
+    return {
+      mask: "#D5DBE6",
+      eye: [STEEL_D, STEEL],
+      deco: (
+        <>
+          <Star x={76} y={24} s={1.900} fill={STEEL_D} /><Star x={84} y={42} s={1.100} fill={STEEL} /><Star x={15} y={28} s={1.300} fill={STEEL_D} />
+          <path d="M31 50q4 6 8 7" fill="none" stroke="#fff" strokeOpacity=".7" strokeWidth="2.500" strokeLinecap="round" />
+        </>
+      ),
+    };
+  if (/fruit/i.test(name))
+    return {
+      mask: "#FFC58A",
+      eye: ["#F29A4A", "#FFE0B8"],
+      deco: (
+        <>
+          <g transform="translate(77 30)">
+            <circle r="11" fill={ORANGE} /><circle r="8.500" fill="#FFD9A8" />
+            <path d="M0-8.500v17M-7.500-4.300l15 8.600M-7.500 4.300l15-8.600" stroke={ORANGE} strokeWidth="1.400" />
+          </g>
+          <path d="M16 22c6-8 14-6 14 2-8 2-12 0-14-2z" fill={GREEN} /><circle cx="22" cy="46" r="4.500" fill={RED} /><path d="M20 42q2-3 4 0" stroke={GREEN} strokeWidth="1.600" fill="none" strokeLinecap="round" />
+        </>
+      ),
+    };
+  if (/acme|acne/i.test(name))
+    return {
+      mask: "#BFE3C6",
+      eye: [GREEN, "#DDF3E3"],
+      deco: (
+        <>
+          <path d="M70 16c10-4 18 2 16 12-10 2-16-2-16-12z" fill="#5FAE78" /><path d="M72 26q8-6 12-8" stroke="#DDF3E3" strokeWidth="1.500" fill="none" strokeLinecap="round" />
+          <path d="M14 24c6-8 14-6 14 2-8 2-12 0-14-2z" fill={GREEN} />
+          <circle cx="76" cy="46" r="3" fill="#fff" /><circle cx="84" cy="54" r="2" fill="#fff" />
+        </>
+      ),
+    };
+  if (/hydra/i.test(name))
+    return {
+      mask: "#BFE8FF",
+      eye: [WATER, "#E3F3FF"],
+      deco: (
+        <>
+          {[[78, 22, 1.6], [86, 40, 1.2], [72, 44, 1]].map(([x, y, k]) => <path key={`${x}${y}`} transform={`translate(${x} ${y}) scale(${k})`} d="M0-7Q6 1 0 7-6 1 0-7z" fill={WATER} />)}
+          <path d="M12 30q4-4 8 0t8 0M12 38q4-4 8 0t8 0" stroke={WATER} strokeWidth="2.200" fill="none" strokeLinecap="round" />
+        </>
+      ),
+    };
+  // Brightening and any other facial: pearl mask with a sunburst behind the head
+  return {
+    mask: tint === "#F6EFE0" ? "#FFF3C9" : tint,
+    eye: [GREEN, "#BDE5C8"],
+    deco: (
+      <>
+        <g stroke={GOLD} strokeWidth="2.800" strokeLinecap="round">
+          <path d="M46 4v7M24 12l4 5M68 12l-4 5M10 30l7 2M82 30l-7 2" />
+        </g>
+        <Star x={16} y={52} s={1.200} /><Star x={78} y={52} s={1.200} />
+      </>
+    ),
+  };
+}
+
 function art(kind: Kind, name: string): ReactNode {
   const tint = tintFor(name);
   switch (kind) {
@@ -377,7 +467,8 @@ function art(kind: Kind, name: string): ReactNode {
           <Star x={14} y={50} s={1} fill="#fff" />
         </>
       );
-    case "facial":
+    case "facial": {
+      const fv = facialLook(name);
       return (
         <>
           <Person
@@ -388,19 +479,18 @@ function art(kind: Kind, name: string): ReactNode {
               <g>
                 <path d="M28 43C26 21 38 12 50 14c13 2 18 14 14 29-6-9-28-9-36 0z" fill="#fff" />
                 <path d="M33 22q13-8 28 0" fill="none" stroke="#E4EAF6" strokeWidth="2.500" strokeLinecap="round" />
-                <path d="M31 46c0 12 6 19 15 19s15-7 15-19c-4-3-9-3-15-3s-11 0-15 3z" fill={tint} />
-                <circle cx="39" cy="45" r="6" fill={GREEN} /><circle cx="53" cy="45" r="6" fill={GREEN} />
-                <circle cx="39" cy="45" r="3.200" fill="#BDE5C8" /><circle cx="53" cy="45" r="3.200" fill="#BDE5C8" />
+                <path d="M31 46c0 12 6 19 15 19s15-7 15-19c-4-3-9-3-15-3s-11 0-15 3z" fill={fv.mask} />
+                <circle cx="39" cy="45" r="6" fill={fv.eye[0]} /><circle cx="53" cy="45" r="6" fill={fv.eye[0]} />
+                <circle cx="39" cy="45" r="3.200" fill={fv.eye[1]} /><circle cx="53" cy="45" r="3.200" fill={fv.eye[1]} />
                 <path d="M40 60q6 3.500 12 0" fill="none" stroke={SKIN_D} strokeWidth="1.800" strokeLinecap="round" />
               </g>
             }
           />
           <path d="M16 80h64" stroke="#E4EAF6" strokeWidth="3" />
-          <Star x={17} y={30} s={1.500} />
-          <Star x={76} y={22} s={1.300} />
-          {/hydra/i.test(name) && [[78, 50], [84, 60], [72, 62]].map(([dx, dy]) => <path key={`${dx}-${dy}`} transform={`translate(${dx} ${dy})`} d="M0-4Q4 1 0 4-4 1 0-4z" fill={WATER} />)}
+          {fv.deco}
         </>
       );
+    }
     case "treatment":
       return (
         <>
