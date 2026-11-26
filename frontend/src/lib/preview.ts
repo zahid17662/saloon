@@ -189,6 +189,15 @@ export function previewApi(method: string, path: string, query: URLSearchParams,
           .sort((a, b) => a.startsAt.localeCompare(b.startsAt)),
       );
     }
+    if (path === "/shop/appointments") {
+      const barberId = Number(query.get("barberId"));
+      const today = dhakaDay(Date.now());
+      return ok(
+        st.appointments
+          .filter((a) => (a.status === "PENDING" || a.status === "CONFIRMED") && dhakaDay(Date.parse(a.startsAt)) >= today && (a.barberId === barberId || a.barberId == null))
+          .sort((a, b) => a.startsAt.localeCompare(b.startsAt)),
+      );
+    }
     if (path === "/sales/today-stats") {
       return ok(
         barbers.map((b) => {
@@ -261,10 +270,19 @@ export function previewApi(method: string, path: string, query: URLSearchParams,
     st.appointments.push(a);
     return ok(a);
   }
-  if ((m = path.match(/^\/appointments\/(\d+)$/)) && method === "PATCH") {
+  if ((m = path.match(/^\/shop\/appointments\/(\d+)$/)) && method === "PATCH") {
     const a = st.appointments.find((x) => x.id === Number(m![1]));
     if (!a) return bad("অ্যাপয়েন্টমেন্ট পাওয়া যায়নি");
-    a.status = body.status as Appointment["status"];
+    const barberId = Number(body.barberId);
+    const next = body.status as Appointment["status"];
+    if (a.barberId != null && a.barberId !== barberId) return bad("এই বুকিং অন্য Hairdresser-এর");
+    const moves: Record<Appointment["status"], Appointment["status"][]> = { PENDING: ["CONFIRMED", "CANCELLED"], CONFIRMED: ["DONE", "CANCELLED"], CANCELLED: [], DONE: [] };
+    if (!moves[a.status].includes(next)) return bad("এই বুকিংয়ের অবস্থা আর বদলানো যাবে না");
+    if (a.barberId == null && next === "CONFIRMED") {
+      if (st.appointments.some((x) => x.id !== a.id && x.barberId === barberId && x.startsAt === a.startsAt && (x.status === "PENDING" || x.status === "CONFIRMED"))) return bad("এই সময়ে আপনার আরেকটি বুকিং আছে");
+      a.barberId = barberId;
+    }
+    a.status = next;
     return ok(a);
   }
   if (path === "/sales" || path === "/sales/past") {

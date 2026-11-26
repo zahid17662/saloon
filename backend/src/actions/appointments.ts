@@ -1,10 +1,10 @@
 // Customer appointments. Booking and the public menu need no login (customers have no accounts), so
-// booking is rate limited per client IP like logins are. Listing and changing status are admin only.
+// booking is rate limited per client IP like logins are. The admin only lists them; a Hairdresser (shop session) confirms, cancels and finishes their own.
 
 import { db } from "@/db";
-import { attemptStore, getClientIp, requireAdmin } from "@/lib/auth";
+import { attemptStore, getClientIp, requireAdmin, requireShop } from "@/lib/auth";
 import { beginAttempt } from "@/lib/rate-limit";
-import { appointmentInput, appointmentStatusInput, appointmentsQuery, idSchema, slotsQuery } from "@/lib/schemas";
+import { appointmentInput, appointmentStatusInput, appointmentsQuery, barberAppointmentsQuery, idSchema, slotsQuery } from "@/lib/schemas";
 import type { Appointment } from "@/lib/types";
 import { parseInput, runAction, type ActionResult } from "@/server/action";
 import * as appts from "@/server/appointments";
@@ -42,9 +42,19 @@ export async function listAppointments(query: unknown): Promise<ActionResult<App
   });
 }
 
-export async function setAppointmentStatus(id: unknown, input: unknown): Promise<ActionResult<Appointment>> {
+/** Hairdresser: their open bookings (plus "any Hairdresser" ones nobody has taken). */
+export async function listBarberAppointments(query: unknown): Promise<ActionResult<Appointment[]>> {
   return runAction(async () => {
-    await requireAdmin();
-    return appts.setAppointmentStatus(db, parseInput(idSchema, id), parseInput(appointmentStatusInput, input).status);
+    await requireShop();
+    return appts.listForBarber(db, parseInput(barberAppointmentsQuery, query).barberId);
+  });
+}
+
+/** Hairdresser: confirm, cancel or finish a booking. The admin cannot. */
+export async function setBarberAppointmentStatus(id: unknown, input: unknown): Promise<ActionResult<Appointment>> {
+  return runAction(async () => {
+    await requireShop();
+    const v = parseInput(appointmentStatusInput, input);
+    return appts.setAppointmentStatusAs(db, parseInput(idSchema, id), v.barberId, v.status);
   });
 }

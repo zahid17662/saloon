@@ -1,12 +1,12 @@
-// Customer appointments. Customers book without an account (name + phone); the admin confirms or
-// cancels. A barber cannot be double-booked at the same start time: a partial unique index enforces it,
+// Customer appointments. Customers book without an account (name + phone); the Hairdresser confirms or
+// cancels (the admin only sees them). A barber cannot be double-booked at the same start time: a partial unique index enforces it,
 // so two customers racing for one slot cannot both win. Prices are snapshotted into the booking.
 
-import { and, asc, eq, gte, inArray, lt, ne } from "drizzle-orm";
+import { and, asc, eq, gte, inArray, isNull, lt, ne, or } from "drizzle-orm";
 import { appointments, barbers, categories, services } from "../db/schema";
 import { resolveSlot } from "../lib/booking";
 import type { AppointmentInput, AppointmentsQuery } from "../lib/schemas";
-import { dhakaDayStart } from "../lib/time";
+import { dhakaDayStart, todayKey } from "../lib/time";
 import type { Appointment, AppointmentStatus } from "../lib/types";
 import type { Db } from "./db-types";
 import { DomainError } from "./errors";
@@ -17,6 +17,9 @@ const MSG = {
   noService: "বেছে নেওয়া সেবা এখন পাওয়া যাচ্ছে না",
   slotTaken: "এই সময়টি আগেই বুক হয়ে গেছে, অন্য সময় বেছে নিন",
   noAppointment: "অ্যাপয়েন্টমেন্ট পাওয়া যায়নি",
+  notYours: "এই বুকিং অন্য Hairdresser-এর",
+  badMove: "এই বুকিংয়ের অবস্থা আর বদলানো যাবে না",
+  clash: "এই সময়ে আপনার আরেকটি বুকিং আছে",
 } as const;
 
 /** Each customer phone may hold only a few open future bookings, so one person cannot flood the book. */
@@ -115,10 +118,51 @@ export async function listAppointments(db: Db, q: AppointmentsQuery): Promise<Ap
   return rows.map(toAppointment);
 }
 
-export async function setAppointmentStatus(db: Db, id: number, status: Exclude<AppointmentStatus, "PENDING">): Promise<Appointment> {
-  const [row] = await db.update(appointments).set({ status }).where(eq(appointments.id, id)).returning();
+/** A Hairdresser's open bookings from today on: their own, plus "any Hairdresser" ones nobody has taken yet. */
+export async function listForBarber(db: Db, barberId: number, now: Date = new Date()): Promise<Appointment[]> {
+  const rows = await db
+    .select()
+    .from(appointments)
+    .where(
+      and(
+        gte(appointments.startsAt, dhakaDayStart(todayKey(now))),
+        inArray(appointments.status, ["PENDING", "CONFIRMED"]),
+        or(eq(appointments.barberId, barberId), isNull(appointments.barberId)),
+      ),
+    )
+    .orderBy(asc(appointments.startsAt), asc(appointments.id));
+  return rows.map(toAppointment);
+}
+
+const MOVES: Record<AppointmentStatus, AppointmentStatus[]> = {
+  PENDING: ["CONFIRMED", "CANCELLED"],
+  CONFIRMED: ["DONE", "CANCELLED"],
+  CANCELLED: [],
+  DONE: [],
+};
+
+/**
+ * The Hairdresser decides: confirm or cancel a new booking, then mark it done. Only the booked
+ * Hairdresser may touch it; an "any Hairdresser" booking goes to whoever confirms it first.
+ */
+export async function setAppointmentStatusAs(db: Db, id: number, barberId: number, status: Exclude<AppointmentStatus, "PENDING">): Promise<Appointment> {
+  const [row] = await db.select().from(appointments).where(eq(appointments.id, id)).limit(1);
   if (!row) throw new DomainError(MSG.noAppointment);
-  return toAppointment(row);
+  if (row.barberId != null && row.barberId !== barberId) throw new DomainError(MSG.notYours);
+  if (!MOVES[row.status].includes(status)) throw new DomainError(MSG.badMove);
+  const takeIt = row.barberId == null && status === "CONFIRMED";
+  try {
+    const [done] = await db
+      .update(appointments)
+      .set(takeIt ? { status, barberId } : { status })
+      .where(and(eq(appointments.id, id), eq(appointments.status, row.status)))
+      .returning();
+    if (!done) throw new DomainError(MSG.badMove); // someone else changed it a moment ago
+    return toAppointment(done);
+  } catch (e) {
+    if (isUniqueViolation(e)) throw new DomainError(MSG.clash);
+    throw e;
+  }
 }
 
 /** "HH:MM" start times already taken on a Dhaka day for one barber (public, so customers can skip them). */

@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createSale, voidMySale } from "@/api/sales";
+import { BarberBookings } from "@/components/barber-bookings";
 import { useCatalog } from "@/components/catalog-context";
 import { Badge, Button, cx, ErrorText, Field, LoadingScreen, Modal } from "@/components/ui";
 import { BackIcon, MinusIcon, PlusIcon, ReceiptIcon } from "@/components/icons";
@@ -137,6 +138,8 @@ export function BarberScreen({ barberId, todaySales }: { barberId: number; today
             </p>
           </div>
         </header>
+
+        <BarberBookings barberId={barberId} />
 
         {/* Category tabs */}
         <nav className="scrollbar-none -mx-4 mb-4 flex gap-2 overflow-x-auto px-4 lg:mx-0 lg:px-0" aria-label="ক্যাটাগরি">

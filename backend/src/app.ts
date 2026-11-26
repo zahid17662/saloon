@@ -71,7 +71,7 @@ export function createApp() {
   api.get("/public/slots", route((req) => appointmentActions.getBookedTimes({ date: req.query.date, barberId: Number(req.query.barberId) })));
   api.post("/public/appointments", route((req) => appointmentActions.bookAppointment(req.body)));
 
-  // ----- appointments (admin)
+  // ----- appointments (admin: view only)
   api.get(
     "/appointments",
     route((req) => {
@@ -79,7 +79,9 @@ export function createApp() {
       return appointmentActions.listAppointments({ from: q.from, to: q.to, ...(q.status === undefined ? {} : { status: q.status }) });
     }),
   );
-  api.patch("/appointments/:id", route((req) => appointmentActions.setAppointmentStatus(Number(req.params.id), req.body)));
+  // ----- appointments (Hairdresser, shop session): they confirm; the admin cannot
+  api.get("/shop/appointments", route((req) => appointmentActions.listBarberAppointments({ barberId: Number(req.query.barberId) })));
+  api.patch("/shop/appointments/:id", route((req) => appointmentActions.setBarberAppointmentStatus(Number(req.params.id), req.body)));
   api.post("/barbers", route((req) => catalogActions.addBarber(req.body)));
   api.patch("/barbers/:id", route((req) => catalogActions.updateBarber(Number(req.params.id), req.body)));
   api.post("/categories", route((req) => catalogActions.addCategory(req.body)));

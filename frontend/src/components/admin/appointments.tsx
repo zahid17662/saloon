@@ -1,13 +1,13 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
-import { listAppointments, setAppointmentStatus } from "@/api/appointments";
+import { useEffect, useState } from "react";
+import { listAppointments } from "@/api/appointments";
 import { NET_ERR } from "@/lib/messages";
 import { bnDigits, taka } from "@/lib/money";
 import { fmtDate, fmtTime, shiftDays, todayKey } from "@/lib/time";
 import type { Appointment, AppointmentStatus } from "@/lib/types";
 import { useCatalog } from "../catalog-context";
-import { Badge, Button, Empty, ErrorText, Field, LoadingScreen, PageTitle, Select } from "../ui";
+import { Badge, Empty, ErrorText, Field, LoadingScreen, PageTitle, Select } from "../ui";
 
 const STATUS_LABEL: Record<AppointmentStatus, string> = {
   PENDING: "নতুন",
@@ -22,7 +22,7 @@ const STATUS_TONE: Record<AppointmentStatus, "gold" | "green" | "red" | "neutral
   DONE: "neutral",
 };
 
-/** Admin: customer bookings, soonest first. New ones need a confirm or cancel. */
+/** Admin: online bookings, soonest first. View only: the booked Hairdresser confirms or cancels from their own screen. */
 export function AppointmentsList() {
   const catalog = useCatalog();
   const [from, setFrom] = useState(todayKey());
@@ -30,8 +30,6 @@ export function AppointmentsList() {
   const [status, setStatus] = useState<"all" | AppointmentStatus>("all");
   const [rows, setRows] = useState<Appointment[] | null>(null);
   const [error, setError] = useState("");
-  const [busyId, setBusyId] = useState<number | null>(null);
-  const [reload, setReload] = useState(0);
 
   useEffect(() => {
     let current = true; // ignore a slow reply that a newer filter has overtaken
@@ -49,29 +47,30 @@ export function AppointmentsList() {
     return () => {
       current = false;
     };
-  }, [from, to, status, reload]);
-
-  const act = useCallback(async (a: Appointment, next: Exclude<AppointmentStatus, "PENDING">) => {
-    setBusyId(a.id);
-    setError("");
-    try {
-      const r = await setAppointmentStatus(a.id, next);
-      if (!r.ok) setError(r.error);
-      else setReload((n) => n + 1);
-    } catch {
-      setError(NET_ERR);
-    } finally {
-      setBusyId(null);
-    }
-  }, []);
+  }, [from, to, status]);
 
   if (!catalog || rows === null) return <LoadingScreen />;
   const barberName = (id: number | null) => (id == null ? "যে কেউ" : (catalog.barbers.find((b) => b.id === id)?.name ?? "-"));
-  const fresh = rows.filter((a) => a.status === "PENDING").length;
+  const count = (st: AppointmentStatus) => rows.filter((a) => a.status === st).length;
+  const tiles: { label: string; n: number; tone: string }[] = [
+    { label: "মোট বুকিং", n: rows.length, tone: "text-fg" },
+    { label: "নতুন", n: count("PENDING"), tone: "text-gold-ink" },
+    { label: "নিশ্চিত", n: count("CONFIRMED"), tone: "text-success" },
+    { label: "সম্পন্ন", n: count("DONE"), tone: "text-primary" },
+    { label: "বাতিল", n: count("CANCELLED"), tone: "text-danger" },
+  ];
 
   return (
     <>
-      <PageTitle title="অ্যাপয়েন্টমেন্ট" sub={`${bnDigits(rows.length)}টি বুকিং${fresh ? ` · ${bnDigits(fresh)}টি নতুন` : ""}`} />
+      <PageTitle title="অনলাইন বুকিং" sub="বুকিং নিশ্চিত বা বাতিল করেন সংশ্লিষ্ট Hairdresser, এখানে শুধু দেখা যাবে" />
+      <ul className="mb-5 grid grid-cols-2 gap-3 sm:grid-cols-5">
+        {tiles.map((t) => (
+          <li key={t.label} className="rounded-2xl bg-surface p-4 shadow-card">
+            <div className={`text-2xl font-bold tabular-nums ${t.tone}`}>{bnDigits(t.n)}</div>
+            <div className="mt-0.5 text-xs text-muted">{t.label}</div>
+          </li>
+        ))}
+      </ul>
       <div className="mb-4 flex flex-wrap items-end gap-3">
         <Field label="থেকে" type="date" value={from} onChange={(e) => e.target.value && setFrom(e.target.value)} className="w-44" />
         <Field label="পর্যন্ত" type="date" value={to} min={from} onChange={(e) => e.target.value && setTo(e.target.value)} className="w-44" />
@@ -111,23 +110,6 @@ export function AppointmentsList() {
               </div>
               <div className="mt-1 text-xs text-subtle">Hairdresser: {barberName(a.barberId)}</div>
               {a.note && <div className="mt-2 rounded-xl bg-surface-2 p-2.5 text-sm text-muted">{a.note}</div>}
-              {(a.status === "PENDING" || a.status === "CONFIRMED") && (
-                <div className="mt-3 flex flex-wrap gap-2">
-                  {a.status === "PENDING" && (
-                    <Button size="sm" disabled={busyId === a.id} onClick={() => act(a, "CONFIRMED")}>
-                      নিশ্চিত করুন
-                    </Button>
-                  )}
-                  {a.status === "CONFIRMED" && (
-                    <Button size="sm" variant="secondary" disabled={busyId === a.id} onClick={() => act(a, "DONE")}>
-                      সম্পন্ন
-                    </Button>
-                  )}
-                  <Button size="sm" variant="danger" disabled={busyId === a.id} onClick={() => act(a, "CANCELLED")}>
-                    বাতিল করুন
-                  </Button>
-                </div>
-              )}
             </li>
           ))}
         </ul>

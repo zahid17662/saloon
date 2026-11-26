@@ -2,7 +2,7 @@ import { eq } from "drizzle-orm";
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { appointments, barbers, categories, services } from "../db/schema";
 import type { AppointmentInput } from "../lib/schemas";
-import { bookedTimes, createAppointment, listAppointments, MAX_OPEN_PER_PHONE, publicMenu, setAppointmentStatus } from "./appointments";
+import { bookedTimes, createAppointment, listAppointments, listForBarber, MAX_OPEN_PER_PHONE, publicMenu, setAppointmentStatusAs } from "./appointments";
 import { DomainError } from "./errors";
 import { createTestDb, type TestDb } from "./test-db";
 
@@ -85,7 +85,7 @@ describe("createAppointment", () => {
 
   it("frees the slot again when the booking is cancelled", async () => {
     const a = await createAppointment(t.db, input(), NOW);
-    await setAppointmentStatus(t.db, a.id, "CANCELLED");
+    await setAppointmentStatusAs(t.db, a.id, BARBER, "CANCELLED");
     await expect(createAppointment(t.db, input({ phone: "01812345678" }), NOW)).resolves.toBeTruthy();
   });
 
@@ -117,7 +117,7 @@ describe("listing and status", () => {
   it("lists by date range and status, earliest first", async () => {
     await createAppointment(t.db, input({ time: "17:00" }), NOW);
     const early = await createAppointment(t.db, input({ time: "11:00", phone: "01812345678" }), NOW);
-    await setAppointmentStatus(t.db, early.id, "CONFIRMED");
+    await setAppointmentStatusAs(t.db, early.id, BARBER, "CONFIRMED");
     const all = await listAppointments(t.db, { from: TOMORROW, to: TOMORROW });
     expect(all.map((a) => a.startsAt)).toEqual(["2026-03-11T05:00:00.000Z", "2026-03-11T11:00:00.000Z"]);
     const confirmed = await listAppointments(t.db, { from: TOMORROW, to: TOMORROW, status: "CONFIRMED" });
@@ -126,7 +126,43 @@ describe("listing and status", () => {
   });
 
   it("throws for an unknown appointment", async () => {
-    await expect(setAppointmentStatus(t.db, 424242, "CONFIRMED")).rejects.toThrow(DomainError);
+    await expect(setAppointmentStatusAs(t.db, 424242, BARBER, "CONFIRMED")).rejects.toThrow(DomainError);
+  });
+});
+
+describe("the Hairdresser decides", () => {
+  it("shows a Hairdresser their own and unassigned bookings, never another one's", async () => {
+    const mine = await createAppointment(t.db, input({ time: "11:00" }), NOW);
+    const any = await createAppointment(t.db, input({ barberId: null, time: "12:00", phone: "01812345678" }), NOW);
+    await createAppointment(t.db, input({ barberId: BARBER2, time: "13:00", phone: "01912345678" }), NOW);
+    const list = await listForBarber(t.db, BARBER, NOW);
+    expect(list.map((a) => a.id)).toEqual([mine.id, any.id]);
+  });
+
+  it("lets only the booked Hairdresser confirm, then finish", async () => {
+    const a = await createAppointment(t.db, input(), NOW);
+    await expect(setAppointmentStatusAs(t.db, a.id, BARBER2, "CONFIRMED")).rejects.toThrow(DomainError);
+    expect((await setAppointmentStatusAs(t.db, a.id, BARBER, "CONFIRMED")).status).toBe("CONFIRMED");
+    expect((await setAppointmentStatusAs(t.db, a.id, BARBER, "DONE")).status).toBe("DONE");
+    await expect(setAppointmentStatusAs(t.db, a.id, BARBER, "CANCELLED")).rejects.toThrow(DomainError); // finished stays finished
+  });
+
+  it("does not jump straight from new to done", async () => {
+    const a = await createAppointment(t.db, input(), NOW);
+    await expect(setAppointmentStatusAs(t.db, a.id, BARBER, "DONE")).rejects.toThrow(DomainError);
+  });
+
+  it("gives an 'any Hairdresser' booking to whoever confirms it, and then it is theirs alone", async () => {
+    const a = await createAppointment(t.db, input({ barberId: null }), NOW);
+    const done = await setAppointmentStatusAs(t.db, a.id, BARBER2, "CONFIRMED");
+    expect(done.barberId).toBe(BARBER2);
+    await expect(setAppointmentStatusAs(t.db, a.id, BARBER, "CANCELLED")).rejects.toThrow(DomainError);
+  });
+
+  it("refuses to take an 'any' booking when that Hairdresser already has someone at that time", async () => {
+    await createAppointment(t.db, input({ barberId: BARBER2 }), NOW);
+    const a = await createAppointment(t.db, input({ barberId: null, phone: "01812345678" }), NOW);
+    await expect(setAppointmentStatusAs(t.db, a.id, BARBER2, "CONFIRMED")).rejects.toThrow(DomainError);
   });
 });
 

@@ -40,6 +40,7 @@ vi.mock("@/db", async () => {
 });
 
 import { GET as backupGET } from "@/actions/backup";
+import * as appointmentActions from "@/actions/appointments";
 import * as authActions from "@/actions/auth";
 import * as catalogActions from "@/actions/catalog";
 import * as payoutActions from "@/actions/payouts";
@@ -54,7 +55,7 @@ import {
 import { toCsv } from "@/lib/reports";
 import { shiftDays, todayKey } from "@/lib/time";
 import { MSG as ACTION_MSG } from "@/server/action";
-import { barbers, categories, loginAttempts, payouts, saleItems, sales, services, settings } from "../db/schema";
+import { appointments, barbers, categories, loginAttempts, payouts, saleItems, sales, services, settings } from "../db/schema";
 import { seedDb } from "../db/seed-core";
 import { createTestDb, type TestDb } from "./test-db";
 
@@ -70,6 +71,7 @@ const key = () => `sec-key-${++keyN}-xxxxxxxx`;
 
 async function resetDb() {
   await t.db.delete(loginAttempts);
+  await t.db.delete(appointments);
   await t.db.delete(payouts);
   await t.db.delete(sales);
   await t.db.delete(services);
@@ -176,6 +178,14 @@ async function mkSale() {
   return s.id;
 }
 
+async function mkAppointment(): Promise<number> {
+  const [a] = await t.db
+    .insert(appointments)
+    .values({ customerName: "করিম", phone: "01712345678", barberId: ids.barberA, services: [{ serviceId: ids.svc, name: "Cut", price: 100 }], total: 100, startsAt: new Date(Date.now() + 86_400_000), note: "" })
+    .returning();
+  return a.id;
+}
+
 /** Admin-only actions. Built lazily because ids and helper rows are created per test. */
 const adminCases = (): ActionCase[] => [
   { name: "addBarber", call: () => catalogActions.addBarber({ name: "New", commissionPct: 40 }) },
@@ -196,10 +206,13 @@ const adminCases = (): ActionCase[] => [
   { name: "deletePayout", call: async () => payoutActions.deletePayout({ id: await mkPayout() }) },
   { name: "changeAdminPin", call: () => authActions.changeAdminPin({ current: PIN, next: "5555" }) },
   { name: "changeShopCode", call: () => authActions.changeShopCode({ next: "7777" }) },
+  { name: "listAppointments", call: () => appointmentActions.listAppointments({ from: "2026-01-01", to: "2026-12-31" }) },
 ];
 const shopCases = (): ActionCase[] => [
   { name: "createSale", call: () => saleActions.createSale(saleFields()) },
   { name: "voidMySale", call: async () => saleActions.voidMySale({ saleId: await mkSale(), barberId: ids.barberA, reason: "oops" }) },
+  { name: "listBarberAppointments", call: () => appointmentActions.listBarberAppointments({ barberId: ids.barberA }) },
+  { name: "setBarberAppointmentStatus", call: async () => appointmentActions.setBarberAppointmentStatus(await mkAppointment(), { barberId: ids.barberA, status: "CONFIRMED" }) },
 ];
 
 /** A snapshot of everything an attacker could change, to prove a refused call changed nothing. */

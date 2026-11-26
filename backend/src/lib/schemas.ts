@@ -189,7 +189,9 @@ export const appointmentInput = z
   })
   .refine((v) => new Set(v.serviceIds).size === v.serviceIds.length, { message: APPT_MSG.dup, path: ["serviceIds"] });
 
-export const appointmentStatusInput = z.strictObject({ status: z.enum(["CONFIRMED", "CANCELLED", "DONE"], { error: M.id }) });
+export const appointmentStatusInput = z.strictObject({ barberId: idSchema, status: z.enum(["CONFIRMED", "CANCELLED", "DONE"], { error: M.id }) });
+
+export const barberAppointmentsQuery = z.strictObject({ barberId: idSchema });
 
 export const appointmentsQuery = z
   .strictObject({
