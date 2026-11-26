@@ -1,5 +1,5 @@
-const INK = "#0B1F4B";
-const BLUE = "#F5C518";
+const INK = "#0C5C45";
+const BLUE = "#EF7722";
 
 /**
  * Shop mark drawn in the site's line-art style: crossed scissors in a ring.
@@ -21,7 +21,7 @@ export function Logo({ size = 40, className = "", detail }: { size?: number; cla
         <>
           <text x="100" y="142" textAnchor="middle" fontSize="38" fontWeight="700" letterSpacing="5" fill={INK} style={font}>NIR</text>
           <path d="M66 152h68" stroke={BLUE} strokeWidth="3" strokeLinecap="round" />
-          <text x="100" y="170" textAnchor="middle" fontSize="8" fontWeight="600" letterSpacing="0.600" fill="#8A6A00" style={font}>SMART GENTS PARLOUR</text>
+          <text x="100" y="170" textAnchor="middle" fontSize="8" fontWeight="600" letterSpacing="0.600" fill="#B4601A" style={font}>SMART GENTS PARLOUR</text>
         </>
       )}
     </svg>

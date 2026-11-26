@@ -9,6 +9,8 @@ import { BookingForm } from "./booking-form";
 import { QueueJoin } from "./queue-join";
 
 /** The customer-facing home page. No login; staff and admin have their own entrances in the footer. */
+const TINTS = ["bg-gold/30", "bg-orange-soft", "bg-primary-soft", "bg-peach"];
+
 export function Landing({ menu }: { menu: PublicMenu | null }) {
   if (!menu) {
     return (
@@ -51,29 +53,31 @@ export function Landing({ menu }: { menu: PublicMenu | null }) {
       <div className="pole-bar" aria-hidden="true" />
 
       <main className="mx-auto max-w-5xl space-y-12 px-4 pb-16">
-        <section className="-mx-4 rounded-b-[2.5rem] bg-primary-soft px-4 pt-12 pb-12 text-center sm:pt-20 sm:pb-16">
-          <p className="text-xs font-bold tracking-[0.3em] text-primary uppercase">Gents Parlour</p>
-          <h1 className="font-display mt-3 text-4xl leading-snug font-extrabold tracking-tight text-fg sm:text-6xl">
-            Look Good, <span className="text-gold-ink">Feel Confident</span>
+        <section className="bg-barber -mx-4 rounded-b-[2.5rem] px-4 pt-12 pb-12 text-center sm:pt-20 sm:pb-16">
+          <p className="text-xs font-bold tracking-[0.3em] text-gold uppercase">Gents Parlour</p>
+          <h1 className="font-display mt-3 text-4xl leading-snug font-extrabold tracking-tight text-white sm:text-6xl">
+            Look Good, <span className="text-gold">Feel Confident</span>
           </h1>
-          <p className="mx-auto mt-4 max-w-xl text-base text-muted">
+          <p className="mx-auto mt-4 max-w-xl text-base text-white/75">
             আমাদের সেবা আর দাম দেখে নিন, পছন্দের Hairdresser আর সময় বেছে আগেই বুক করে রাখুন। লাইনে দাঁড়াতে হবে না।
           </p>
           <div className="mt-7 flex flex-wrap items-center justify-center gap-3">
             <a
               href="#book"
-              className="inline-flex h-12 items-center rounded-full bg-primary px-7 font-bold text-gold shadow-[0_8px_20px_rgb(11_31_75/0.25)] transition-colors hover:bg-primary-hover"
+              className="inline-flex h-12 items-center rounded-full bg-orange px-7 font-bold text-white shadow-[0_10px_24px_rgb(239_119_34/0.35)] transition-opacity hover:opacity-90"
             >
               অ্যাপয়েন্টমেন্ট নিন
             </a>
             <a
               href="#services"
-              className="inline-flex h-12 items-center rounded-full border border-line-strong bg-surface px-7 font-medium text-fg transition-colors hover:border-primary hover:text-primary"
+              className="inline-flex h-12 items-center rounded-full border border-white/30 px-7 font-medium text-white transition-colors hover:bg-white/10"
             >
               সেবা ও দাম
             </a>
           </div>
-          <BarbershopScene className="mx-auto mt-8 w-full max-w-xl" />
+          <div className="mx-auto mt-9 max-w-xl rounded-[2rem] bg-surface p-3 shadow-pop">
+            <BarbershopScene className="w-full" />
+          </div>
         </section>
 
         <section id="services" aria-labelledby="services-h" className="scroll-mt-20">
@@ -84,14 +88,14 @@ export function Landing({ menu }: { menu: PublicMenu | null }) {
             <p className="rounded-3xl bg-surface p-6 text-center text-sm text-muted shadow-card">সেবার তালিকা শীঘ্রই যোগ হবে।</p>
           ) : (
             <div className="grid gap-4 md:grid-cols-2">
-              {groups.map((g) => (
+              {groups.map((g, gi) => (
                 <div key={g.id} className="rounded-3xl bg-surface p-5 shadow-card">
-                  <h3 className="mb-3 text-base font-semibold text-fg">{g.name}</h3>
+                  <h3 className="mb-3 inline-flex rounded-full bg-primary-soft px-3.5 py-1.5 text-sm font-bold text-primary">{g.name}</h3>
                   <ul className="divide-y divide-line">
                     {g.items.map((s) => (
                       <li key={s.id} className="flex items-center justify-between gap-3 py-2.5 text-[15px]">
-                        <span className="flex min-w-0 items-center gap-3 text-fg"><ServiceArt name={s.name} size={44} className="flex-none" /><span className="min-w-0 break-words">{s.name}</span></span>
-                        <span className="font-semibold text-primary tabular-nums">{taka(s.price)}</span>
+                        <span className="flex min-w-0 items-center gap-3 text-fg"><span className={`flex h-12 w-12 flex-none items-center justify-center rounded-2xl ${TINTS[gi % TINTS.length]}`}><ServiceArt name={s.name} size={40} /></span><span className="min-w-0 break-words font-medium">{s.name}</span></span>
+                        <span className="font-bold text-orange tabular-nums">{taka(s.price)}</span>
                       </li>
                     ))}
                   </ul>

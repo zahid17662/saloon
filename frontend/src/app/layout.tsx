@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Noto_Sans_Bengali, Playfair_Display, Poppins } from "next/font/google";
+import { Noto_Sans_Bengali, Outfit, Poppins } from "next/font/google";
 import { connection } from "next/server";
 import { CatalogBoundary } from "@/components/catalog-boundary";
 import { fetchShopName } from "@/lib/shop-name";
@@ -13,11 +13,11 @@ const latin = Poppins({
   weight: ["400", "500", "600", "700"],
 });
 
-// Serif for the brand name and big headings only.
-const display = Playfair_Display({
+// Chunky geometric sans for the brand name and big headings only.
+const display = Outfit({
   variable: "--font-display-latin",
   subsets: ["latin"],
-  weight: ["500", "600", "700"],
+  weight: ["600", "700", "800"],
 });
 
 const bangla = Noto_Sans_Bengali({
@@ -37,7 +37,7 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export const viewport: Viewport = {
-  themeColor: "#f4f2ea",
+  themeColor: "#faf6ec",
   width: "device-width",
   initialScale: 1,
 };
