@@ -93,7 +93,7 @@ export function Landing({ menu }: { menu: PublicMenu | null }) {
             </dl>
           </div>
           <div className="relative -mx-6 mt-9 border-t border-gold/40 sm:-mx-12 sm:mt-0">
-            <Image src="/hero-parlour.jpg" alt="পার্লারের ভেতরের ছবি" width={1600} height={502} sizes="(min-width: 1024px) 1024px, 100vw" priority className="block aspect-[4/3] w-full object-cover object-[58%_50%] sm:aspect-[1600/502]" />
+            <Image src="/hero-parlour.jpg" alt="পার্লারের ভেতরের ছবি" width={1600} height={502} sizes="(min-width: 1024px) 1024px, 100vw" priority className="block h-auto w-full" />
           </div>
         </section>
 

@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useRef, useState } from "react";
 import { Logo } from "./logo";
 import { bnDigits, taka } from "@/lib/money";
@@ -45,6 +46,9 @@ export function ShopBoard({ services, categories = [] }: { services: Svc[]; cate
 
   return (
     <div className="min-h-dvh bg-bg text-fg">
+      <div className="mx-auto max-w-4xl overflow-hidden bg-primary sm:rounded-b-3xl">
+        <Image src="/hero-parlour.jpg" alt="পার্লারের ভেতরের ছবি" width={1600} height={502} sizes="(min-width: 896px) 896px, 100vw" priority className="block h-auto w-full" />
+      </div>
       <header className="sticky top-0 z-30 bg-primary pt-[env(safe-area-inset-top)] text-white shadow-[0_10px_24px_-14px_rgb(11_31_75/0.7)]">
         <div className="mx-auto flex h-16 max-w-6xl items-center gap-3 px-4 sm:px-8">
           <Logo size={36} />
