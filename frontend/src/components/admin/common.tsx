@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { bnDigits, nameInitial, taka } from "@/lib/money";
+import { bnDigits, taka } from "@/lib/money";
+import { HairdresserPortrait } from "../service-icon";
 import { fmtDateKey, type DateRange } from "@/lib/time";
 import type { BarberRow } from "@/lib/reports";
 import { Empty } from "../ui";
@@ -74,9 +75,7 @@ export function BarberTable({ rows, flat }: { rows: BarberRow[]; flat?: boolean 
           <tr key={r.barberId}>
             <td className={td}>
               <span className="flex items-center gap-2.5">
-                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary-soft text-xs font-semibold text-primary">
-                  {nameInitial(r.barberName)}
-                </span>
+                <HairdresserPortrait id={r.barberId} size={32} />
                 {r.barberName}
               </span>
             </td>

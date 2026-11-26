@@ -4,7 +4,7 @@ import { bnDigits, taka } from "@/lib/money";
 import type { PublicMenu } from "@/lib/types";
 import { CalendarIcon, PhoneIcon, PinIcon, ScissorsIcon } from "../icons";
 import { Logo } from "../logo";
-import { ServiceArt } from "../service-icon";
+import { HairdresserPortrait, ServiceArt } from "../service-icon";
 import { BookingForm } from "./booking-form";
 import { PopularServices } from "./popular";
 import { QueueJoin } from "./queue-join";
@@ -116,9 +116,7 @@ export function Landing({ menu }: { menu: PublicMenu | null }) {
             <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
               {menu.barbers.map((b) => (
                 <li key={b.id} className="flex flex-col items-center gap-2 rounded-3xl bg-surface p-5 text-center shadow-card">
-                  <span className="flex h-16 w-16 items-center justify-center rounded-full bg-primary-soft text-2xl font-bold text-primary">
-                    {b.name.trim().charAt(0)}
-                  </span>
+                  <HairdresserPortrait id={b.id} size={80} className="ring-4 ring-gold/40" />
                   <span className="font-semibold text-fg">{b.name}</span>
                 </li>
               ))}

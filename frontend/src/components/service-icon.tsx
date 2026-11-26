@@ -465,3 +465,20 @@ export function ServiceArt({ name, size = 72, className = "" }: { name: string; 
     </svg>
   );
 }
+
+const LOOKS: { bg: string; hair: PersonProps["hair"]; hairFill: string; beard?: boolean; stache?: boolean | "big"; shirt: string }[] = [
+  { bg: "#DCE4F7", hair: "quiff", hairFill: HAIR, stache: true, shirt: NAVY },
+  { bg: "#FBEFB5", hair: "short", hairFill: "#3A2A22", beard: true, stache: true, shirt: "#1E3F8F" },
+  { bg: "#FCE3D2", hair: "short", hairFill: "#1B1B24", shirt: NAVY },
+];
+
+/** Round demo portrait of a Hairdresser. Three distinct looks, picked from the id, until a real photo is added. */
+export function HairdresserPortrait({ id, size = 48, className = "" }: { id: number; size?: number; className?: string }) {
+  const v = LOOKS[Math.abs(id) % LOOKS.length];
+  return (
+    <svg width={size} height={size} viewBox="6 4 80 80" aria-hidden="true" style={{ width: size, height: size }} className={`flex-none rounded-full ${className}`}>
+      <rect x="0" y="0" width="100" height="100" fill={v.bg} />
+      <Person hair={v.hair} hairFill={v.hairFill} beard={v.beard} stache={v.stache} shirt={v.shirt} />
+    </svg>
+  );
+}

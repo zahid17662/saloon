@@ -5,6 +5,7 @@ import { bookAppointment, getBookedTimes } from "@/api/appointments";
 import { daySlots, MAX_DAYS_AHEAD, MIN_LEAD_MS, resolveSlot } from "@/lib/booking";
 import { NET_ERR } from "@/lib/messages";
 import { bnDigits, taka } from "@/lib/money";
+import { HairdresserPortrait } from "../service-icon";
 import { dhakaDateToIso, fmtDate, fmtDateKey, fmtTime, shiftDays, todayKey } from "@/lib/time";
 import type { Appointment, PublicMenu } from "@/lib/types";
 import { CalendarIcon, ScissorsIcon, UsersIcon } from "../icons";
@@ -159,8 +160,8 @@ export function BookingForm({ menu }: { menu: PublicMenu }) {
                 }}
                 className="flex w-20 flex-none flex-col items-center gap-2"
               >
-                <span className={cx("flex h-16 w-16 items-center justify-center rounded-full text-xl font-bold transition-colors", on ? "bg-primary text-gold ring-4 ring-primary/20" : "bg-primary-soft text-primary")}>
-                  {b.id === ANY ? "★" : b.name.trim().charAt(0)}
+                <span className={cx("flex h-16 w-16 items-center justify-center rounded-full text-xl font-bold transition-all", on ? "bg-primary text-gold ring-4 ring-primary/25" : "bg-primary-soft text-primary", !on && b.id !== ANY && "opacity-80")}>
+                  {b.id === ANY ? "★" : <HairdresserPortrait id={Number(b.id)} size={64} />}
                 </span>
                 <span className={cx("w-full truncate text-center text-xs", on ? "font-bold text-primary" : "text-muted")}>{b.name}</span>
               </button>

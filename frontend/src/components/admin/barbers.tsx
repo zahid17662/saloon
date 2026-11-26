@@ -7,7 +7,8 @@ import { usePayoutsView } from "./use-admin-data";
 import { PlusIcon } from "../icons";
 import { addBarber, updateBarber } from "@/api/catalog";
 import { NET_ERR } from "@/lib/messages";
-import { bnDigits, nameInitial, parseIntInput } from "@/lib/money";
+import { bnDigits, parseIntInput } from "@/lib/money";
+import { HairdresserPortrait } from "../service-icon";
 import type { Barber } from "@/lib/types";
 
 export function Barbers() {
@@ -40,9 +41,7 @@ export function Barbers() {
           <li key={b.id}>
             <Card className={b.active ? "" : "opacity-60"}>
               <div className="flex items-center gap-3">
-                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-primary text-lg font-bold text-white">
-                  {nameInitial(b.name)}
-                </div>
+                <HairdresserPortrait id={b.id} size={48} />
                 <div className="min-w-0 flex-1">
                   <div className="truncate font-semibold text-fg">{b.name}</div>
                   <div className="text-sm text-muted">

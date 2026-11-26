@@ -1,14 +1,13 @@
 import type { Lane } from "@/lib/queue";
+import { HairdresserPortrait } from "./service-icon";
 
-/** Round profile picture of a barber, or the initial letter when no picture was added. */
-export function BarberFace({ lane, size, className = "" }: { lane: Pick<Lane, "name" | "initial" | "photo">; size: number; className?: string }) {
+/** Round profile picture of a barber, or an illustrated demo portrait when no picture was added. */
+export function BarberFace({ lane, size, className = "" }: { lane: Pick<Lane, "id" | "name" | "initial" | "photo">; size: number; className?: string }) {
   return lane.photo ? (
     // eslint-disable-next-line @next/next/no-img-element
     <img src={lane.photo} alt={lane.name} width={size} height={size} style={{ width: size, height: size }} className={`flex-none rounded-full object-cover ${className}`} />
   ) : (
-    <span style={{ width: size, height: size, fontSize: size * 0.4 }} className={`flex flex-none items-center justify-center rounded-full bg-primary-soft font-bold text-primary ${className}`} aria-hidden="true">
-      {lane.initial}
-    </span>
+    <HairdresserPortrait id={lane.id} size={size} className={className} />
   );
 }
 
