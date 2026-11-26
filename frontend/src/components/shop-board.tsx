@@ -4,6 +4,7 @@ import { useRef, useState } from "react";
 import { Logo } from "./logo";
 import { bnDigits, taka } from "@/lib/money";
 import { aheadOf, etaMin, finish, isFree, join, MIN_PER_CUT, removeTicket, resetDemo, setPhoto, useQueue, type Lane, type Source } from "@/lib/queue";
+import { ReceiptIcon, ScissorsIcon, UsersIcon } from "./icons";
 import { ServiceArt, ServiceIcon } from "./service-icon";
 import { cx } from "./ui";
 import { BarberFace, squarePhoto } from "./barber-face";
@@ -92,11 +93,11 @@ export function ShopBoard({ services, categories = [] }: { services: Svc[]; cate
         <button onClick={resetDemo} className="mx-auto mt-8 block text-xs text-muted underline">ডেমো ডেটা রিসেট</button>
       </main>
 
-      <nav className="fixed inset-x-0 bottom-0 z-30 border-t border-line bg-surface/95 pb-[env(safe-area-inset-bottom)] backdrop-blur lg:hidden" aria-label="বিভাগ">
-        <div className="mx-auto grid h-16 max-w-md grid-cols-3">
+      <nav className="fixed inset-x-0 bottom-0 z-30 px-4 pb-[max(1rem,env(safe-area-inset-bottom))] lg:hidden" aria-label="বিভাগ">
+        <div className="mx-auto grid max-w-md grid-cols-3 gap-1 rounded-full border border-line bg-surface/95 p-1.5 shadow-pop backdrop-blur">
           {TABS.map((t) => (
-            <button key={t.id} onClick={() => setView(t.id)} aria-current={view === t.id} className={cx("flex min-w-0 flex-col items-center justify-center gap-0.5 px-1 text-[11px] font-semibold sm:text-xs", view === t.id ? "text-primary" : "text-muted")}>
-              <span className={cx("flex h-7 w-12 items-center justify-center rounded-full text-lg leading-none", view === t.id && "bg-primary-soft")}>{t.icon}</span>{t.label}
+            <button key={t.id} onClick={() => setView(t.id)} aria-current={view === t.id} className={cx("flex min-w-0 flex-col items-center justify-center gap-0.5 rounded-full py-2 text-[11px] font-semibold transition-colors sm:text-xs", view === t.id ? "bg-primary text-gold" : "text-muted")}>
+              <span className="text-lg leading-none">{t.icon}</span>{t.label}
             </button>
           ))}
         </div>
@@ -523,28 +524,53 @@ function NewSerial({ services, categories, lanes, preset, onSeeQueue }: { servic
           <label className="mt-3 grid gap-1 text-sm font-medium">নোট (ঐচ্ছিক)
             <textarea value={note} onChange={(e) => setNote(e.target.value)} maxLength={200} rows={2} placeholder="যেমন: সাইড ছোট, দাড়ি হালকা" className="rounded-xl border border-line-strong px-3 py-2.5 text-base" />
           </label>
-          <dl className="mt-4 space-y-2 text-sm">
-            <div className="flex justify-between gap-4"><dt className="text-muted">সার্ভিস</dt><dd className="flex flex-wrap justify-end gap-1.5">{chosen.map((s) => <span key={s.id} className="inline-flex items-center gap-1 rounded-full bg-primary-soft px-2.5 py-1 text-xs font-semibold text-primary"><ServiceIcon name={s.name} className="h-3.5 w-3.5" />{s.name}</span>)}</dd></div>
-            <div className="flex justify-between gap-4"><dt className="text-muted">Hairdresser</dt><dd className="font-medium">{target.name}</dd></div>
-            <div className="flex justify-between gap-4"><dt className="text-muted">সিরিয়াল</dt><dd className="font-medium">#{bnDigits(target.lastSerial + 1)} · {isFree(target) ? "সরাসরি শুরু" : `প্রায় ${bnDigits(etaMin(target))} মিনিট পরে`}</dd></div>
-            <div className="flex justify-between gap-4 border-t border-dashed border-line-strong pt-2"><dt className="font-semibold">মোট</dt><dd className="text-lg font-bold">{taka(price)}</dd></div>
-          </dl>
-          <button onClick={confirm} disabled={phoneBad} className="mt-4 h-14 disabled:opacity-50 w-full rounded-2xl bg-primary text-base font-bold text-white active:opacity-90 sm:w-auto sm:px-12">সিরিয়াল দিন</button>
+          <div className="mt-4 rounded-2xl border border-line bg-surface-2 p-4">
+            <div className="space-y-2.5">
+              <InfoRow icon={<ScissorsIcon className="h-4 w-4" />} k="সার্ভিস" v={chosen.map((s) => s.name).join(", ")} />
+              <InfoRow icon={<UsersIcon className="h-4 w-4" />} k="Hairdresser" v={target.name} />
+              <InfoRow icon={<ReceiptIcon className="h-4 w-4" />} k="সিরিয়াল" v={`#${bnDigits(target.lastSerial + 1)} · ${isFree(target) ? "সরাসরি শুরু" : `প্রায় ${bnDigits(etaMin(target))} মিনিট পরে`}`} />
+            </div>
+            <dl className="mt-3.5 space-y-1.5 border-t border-dashed border-line-strong pt-3 text-sm">
+              {chosen.map((s) => (
+                <div key={s.id} className="flex justify-between gap-4">
+                  <dt className="min-w-0 truncate text-muted">{s.name}</dt>
+                  <dd className="font-medium tabular-nums">{taka(s.price)}</dd>
+                </div>
+              ))}
+              <div className="flex justify-between gap-4 border-t border-dashed border-line-strong pt-2">
+                <dt className="font-bold">মোট</dt>
+                <dd className="text-lg font-bold text-gold-ink tabular-nums">{taka(price)}</dd>
+              </div>
+            </dl>
+          </div>
+          <button onClick={confirm} disabled={phoneBad} className="mt-4 h-14 w-full rounded-full bg-primary text-base font-bold text-gold active:opacity-90 disabled:opacity-50 sm:w-auto sm:px-12">সিরিয়াল দিন</button>
         </section>
       )}
 
       {chosen.length > 0 && (
-        <div className="fixed inset-x-0 bottom-[calc(4rem+env(safe-area-inset-bottom))] z-20 border-t border-line bg-surface/95 px-4 py-2.5 backdrop-blur lg:hidden">
-          <div className="mx-auto flex max-w-md items-center gap-3">
+        <div className="fixed inset-x-0 bottom-[calc(5.5rem+env(safe-area-inset-bottom))] z-20 px-4 lg:hidden">
+          <div className="mx-auto flex max-w-md items-center gap-3 rounded-2xl border border-line bg-surface/95 px-3.5 py-2.5 shadow-pop backdrop-blur">
             <div className="min-w-0 flex-1 text-sm"><div className="truncate text-muted">{bnDigits(chosen.length)}টি সার্ভিস{target ? ` · ${target.name}` : ""}</div><div className="font-bold">{taka(price)}</div></div>
             {target ? (
-              <button onClick={() => document.getElementById("ok")?.scrollIntoView({ behavior: "smooth" })} className="h-11 rounded-xl bg-primary px-5 text-sm font-semibold text-white">নিশ্চিত করুন ↓</button>
+              <button onClick={() => document.getElementById("ok")?.scrollIntoView({ behavior: "smooth" })} className="h-11 rounded-full bg-primary px-5 text-sm font-semibold text-gold">নিশ্চিত করুন ↓</button>
             ) : (
-              <button onClick={() => document.getElementById("bar")?.scrollIntoView({ behavior: "smooth" })} className="h-11 rounded-xl bg-primary px-5 text-sm font-semibold text-white">Hairdresser বাছুন ↓</button>
+              <button onClick={() => document.getElementById("bar")?.scrollIntoView({ behavior: "smooth" })} className="h-11 rounded-full bg-primary px-5 text-sm font-semibold text-gold">Hairdresser বাছুন ↓</button>
             )}
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+function InfoRow({ icon, k, v }: { icon: React.ReactNode; k: string; v: string }) {
+  return (
+    <div className="flex items-center gap-3">
+      <span className="flex h-9 w-9 flex-none items-center justify-center rounded-xl bg-primary-soft text-primary">{icon}</span>
+      <span className="min-w-0">
+        <span className="block text-xs text-muted">{k}</span>
+        <span className="block truncate text-sm font-semibold text-fg">{v}</span>
+      </span>
     </div>
   );
 }

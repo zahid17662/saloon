@@ -6,6 +6,7 @@ import { CalendarIcon, PhoneIcon, PinIcon, ScissorsIcon } from "../icons";
 import { Logo } from "../logo";
 import { ServiceArt } from "../service-icon";
 import { BookingForm } from "./booking-form";
+import { PopularServices } from "./popular";
 import { QueueJoin } from "./queue-join";
 
 /** The customer-facing home page. No login; staff and admin have their own entrances in the footer. */
@@ -79,6 +80,8 @@ export function Landing({ menu }: { menu: PublicMenu | null }) {
             <BarbershopScene className="w-full" />
           </div>
         </section>
+
+        <PopularServices menu={menu} />
 
         <section id="services" aria-labelledby="services-h" className="scroll-mt-20">
           <h2 id="services-h" className="mb-4 text-xl font-bold text-fg">

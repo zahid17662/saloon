@@ -5,11 +5,15 @@ import { bookAppointment, getBookedTimes } from "@/api/appointments";
 import { daySlots, MAX_DAYS_AHEAD, MIN_LEAD_MS, resolveSlot } from "@/lib/booking";
 import { NET_ERR } from "@/lib/messages";
 import { bnDigits, taka } from "@/lib/money";
-import { fmtDate, fmtTime, shiftDays, todayKey } from "@/lib/time";
+import { dhakaDateToIso, fmtDate, fmtDateKey, fmtTime, shiftDays, todayKey } from "@/lib/time";
 import type { Appointment, PublicMenu } from "@/lib/types";
+import { CalendarIcon, ScissorsIcon, UsersIcon } from "../icons";
 import { Button, cx, ErrorText, Field } from "../ui";
 
 const ANY = "any";
+const DAYS_SHOWN = 10;
+const weekdayFmt = new Intl.DateTimeFormat("bn-BD", { timeZone: "Asia/Dhaka", weekday: "short" });
+const dayNumFmt = new Intl.DateTimeFormat("bn-BD", { timeZone: "Asia/Dhaka", day: "2-digit" });
 
 /** Customer booking form: pick services, a barber, a day and a free time, then leave name and phone. */
 export function BookingForm({ menu }: { menu: PublicMenu }) {
@@ -27,7 +31,8 @@ export function BookingForm({ menu }: { menu: PublicMenu }) {
   const submitting = useRef(false);
 
   const today = todayKey();
-  const total = useMemo(() => menu.services.filter((s) => picked.includes(s.id)).reduce((n, s) => n + s.price, 0), [menu, picked]);
+  const chosenServices = useMemo(() => menu.services.filter((s) => picked.includes(s.id)), [menu, picked]);
+  const total = useMemo(() => chosenServices.reduce((n, s) => n + s.price, 0), [chosenServices]);
 
   // Start times already taken for the chosen barber that day (with "any barber" nothing is blocked).
   useEffect(() => {
@@ -138,43 +143,58 @@ export function BookingForm({ menu }: { menu: PublicMenu }) {
       </fieldset>
 
       <fieldset>
-        <legend className="mb-2 text-sm font-medium text-muted">২. Barber বেছে নিন</legend>
-        <div className="flex flex-wrap gap-2">
-          {[{ id: ANY, name: "যে কেউ" }, ...menu.barbers.map((b) => ({ id: String(b.id), name: b.name }))].map((b) => (
-            <button
-              key={b.id}
-              type="button"
-              aria-pressed={barber === b.id}
-              onClick={() => {
-                setBarber(b.id);
-                setTime("");
-                if (b.id === ANY) setTaken([]);
-              }}
-              className={cx(
-                "min-h-11 rounded-full border px-4 text-sm transition-colors",
-                barber === b.id ? "border-primary bg-primary-soft font-semibold text-primary" : "border-line-strong bg-surface text-fg hover:bg-surface-2",
-              )}
-            >
-              {b.name}
-            </button>
-          ))}
+        <legend className="mb-3 text-sm font-medium text-muted">২. Hairdresser বেছে নিন</legend>
+        <div className="-mx-1 flex gap-3 overflow-x-auto px-1 pb-1">
+          {[{ id: ANY, name: "যে কেউ" }, ...menu.barbers.map((b) => ({ id: String(b.id), name: b.name }))].map((b) => {
+            const on = barber === b.id;
+            return (
+              <button
+                key={b.id}
+                type="button"
+                aria-pressed={on}
+                onClick={() => {
+                  setBarber(b.id);
+                  setTime("");
+                  if (b.id === ANY) setTaken([]);
+                }}
+                className="flex w-20 flex-none flex-col items-center gap-2"
+              >
+                <span className={cx("flex h-16 w-16 items-center justify-center rounded-full text-xl font-bold transition-colors", on ? "bg-primary text-gold ring-4 ring-primary/20" : "bg-primary-soft text-primary")}>
+                  {b.id === ANY ? "★" : b.name.trim().charAt(0)}
+                </span>
+                <span className={cx("w-full truncate text-center text-xs", on ? "font-bold text-primary" : "text-muted")}>{b.name}</span>
+              </button>
+            );
+          })}
         </div>
       </fieldset>
 
       <fieldset>
         <legend className="mb-2 text-sm font-medium text-muted">৩. দিন ও সময়</legend>
-        <Field
-          label="তারিখ"
-          type="date"
-          value={date}
-          min={today}
-          max={shiftDays(today, MAX_DAYS_AHEAD)}
-          onChange={(e) => {
-            setDate(e.target.value || today);
-            setTime("");
-          }}
-          className="mb-3 max-w-56"
-        />
+        <div className="-mx-1 mb-4 flex gap-2 overflow-x-auto px-1 pb-1">
+          {Array.from({ length: Math.min(DAYS_SHOWN, MAX_DAYS_AHEAD + 1) }, (_, i) => shiftDays(today, i)).map((key) => {
+            const on = date === key;
+            const d = new Date(dhakaDateToIso(key));
+            return (
+              <button
+                key={key}
+                type="button"
+                aria-pressed={on}
+                onClick={() => {
+                  setDate(key);
+                  setTime("");
+                }}
+                className={cx(
+                  "flex h-[4.25rem] w-16 flex-none flex-col items-center justify-center gap-1 rounded-2xl border transition-colors",
+                  on ? "border-primary bg-primary text-gold" : "border-line-strong bg-surface text-fg hover:bg-surface-2",
+                )}
+              >
+                <span className="text-[11px] font-medium opacity-80">{weekdayFmt.format(d)}</span>
+                <span className="text-lg leading-none font-bold tabular-nums">{dayNumFmt.format(d)}</span>
+              </button>
+            );
+          })}
+        </div>
         {anyFree ? (
           <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-6">
             {slots.map(({ t, free }) => (
@@ -188,8 +208,8 @@ export function BookingForm({ menu }: { menu: PublicMenu }) {
                   setError("");
                 }}
                 className={cx(
-                  "min-h-11 rounded-xl border text-sm tabular-nums transition-colors disabled:cursor-not-allowed disabled:opacity-35",
-                  time === t ? "border-primary bg-primary text-white" : "border-line-strong bg-surface text-fg hover:bg-surface-2",
+                  "min-h-11 rounded-full border text-sm tabular-nums transition-colors disabled:cursor-not-allowed disabled:opacity-35",
+                  time === t ? "border-primary bg-primary font-semibold text-gold" : "border-line-strong bg-surface text-fg hover:bg-surface-2",
                 )}
               >
                 {bnDigits(t)}
@@ -218,11 +238,46 @@ export function BookingForm({ menu }: { menu: PublicMenu }) {
         <Field label="কিছু জানাতে চান? (ঐচ্ছিক)" value={note} onChange={(e) => setNote(e.target.value)} maxLength={200} className="sm:col-span-2" />
       </fieldset>
 
+      {picked.length > 0 && (
+        <div className="rounded-2xl border border-line bg-surface-2 p-4">
+          <h4 className="mb-3 text-sm font-bold text-fg">অর্ডার সারাংশ</h4>
+          <div className="space-y-2.5">
+            <SumRow icon={<UsersIcon className="h-4 w-4" />} k="Hairdresser" v={barber === ANY ? "যে কেউ" : (menu.barbers.find((b) => String(b.id) === barber)?.name ?? "—")} />
+            <SumRow icon={<ScissorsIcon className="h-4 w-4" />} k="সেবা" v={chosenServices.map((s) => s.name).join(", ")} />
+            <SumRow icon={<CalendarIcon className="h-4 w-4" />} k="দিন ও সময়" v={`${fmtDateKey(date)}${time ? `, ${bnDigits(time)}` : ""}`} />
+          </div>
+          <dl className="mt-4 space-y-1.5 border-t border-dashed border-line-strong pt-3 text-sm">
+            {chosenServices.map((s) => (
+              <div key={s.id} className="flex justify-between gap-4">
+                <dt className="min-w-0 truncate text-muted">{s.name}</dt>
+                <dd className="font-medium tabular-nums">{taka(s.price)}</dd>
+              </div>
+            ))}
+            <div className="flex justify-between gap-4 border-t border-dashed border-line-strong pt-2 text-base">
+              <dt className="font-bold text-fg">মোট</dt>
+              <dd className="font-bold text-gold-ink tabular-nums">{taka(total)}</dd>
+            </div>
+          </dl>
+        </div>
+      )}
+
       <ErrorText>{error}</ErrorText>
       <Button type="submit" size="lg" className="w-full sm:w-auto sm:px-10" disabled={busy}>
         {busy ? "অপেক্ষা করুন…" : "অ্যাপয়েন্টমেন্ট নিশ্চিত করুন"}
       </Button>
     </form>
+  );
+}
+
+function SumRow({ icon, k, v }: { icon: React.ReactNode; k: string; v: string }) {
+  return (
+    <div className="flex items-center gap-3">
+      <span className="flex h-9 w-9 flex-none items-center justify-center rounded-xl bg-primary-soft text-primary">{icon}</span>
+      <span className="min-w-0">
+        <span className="block text-xs text-muted">{k}</span>
+        <span className="block truncate text-sm font-semibold text-fg">{v || "—"}</span>
+      </span>
+    </div>
   );
 }
 
