@@ -72,7 +72,7 @@ export function PastSaleForm({
       onSubmit={async (e) => {
         e.preventDefault();
         if (busy) return;
-        if (!barber) return setError("নাপিত বাছাই করুন");
+        if (!barber) return setError("Hairdresser বাছাই করুন");
         if (lines.length === 0) return setError("কোনো সার্ভিস বাছাই করা হয়নি");
         const when = resolveBackdate(date, time, new Date());
         if (!when.ok) return setError(when.error);
@@ -116,7 +116,7 @@ export function PastSaleForm({
       </div>
 
       <div className="grid grid-cols-2 gap-3">
-        <Select label="নাপিত" value={barberId} onChange={(e) => setBarberId(e.target.value)} required>
+        <Select label="Hairdresser" value={barberId} onChange={(e) => setBarberId(e.target.value)} required>
           <option value="">— বাছাই করুন —</option>
           {barbers.map((b) => (
             <option key={b.id} value={b.id}>
@@ -179,7 +179,7 @@ export function PastSaleForm({
       </fieldset>
 
       <div className="flex items-baseline justify-between rounded-xl bg-surface-2 px-3 py-2">
-        <span className="text-sm text-muted">মোট{barber ? ` · নাপিতের ভাগ ${taka(share)}` : ""}</span>
+        <span className="text-sm text-muted">মোট{barber ? ` · Hairdresser-এর ভাগ ${taka(share)}` : ""}</span>
         <span className="text-xl font-bold text-fg tabular-nums">{taka(total)}</span>
       </div>
 

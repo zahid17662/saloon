@@ -27,8 +27,8 @@ const NAV = [
   { href: "/admin/reports", label: "রিপোর্ট", Icon: ListIcon },
   { href: "/admin/sales", label: "বিক্রি", Icon: ReceiptIcon },
   { href: "/admin/appointments", label: "অ্যাপয়েন্টমেন্ট", Icon: CalendarIcon },
-  { href: "/admin/payouts", label: "নাপিতের পেমেন্ট", Icon: WalletIcon },
-  { href: "/admin/barbers", label: "নাপিত", Icon: UsersIcon },
+  { href: "/admin/payouts", label: "Hairdresser-এর পেমেন্ট", Icon: WalletIcon },
+  { href: "/admin/barbers", label: "Hairdresser", Icon: UsersIcon },
   { href: "/admin/services", label: "সার্ভিস ও দাম", Icon: ScissorsIcon },
   { href: "/admin/settings", label: "সেটিংস", Icon: GearIcon },
 ] as const;
@@ -116,7 +116,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
             <span className="flex h-9 w-9 items-center justify-center rounded-full bg-surface-2">
               <HomeIcon className="h-[18px] w-[18px]" />
             </span>
-            নাপিতের স্ক্রিন
+            Hairdresser-এর স্ক্রিন
           </Link>
           <button
             onClick={logout}
@@ -135,7 +135,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
         <div className="flex items-center justify-between px-4 pt-[max(0.75rem,env(safe-area-inset-top))] pb-2">
           <div className="min-w-0 truncate font-semibold text-fg">{NAV.find((n) => active(n.href))?.label ?? shopName}</div>
           <div className="flex gap-1">
-            <Link href="/staff" aria-label="নাপিতের স্ক্রিন" className="flex h-11 w-11 items-center justify-center rounded-lg text-muted hover:bg-surface-2">
+            <Link href="/staff" aria-label="Hairdresser-এর স্ক্রিন" className="flex h-11 w-11 items-center justify-center rounded-lg text-muted hover:bg-surface-2">
               <HomeIcon className="h-5 w-5" />
             </Link>
             <button
@@ -160,7 +160,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
               <li key={href}>
                 <Link href={href} aria-current={on ? "page" : undefined} className={cx("flex min-h-14 flex-col items-center justify-center gap-0.5 px-1 text-[11px] leading-snug", on ? "font-semibold text-primary" : "text-muted")}>
                   <span className={cx("flex h-7 w-12 items-center justify-center rounded-full", on && "bg-primary-soft")}><Icon className="h-5 w-5" /></span>
-                  <span className="max-w-full truncate">{label.replace("নাপিতের ", "").replace("অ্যাপয়েন্টমেন্ট", "বুকিং")}</span>
+                  <span className="max-w-full truncate">{label.replace("Hairdresser-এর ", "").replace("অ্যাপয়েন্টমেন্ট", "বুকিং")}</span>
                 </Link>
               </li>
             );
@@ -185,7 +185,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
           ))}
           <li className="my-1 border-t border-line" />
           <li>
-            <Link href="/staff" onClick={() => setMore(false)} className="flex min-h-12 items-center gap-3 rounded-xl px-3 text-[15px] text-fg hover:bg-surface-2"><HomeIcon className="h-5 w-5" />নাপিতের স্ক্রিন</Link>
+            <Link href="/staff" onClick={() => setMore(false)} className="flex min-h-12 items-center gap-3 rounded-xl px-3 text-[15px] text-fg hover:bg-surface-2"><HomeIcon className="h-5 w-5" />Hairdresser-এর স্ক্রিন</Link>
           </li>
           <li>
             <button onClick={logout} className="flex min-h-12 w-full items-center gap-3 rounded-xl px-3 text-left text-[15px] text-fg hover:bg-surface-2"><LogoutIcon className="h-5 w-5" />লগআউট</button>

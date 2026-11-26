@@ -55,7 +55,7 @@ export function AdminLogin({ shopName }: { shopName: string }) {
           লগইন
         </Button>
         <Link href="/staff" className="mt-2 inline-block text-sm text-primary hover:underline">
-          নাপিতের স্ক্রিনে যান
+          Hairdresser-এর স্ক্রিনে যান
         </Link>
       </form>
     </main>

@@ -40,7 +40,7 @@ export function Payouts() {
 
   return (
     <>
-      <PageTitle title="নাপিতের পেমেন্ট" sub={`মোট পাওনা ${taka(totalOwed)}`} />
+      <PageTitle title="Hairdresser-এর পেমেন্ট" sub={`মোট পাওনা ${taka(totalOwed)}`} />
       <p role="status" className="sr-only">
         {view.loading ? "হিসাব হালনাগাদ হচ্ছে…" : ""}
       </p>
@@ -79,7 +79,7 @@ export function Payouts() {
 
       <div className="mt-8 mb-3 flex flex-wrap items-end justify-between gap-3">
         <h2 className="text-lg font-semibold text-fg">পেমেন্টের ইতিহাস</h2>
-        <Select label="নাপিত" value={filter} onChange={(e) => setFilter(e.target.value)} className="w-40">
+        <Select label="Hairdresser" value={filter} onChange={(e) => setFilter(e.target.value)} className="w-40">
           <option value="all">সবাই</option>
           {catalog.barbers.map((b) => (
             <option key={b.id} value={b.id}>
@@ -96,7 +96,7 @@ export function Payouts() {
           <thead className="border-b border-line">
             <tr>
               <th className={th}>তারিখ</th>
-              <th className={th}>নাপিত</th>
+              <th className={th}>Hairdresser</th>
               <th className={thNum}>টাকা</th>
               <th className={th}>নোট</th>
               <th className={th}>

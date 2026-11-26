@@ -41,7 +41,7 @@ export function BarberPicker({ stats }: { stats: TodayStat[] }) {
 
       {barbers.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-line p-10 text-center text-subtle">
-          কোনো নাপিত নেই। এডমিন প্যানেল থেকে নাপিত যোগ করুন।
+          কোনো Hairdresser নেই। এডমিন প্যানেল থেকে Hairdresser যোগ করুন।
         </div>
       ) : (
         <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3">

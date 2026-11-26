@@ -92,7 +92,7 @@ export function ReceiptView({ sale }: { sale: Sale | null }) {
           <dd className="text-right font-semibold">{receiptNo(sale.id)}</dd>
           <dt>তারিখ:</dt>
           <dd className="text-right">{fmtDateTime(sale.createdAt)}</dd>
-          <dt>নাপিত:</dt>
+          <dt>Hairdresser:</dt>
           <dd className="text-right">{barber?.name ?? "—"}</dd>
         </dl>
 

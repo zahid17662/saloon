@@ -62,7 +62,7 @@ export function QueueJoin({ menu }: { menu: PublicMenu }) {
       </div>
 
       <fieldset className="grid gap-2">
-        <legend className="mb-1 text-sm font-medium">কারিগর বেছে নিন</legend>
+        <legend className="mb-1 text-sm font-medium">Hairdresser বেছে নিন</legend>
         {q.lanes.map((l) => {
           const on = sel === l.id;
           const f = isFree(l);

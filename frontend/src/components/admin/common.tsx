@@ -61,11 +61,11 @@ export function BarberTable({ rows, flat }: { rows: BarberRow[]; flat?: boolean 
     <TableWrap flat={flat}>
       <thead className="border-b border-line">
         <tr>
-          <th className={th}>নাপিত</th>
+          <th className={th}>Hairdresser</th>
           <th className={thNum}>কাস্টমার</th>
           <th className={thNum}>সার্ভিস</th>
           <th className={thNum}>মোট বিক্রি</th>
-          <th className={thNum}>নাপিতের ভাগ</th>
+          <th className={thNum}>Hairdresser-এর ভাগ</th>
           <th className={thNum}>মালিকের ভাগ</th>
         </tr>
       </thead>

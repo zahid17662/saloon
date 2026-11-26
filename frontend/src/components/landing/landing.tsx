@@ -57,7 +57,7 @@ export function Landing({ menu }: { menu: PublicMenu | null }) {
             Look Good, <span className="text-gold-ink">Feel Confident</span>
           </h1>
           <p className="mx-auto mt-4 max-w-xl text-base text-muted">
-            আমাদের সেবা আর দাম দেখে নিন, পছন্দের barber আর সময় বেছে আগেই বুক করে রাখুন। লাইনে দাঁড়াতে হবে না।
+            আমাদের সেবা আর দাম দেখে নিন, পছন্দের Hairdresser আর সময় বেছে আগেই বুক করে রাখুন। লাইনে দাঁড়াতে হবে না।
           </p>
           <div className="mt-7 flex flex-wrap items-center justify-center gap-3">
             <a
@@ -104,7 +104,7 @@ export function Landing({ menu }: { menu: PublicMenu | null }) {
         {menu.barbers.length > 0 && (
           <section aria-labelledby="barbers-h">
             <h2 id="barbers-h" className="mb-4 text-xl font-bold text-fg">
-              আমাদের barber
+              আমাদের Hairdresser
             </h2>
             <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
               {menu.barbers.map((b) => (
@@ -124,7 +124,7 @@ export function Landing({ menu }: { menu: PublicMenu | null }) {
             এখনই লাইনে যুক্ত হোন
           </h2>
           <p className="mb-4 text-sm text-muted">
-            পছন্দের কারিগর বেছে নিন। তিনি ফাঁকা থাকলে সরাসরি কাটবেন, না হলে তাঁর সারিতে সিরিয়াল পাবেন।
+            পছন্দের Hairdresser বেছে নিন। তিনি ফাঁকা থাকলে সরাসরি কাটবেন, না হলে তাঁর সারিতে সিরিয়াল পাবেন।
           </p>
           <QueueJoin menu={menu} />
           <h3 className="mt-10 mb-1 text-lg font-bold text-fg">আগাম সময় বেছে বুকিং</h3>

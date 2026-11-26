@@ -41,7 +41,7 @@ export function Tracker() {
       </section>
       {mine && (
         <section className="rounded-3xl bg-surface p-5 shadow-card text-sm">
-          <div className="flex justify-between"><span className="text-muted">কারিগর</span><b>{lane.name}</b></div>
+          <div className="flex justify-between"><span className="text-muted">Hairdresser</span><b>{lane.name}</b></div>
           <div className="mt-2 flex justify-between"><span className="text-muted">সার্ভিস</span><b>{mine.service}</b></div>
           <div className="mt-2 flex justify-between"><span className="text-muted">মোট</span><b>{taka(mine.price)}</b></div>
         </section>

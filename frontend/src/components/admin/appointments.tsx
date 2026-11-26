@@ -109,7 +109,7 @@ export function AppointmentsList() {
               <div className="mt-3 text-sm text-fg">
                 {a.services.map((s) => s.name).join(", ")} · <span className="font-semibold">{taka(a.total)}</span>
               </div>
-              <div className="mt-1 text-xs text-subtle">Barber: {barberName(a.barberId)}</div>
+              <div className="mt-1 text-xs text-subtle">Hairdresser: {barberName(a.barberId)}</div>
               {a.note && <div className="mt-2 rounded-xl bg-surface-2 p-2.5 text-sm text-muted">{a.note}</div>}
               {(a.status === "PENDING" || a.status === "CONFIRMED") && (
                 <div className="mt-3 flex flex-wrap gap-2">

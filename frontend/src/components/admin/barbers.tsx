@@ -20,17 +20,17 @@ export function Barbers() {
     const n = view.data?.balances.find((b) => b.barberId === id)?.salesCount;
     return n === undefined ? "—" : bnDigits(n); // never show a made-up zero while loading or after an error
   };
-  const nextName = `নাপিত ${bnDigits(catalog.barbers.length + 1)}`;
+  const nextName = `Hairdresser ${bnDigits(catalog.barbers.length + 1)}`;
 
   return (
     <>
       <PageTitle
-        title="নাপিত"
+        title="Hairdresser"
         sub={`${bnDigits(catalog.barbers.filter((b) => b.active).length)} জন সক্রিয়`}
         actions={
           <Button onClick={() => setEditing("new")}>
             <PlusIcon className="h-5 w-5" />
-            নতুন নাপিত
+            নতুন Hairdresser
           </Button>
         }
       />
@@ -61,7 +61,7 @@ export function Barbers() {
 
       <Modal
         open={editing !== null}
-        title={editing === "new" ? "নতুন নাপিত" : "নাপিত এডিট"}
+        title={editing === "new" ? "নতুন Hairdresser" : "Hairdresser এডিট"}
         onClose={() => setEditing(null)}
       >
         {editing !== null && (
@@ -118,7 +118,7 @@ function BarberForm({ barber, defaultName, onDone }: { barber: Barber | null; de
         inputMode="numeric"
         value={pct}
         onChange={(e) => setPct(e.target.value)}
-        hint="নাপিত প্রতিটি সার্ভিসের কত শতাংশ পাবে। পরিবর্তন শুধু নতুন বিক্রিতে প্রযোজ্য হবে।"
+        hint="Hairdresser প্রতিটি সার্ভিসের কত শতাংশ পাবে। পরিবর্তন শুধু নতুন বিক্রিতে প্রযোজ্য হবে।"
         required
       />
       {barber && (

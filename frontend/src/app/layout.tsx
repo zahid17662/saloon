@@ -33,7 +33,7 @@ const FALLBACK_TITLE = "সেলুন হিসাব";
 export async function generateMetadata(): Promise<Metadata> {
   await connection();
   const title = (await fetchShopName()) ?? FALLBACK_TITLE;
-  return { title, description: "সেলুনের সার্ভিস, নাপিতের কমিশন ও দৈনিক হিসাব" };
+  return { title, description: "সেলুনের সার্ভিস, Hairdresser-এর কমিশন ও দৈনিক হিসাব" };
 }
 
 export const viewport: Viewport = {

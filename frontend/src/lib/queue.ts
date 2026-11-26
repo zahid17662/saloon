@@ -16,17 +16,17 @@ export const MIN_PER_CUT = 25;
 const seed = (): QueueState => ({
   mine: null,
   lanes: [
-    { id: 1, name: "[কারিগর ১]", initial: "র", lastSerial: 15, doneToday: 4, earned: 920,
+    { id: 1, name: "[Hairdresser 1]", initial: "র", lastSerial: 15, doneToday: 4, earned: 920,
       current: { serial: 12, name: "[কাস্টমার]", service: "হেয়ার কাট + দাড়ি ট্রিম", price: 230, source: "online" },
       waiting: [
         { serial: 13, name: "[কাস্টমার]", service: "ফেসিয়াল", price: 400, source: "online" },
         { serial: 14, name: "[কাস্টমার]", service: "হেয়ার কাট", price: 150, source: "walkin" },
         { serial: 15, name: "[কাস্টমার]", service: "দাড়ি ট্রিম", price: 80, source: "online" },
       ] },
-    { id: 2, name: "[কারিগর ২]", initial: "স", lastSerial: 9, doneToday: 3, earned: 1100,
+    { id: 2, name: "[Hairdresser 2]", initial: "স", lastSerial: 9, doneToday: 3, earned: 1100,
       current: { serial: 8, name: "[কাস্টমার]", service: "গ্রুমিং প্যাকেজ", price: 550, source: "online" },
       waiting: [{ serial: 9, name: "[কাস্টমার]", service: "হেয়ার কাট", price: 150, source: "advance" }] },
-    { id: 3, name: "[কারিগর ৩]", initial: "ম", lastSerial: 5, doneToday: 5, earned: 1250, current: null, waiting: [] },
+    { id: 3, name: "[Hairdresser 3]", initial: "ম", lastSerial: 5, doneToday: 5, earned: 1250, current: null, waiting: [] },
   ],
 });
 

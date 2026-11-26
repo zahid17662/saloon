@@ -78,7 +78,7 @@ export function SalesList() {
       />
       <div className="mb-4 flex flex-wrap items-end gap-3">
         <RangeFilter state={r} />
-        <Select label="নাপিত" value={barberId} onChange={(e) => setBarberId(e.target.value)} className="w-40">
+        <Select label="Hairdresser" value={barberId} onChange={(e) => setBarberId(e.target.value)} className="w-40">
           <option value="all">সবাই</option>
           {catalog.barbers.map((b) => (
             <option key={b.id} value={b.id}>
@@ -111,7 +111,7 @@ export function SalesList() {
               <tr>
                 <th className={th}>রসিদ</th>
                 <th className={th}>সময়</th>
-                <th className={th}>নাপিত</th>
+                <th className={th}>Hairdresser</th>
                 <th className={th}>সার্ভিস</th>
                 <th className={thNum}>মোট</th>
                 <th className={th}>পেমেন্ট</th>
@@ -141,7 +141,7 @@ export function SalesList() {
                     </span>
                     {x.voidedAt && (
                       <div className="mt-1 text-xs text-danger">
-                        বাতিল ({x.voidedBy === "ADMIN" ? "এডমিন" : "নাপিত"}): {x.voidReason}
+                        বাতিল ({x.voidedBy === "ADMIN" ? "এডমিন" : "Hairdresser"}): {x.voidReason}
                       </div>
                     )}
                   </td>
@@ -232,9 +232,9 @@ function VoidForm({ sale, onDone, onCancel }: { sale: Sale; onDone: () => void; 
       }}
     >
       <p className="text-sm text-muted">
-        {receiptNo(sale.id)} · {taka(sale.total)}। বাতিল করলে এটি সব হিসাব ও নাপিতের পাওনা থেকে বাদ যাবে, তবে তালিকায় থাকবে।
+        {receiptNo(sale.id)} · {taka(sale.total)}। বাতিল করলে এটি সব হিসাব ও Hairdresser-এর পাওনা থেকে বাদ যাবে, তবে তালিকায় থাকবে।
       </p>
-      <Field label="কারণ" value={reason} onChange={(e) => setReason(e.target.value)} placeholder="যেমন: ভুল নাপিতের নামে এন্ট্রি" required autoFocus />
+      <Field label="কারণ" value={reason} onChange={(e) => setReason(e.target.value)} placeholder="যেমন: ভুল Hairdresser-এর নামে এন্ট্রি" required autoFocus />
       <ErrorText>{error}</ErrorText>
       <div className="flex gap-2">
         <Button type="button" variant="secondary" className="flex-1" onClick={onCancel}>

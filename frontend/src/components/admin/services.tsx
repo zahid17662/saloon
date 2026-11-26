@@ -135,7 +135,7 @@ function CategoryForm({ category, onDone }: { category: Category | null; onDone:
       {category && (
         <>
           <Field label="ক্রম" inputMode="numeric" value={order} onChange={(e) => setOrder(e.target.value)} />
-          <Toggle checked={active} onChange={setActive} label={active ? "সক্রিয়" : "নিষ্ক্রিয় — নাপিতের স্ক্রিনে দেখাবে না"} />
+          <Toggle checked={active} onChange={setActive} label={active ? "সক্রিয়" : "নিষ্ক্রিয় — Hairdresser-এর স্ক্রিনে দেখাবে না"} />
         </>
       )}
       <ErrorText>{error}</ErrorText>
@@ -212,7 +212,7 @@ function ServiceForm({
       {service && (
         <>
           <Field label="ক্রম" inputMode="numeric" value={order} onChange={(e) => setOrder(e.target.value)} />
-          <Toggle checked={active} onChange={setActive} label={active ? "সক্রিয়" : "নিষ্ক্রিয় — নাপিতের স্ক্রিনে দেখাবে না"} />
+          <Toggle checked={active} onChange={setActive} label={active ? "সক্রিয়" : "নিষ্ক্রিয় — Hairdresser-এর স্ক্রিনে দেখাবে না"} />
         </>
       )}
       <ErrorText>{error}</ErrorText>

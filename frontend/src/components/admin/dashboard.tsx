@@ -70,7 +70,7 @@ export function Dashboard() {
           value={taka(t.ownerShare)}
           icon={<WalletIcon className="h-[18px] w-[18px]" />}
           trend={pct(t.ownerShare, prev.ownerShare)}
-          sub={`নাপিতদের ভাগ ${taka(t.barberShare)}`}
+          sub={`Hairdresser-দের ভাগ ${taka(t.barberShare)}`}
         />
         <Stat
           tone="blush"
@@ -93,8 +93,8 @@ export function Dashboard() {
       <div className="mt-4 grid gap-4 xl:grid-cols-12">
         <Card className="xl:col-span-8">
           <CardHeader
-            title="নাপিত অনুযায়ী হিসাব"
-            sub="প্রত্যেক নাপিতের বিক্রি ও কমিশন ভাগ"
+            title="Hairdresser অনুযায়ী হিসাব"
+            sub="প্রত্যেক Hairdresser-এর বিক্রি ও কমিশন ভাগ"
             actions={
               <Link
                 href="/admin/reports"

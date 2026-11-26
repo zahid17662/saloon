@@ -68,7 +68,7 @@ export function ShopBoard({ services, categories = [] }: { services: Svc[]; cate
 
         {view === "queue" && (
           <>
-            <div role="tablist" aria-label="কারিগর" className="mb-4 grid grid-cols-3 gap-2 lg:hidden">
+            <div role="tablist" aria-label="Hairdresser" className="mb-4 grid grid-cols-3 gap-2 lg:hidden">
               {q.lanes.map((l) => (
                 <button key={l.id} role="tab" aria-selected={tab === l.id} onClick={() => setTab(l.id)}
                   className={cx("flex flex-col items-center gap-1 rounded-2xl border-2 px-1.5 py-2.5 transition-colors", tab === l.id ? "border-primary bg-surface shadow-card" : "border-transparent bg-surface/70")}>
@@ -164,7 +164,7 @@ function Lane({ lane: l, onAdd }: { lane: Lane; onAdd: () => void }) {
       ) : (
         <div className="rounded-3xl border-2 border-dashed border-line-strong bg-surface p-6 text-center">
           <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-success-soft text-xl text-success">✓</span>
-          <p className="mt-3 text-lg font-bold text-success">কারিগর ফাঁকা আছেন</p>
+          <p className="mt-3 text-lg font-bold text-success">Hairdresser ফাঁকা আছেন</p>
           <p className="mt-0.5 text-sm text-muted">নতুন কাস্টমার এলে সরাসরি বসবে</p>
         </div>
       )}
@@ -286,7 +286,7 @@ function DayStack({ todayTotal, todayDone }: { todayTotal: number; todayDone: nu
                     </div>
                     <div className={cx("mt-3 grid grid-cols-2 gap-3 border-t pt-3 text-sm", dark ? "border-white/15" : "border-line")}>
                       <div><p className={mute}>মালিকের ভাগ (৫০%)</p><p className={cx("text-lg font-bold", dark && "text-gold")}>{taka(owner)}</p></div>
-                      <div><p className={mute}>কারিগরদের ভাগ (৫০%)</p><p className="text-lg font-bold">{taka(inc - owner)}</p></div>
+                      <div><p className={mute}>Hairdresser-দের ভাগ (৫০%)</p><p className="text-lg font-bold">{taka(inc - owner)}</p></div>
                     </div>
                     <div className={cx("mt-3 grid grid-cols-3 gap-2 border-t pt-3 text-center text-xs", dark ? "border-white/15" : "border-line")}>
                       <div><p className={mute}>গড় / কাস্টমার</p><p className="mt-0.5 text-sm font-bold">{taka(done ? Math.round(inc / done) : 0)}</p></div>
@@ -316,7 +316,7 @@ function Money({ lanes }: { lanes: Lane[] }) {
     <div className="mx-auto max-w-2xl space-y-4">
       <DayStack todayTotal={total} todayDone={done} />
       <section className="rounded-3xl border border-line bg-surface p-2 shadow-card">
-        <h2 className="px-3 pt-3 pb-1 text-sm font-semibold text-muted">কারিগর অনুযায়ী</h2>
+        <h2 className="px-3 pt-3 pb-1 text-sm font-semibold text-muted">Hairdresser অনুযায়ী</h2>
         <ul className="divide-y divide-line">
           {lanes.map((l) => (
             <li key={l.id} className="flex items-center gap-3 p-3">
@@ -429,7 +429,7 @@ function NewSerial({ services, categories, lanes, preset, onSeeQueue }: { servic
 
       {chosen.length > 0 && (
         <section id="bar" aria-labelledby="bar-h" className="scroll-mt-20">
-          <StepHead n="২" title="কোন কারিগর?" hint="প্রথমে 'যে কেউ', অথবা পছন্দের কারিগর" />
+          <StepHead n="২" title="কোন Hairdresser?" hint="প্রথমে 'যে কেউ', অথবা পছন্দের Hairdresser" />
           <button aria-pressed={barber === "any"} onClick={() => setBarber("any")}
             className={cx("mb-4 flex w-full items-center gap-3 rounded-2xl border-2 border-dashed bg-surface p-4 text-left transition-colors", barber === "any" ? "border-primary shadow-card" : "border-line-strong")}>
             <span className="flex h-11 w-11 flex-none items-center justify-center rounded-full bg-primary-soft text-lg text-primary">⇄</span>
@@ -525,7 +525,7 @@ function NewSerial({ services, categories, lanes, preset, onSeeQueue }: { servic
           </label>
           <dl className="mt-4 space-y-2 text-sm">
             <div className="flex justify-between gap-4"><dt className="text-muted">সার্ভিস</dt><dd className="flex flex-wrap justify-end gap-1.5">{chosen.map((s) => <span key={s.id} className="inline-flex items-center gap-1 rounded-full bg-primary-soft px-2.5 py-1 text-xs font-semibold text-primary"><ServiceIcon name={s.name} className="h-3.5 w-3.5" />{s.name}</span>)}</dd></div>
-            <div className="flex justify-between gap-4"><dt className="text-muted">কারিগর</dt><dd className="font-medium">{target.name}</dd></div>
+            <div className="flex justify-between gap-4"><dt className="text-muted">Hairdresser</dt><dd className="font-medium">{target.name}</dd></div>
             <div className="flex justify-between gap-4"><dt className="text-muted">সিরিয়াল</dt><dd className="font-medium">#{bnDigits(target.lastSerial + 1)} · {isFree(target) ? "সরাসরি শুরু" : `প্রায় ${bnDigits(etaMin(target))} মিনিট পরে`}</dd></div>
             <div className="flex justify-between gap-4 border-t border-dashed border-line-strong pt-2"><dt className="font-semibold">মোট</dt><dd className="text-lg font-bold">{taka(price)}</dd></div>
           </dl>
@@ -540,7 +540,7 @@ function NewSerial({ services, categories, lanes, preset, onSeeQueue }: { servic
             {target ? (
               <button onClick={() => document.getElementById("ok")?.scrollIntoView({ behavior: "smooth" })} className="h-11 rounded-xl bg-primary px-5 text-sm font-semibold text-white">নিশ্চিত করুন ↓</button>
             ) : (
-              <button onClick={() => document.getElementById("bar")?.scrollIntoView({ behavior: "smooth" })} className="h-11 rounded-xl bg-primary px-5 text-sm font-semibold text-white">কারিগর বাছুন ↓</button>
+              <button onClick={() => document.getElementById("bar")?.scrollIntoView({ behavior: "smooth" })} className="h-11 rounded-xl bg-primary px-5 text-sm font-semibold text-white">Hairdresser বাছুন ↓</button>
             )}
           </div>
         </div>
