@@ -5,7 +5,7 @@ import { Logo } from "./logo";
 import { bnDigits, taka } from "@/lib/money";
 import { aheadOf, etaMin, finish, isFree, join, MIN_PER_CUT, removeTicket, resetDemo, setPhoto, useQueue, type Lane, type Source } from "@/lib/queue";
 import { ReceiptIcon, ScissorsIcon, UsersIcon } from "./icons";
-import { ServiceIcon } from "./service-icon";
+import { ServiceArt, ServiceIcon } from "./service-icon";
 import { cx } from "./ui";
 import { BarberFace, squarePhoto } from "./barber-face";
 
@@ -413,8 +413,8 @@ function NewSerial({ services, categories, lanes, preset, onSeeQueue }: { servic
             return (
               <button key={s.id} aria-pressed={on} onClick={() => setPicked((p) => (on ? p.filter((x) => x !== s.id) : [...p, s.id]))}
                 className={cx("flex items-center gap-3 rounded-2xl border bg-surface p-3 text-left transition-colors", on ? "border-primary ring-2 ring-primary/15" : "border-line hover:border-line-strong")}>
-                <span className={cx("flex h-11 w-11 flex-none items-center justify-center rounded-xl transition-colors", on ? "bg-primary text-gold" : "bg-primary-soft text-primary")}>
-                  <ServiceIcon name={s.name} className="h-5 w-5" />
+                <span className={cx("h-14 w-14 flex-none overflow-hidden rounded-2xl transition-colors", on ? "bg-gold/40" : "bg-primary-soft")}>
+                  <ServiceArt name={s.name} size={56} className="block" />
                 </span>
                 <span className="min-w-0 flex-1">
                   <span className="block text-[15px] leading-snug font-semibold break-words">{s.name}</span>

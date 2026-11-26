@@ -4,7 +4,7 @@ import { bnDigits, taka } from "@/lib/money";
 import type { PublicMenu } from "@/lib/types";
 import { CalendarIcon, PhoneIcon, PinIcon, ScissorsIcon } from "../icons";
 import { Logo } from "../logo";
-import { ServiceIcon } from "../service-icon";
+import { ServiceArt } from "../service-icon";
 import { BookingForm } from "./booking-form";
 import { PopularServices } from "./popular";
 import { QueueJoin } from "./queue-join";
@@ -76,8 +76,8 @@ export function Landing({ menu }: { menu: PublicMenu | null }) {
               সেবা ও দাম
             </a>
           </div>
-          <div className="mx-auto mt-9 max-w-xl rounded-[2rem] bg-surface p-3 shadow-pop">
-            <BarbershopScene className="w-full" />
+          <div className="mx-auto mt-9 max-w-4xl overflow-hidden rounded-[2rem] shadow-pop">
+            <BarbershopScene className="block h-52 w-full sm:aspect-[8/3] sm:h-auto" />
           </div>
         </section>
 
@@ -97,7 +97,7 @@ export function Landing({ menu }: { menu: PublicMenu | null }) {
                   <ul className="divide-y divide-line">
                     {g.items.map((s) => (
                       <li key={s.id} className="flex items-center justify-between gap-3 py-2.5 text-[15px]">
-                        <span className="flex min-w-0 items-center gap-3 text-fg"><span className={`flex h-10 w-10 flex-none items-center justify-center rounded-xl text-primary ${TINTS[gi % TINTS.length]}`}><ServiceIcon name={s.name} className="h-5 w-5" /></span><span className="min-w-0 break-words font-medium">{s.name}</span></span>
+                        <span className="flex min-w-0 items-center gap-3 text-fg"><span className={`h-12 w-12 flex-none overflow-hidden rounded-2xl ${TINTS[gi % TINTS.length]}`}><ServiceArt name={s.name} size={48} className="block" /></span><span className="min-w-0 break-words font-medium">{s.name}</span></span>
                         <span className="font-bold text-gold-ink tabular-nums">{taka(s.price)}</span>
                       </li>
                     ))}
