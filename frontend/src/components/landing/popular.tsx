@@ -1,6 +1,6 @@
 import { taka } from "@/lib/money";
 import type { PublicMenu } from "@/lib/types";
-import { ServiceArt } from "../service-icon";
+import { ServiceIcon } from "../service-icon";
 
 /** Card colours cycle so the row reads as a shelf of offers, not a list. */
 const TONES = [
@@ -28,10 +28,10 @@ export function PopularServices({ menu }: { menu: PublicMenu }) {
         {picks.map((s, i) => {
           const tone = TONES[i % TONES.length];
           return (
-            <li key={s.id} className="w-[13.5rem] flex-none snap-start">
+            <li key={s.id} className="w-[11.5rem] flex-none snap-start">
               <a href="#book" className={`block h-full rounded-[1.75rem] p-5 text-center shadow-card transition-transform active:scale-[0.98] ${tone.card}`}>
-                <span className="mx-auto mb-4 flex h-28 w-28 items-center justify-center rounded-full bg-surface">
-                  <ServiceArt name={s.name} size={96} />
+                <span className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-surface text-primary shadow-card">
+                  <ServiceIcon name={s.name} className="h-9 w-9" />
                 </span>
                 <span className="font-display block text-lg leading-snug font-extrabold">{s.name}</span>
                 <span className="mt-1 block text-xs opacity-70">{catName(s.categoryId)}</span>

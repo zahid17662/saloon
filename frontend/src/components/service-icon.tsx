@@ -29,9 +29,8 @@ const PATHS: Record<Kind, ReactNode> = {
   // razor
   beard: (
     <>
-      <path d="M4 9h13a3 3 0 0 1 3 3v0H4z" />
-      <path d="M4 9V6.5A1.5 1.5 0 0 1 5.5 5H15" />
-      <path d="M7 12v4M11 12v4M15 12v4" />
+      <path d="M6 9c0-3.500 2.700-6 6-6s6 2.500 6 6v3c0 4-2.700 8-6 8s-6-4-6-8z" />
+      <path d="M6 12c2 1.200 3.500 1.500 6 1.500s4-.3 6-1.500M10 16.500c1.200.8 2.800.8 4 0" />
     </>
   ),
   // comb
@@ -50,10 +49,12 @@ const PATHS: Record<Kind, ReactNode> = {
       <path d="M8.5 7V3.5h7V7M10.5 3.5v3M13.5 3.5v3M12 14v2" />
     </>
   ),
-  // shaving brush
+  // face with sparkle
   facial: (
     <>
-      <path d="M7 11C6 6 9 3 12 3s6 3 5 8zM8 11h8v2.5H8zM9.5 13.5 10.5 21h3l1-7.5" />
+      <path d="M5 11a6 7 0 0 1 12 0c0 4-2.500 8-6 8s-6-4-6-8z" />
+      <path d="M9 11h.01M13 11h.01M9.500 15c.8.8 2.200.8 3 0" />
+      <path d="M19 3l.8 2.200L22 6l-2.200.8L19 9l-.8-2.200L16 6l2.200-.8z" />
     </>
   ),
   // paint brush

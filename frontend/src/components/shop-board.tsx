@@ -5,7 +5,7 @@ import { Logo } from "./logo";
 import { bnDigits, taka } from "@/lib/money";
 import { aheadOf, etaMin, finish, isFree, join, MIN_PER_CUT, removeTicket, resetDemo, setPhoto, useQueue, type Lane, type Source } from "@/lib/queue";
 import { ReceiptIcon, ScissorsIcon, UsersIcon } from "./icons";
-import { ServiceArt, ServiceIcon } from "./service-icon";
+import { ServiceIcon } from "./service-icon";
 import { cx } from "./ui";
 import { BarberFace, squarePhoto } from "./barber-face";
 
@@ -340,10 +340,10 @@ function Money({ lanes }: { lanes: Lane[] }) {
 
 function StepHead({ n, title, hint }: { n: string; title: string; hint?: string }) {
   return (
-    <div className="mb-4 flex items-center gap-3">
-      <span className="flex h-9 w-9 flex-none items-center justify-center rounded-full bg-primary text-sm font-bold text-gold shadow-card">{n}</span>
+    <div className="mb-3 flex items-center gap-2.5">
+      <span className="flex h-7 w-7 flex-none items-center justify-center rounded-full bg-primary text-xs font-bold text-gold">{n}</span>
       <div className="min-w-0">
-        <h2 className="text-xl leading-snug font-bold">{title}</h2>
+        <h2 className="text-base leading-snug font-bold">{title}</h2>
         {hint && <p className="text-xs text-muted">{hint}</p>}
       </div>
     </div>
@@ -403,22 +403,24 @@ function NewSerial({ services, categories, lanes, preset, onSeeQueue }: { servic
           <div role="tablist" aria-label="সার্ভিসের ধরন" className="-mx-4 mb-3 flex gap-2 overflow-x-auto px-4 pb-1 sm:mx-0 sm:px-0">
             {[{ id: 0, name: "সব" }, ...categories].map((c) => (
               <button key={c.id} role="tab" aria-selected={cat === c.id} onClick={() => setCat(c.id)}
-                className={cx("h-10 flex-none rounded-full border px-4 text-sm font-semibold whitespace-nowrap", cat === c.id ? "border-primary bg-primary text-white" : "border-line-strong bg-surface text-fg")}>{c.name}</button>
+                className={cx("h-9 flex-none rounded-full border px-3.5 text-[13px] font-semibold whitespace-nowrap transition-colors", cat === c.id ? "border-primary bg-primary text-gold" : "border-line-strong bg-surface text-muted hover:text-fg")}>{c.name}</button>
             ))}
           </div>
         )}
-        <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 lg:grid-cols-4">
+        <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
           {services.filter((s) => cat === 0 || s.categoryId === cat).map((s) => {
             const on = picked.includes(s.id);
             return (
               <button key={s.id} aria-pressed={on} onClick={() => setPicked((p) => (on ? p.filter((x) => x !== s.id) : [...p, s.id]))}
-                className={cx("relative flex min-h-36 min-w-0 flex-col justify-between gap-2 rounded-2xl border-2 p-3 text-left transition-colors sm:p-3.5", on ? "border-primary bg-surface shadow-card" : "border-transparent bg-surface hover:border-line-strong")}>
-                <ServiceArt name={s.name} size={76} className="-mt-1 -mr-1 h-[76px] w-[76px] flex-none self-end sm:h-20 sm:w-20" />
-                <span className="min-w-0">
-                  <span className="block text-[15px] leading-snug font-semibold break-words">{s.name}</span>
-                  <span className="mt-0.5 block text-base font-bold text-gold-ink">{taka(s.price)}</span>
+                className={cx("flex items-center gap-3 rounded-2xl border bg-surface p-3 text-left transition-colors", on ? "border-primary ring-2 ring-primary/15" : "border-line hover:border-line-strong")}>
+                <span className={cx("flex h-11 w-11 flex-none items-center justify-center rounded-xl transition-colors", on ? "bg-primary text-gold" : "bg-primary-soft text-primary")}>
+                  <ServiceIcon name={s.name} className="h-5 w-5" />
                 </span>
-                {on && <span className="absolute top-2.5 left-2.5 flex h-6 w-6 items-center justify-center rounded-full bg-primary text-xs text-white">✓</span>}
+                <span className="min-w-0 flex-1">
+                  <span className="block text-[15px] leading-snug font-semibold break-words">{s.name}</span>
+                  <span className="mt-0.5 block text-sm font-bold text-gold-ink tabular-nums">{taka(s.price)}</span>
+                </span>
+                <span className={cx("flex h-6 w-6 flex-none items-center justify-center rounded-full border-2 text-[11px] transition-colors", on ? "border-primary bg-primary text-gold" : "border-line-strong text-transparent")}>✓</span>
               </button>
             );
           })}
