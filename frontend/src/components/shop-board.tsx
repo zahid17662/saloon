@@ -444,19 +444,18 @@ function NewSerial({ services, categories, lanes, preset, onSeeQueue }: { servic
             const sub = m ? m[2] : "";
             return (
               <button key={s.id} aria-pressed={on} onClick={() => setPicked((p) => (on ? p.filter((x) => x !== s.id) : [...p, s.id]))}
-                className={cx("group flex flex-col rounded-[1.75rem] bg-surface p-3 text-left shadow-card ring-1 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lift active:scale-[0.98]", on ? "shadow-lift ring-2 ring-primary" : "ring-primary/5")}>
-                <span className={cx("relative block aspect-[5/4] w-full overflow-hidden rounded-[1.25rem] bg-gradient-to-br transition-colors", on ? "from-gold/50 to-gold/10" : "from-primary-soft to-white")}>
+                className={cx("group flex flex-col rounded-3xl bg-surface p-2.5 text-left shadow-card ring-1 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lift active:scale-[0.98]", on ? "shadow-lift ring-2 ring-primary" : "ring-primary/5")}>
+                <span className={cx("relative block aspect-[16/10] w-full overflow-hidden rounded-2xl bg-gradient-to-br transition-colors", on ? "from-gold/40 to-gold/10" : "from-primary-soft to-white")}>
                   <span aria-hidden="true" className="absolute inset-0 bg-[radial-gradient(circle_at_50%_38%,rgb(255_255_255/0.95),transparent_62%)]" />
-                  <span aria-hidden="true" className="absolute inset-x-8 bottom-1.5 h-2 rounded-full bg-primary/10 blur-sm" />
                   <ServiceArt name={s.name} size={160} className="relative block h-full w-full" />
                 </span>
-                <span className="mt-3.5 flex items-end justify-between gap-2 px-1 pb-1">
-                  <span className="min-w-0">
-                    <span className="block text-[15px] leading-snug font-semibold">{main}</span>
-                    {sub && <span className="block text-xs text-muted">{sub}</span>}
-                    <span className="mt-1 block text-lg leading-tight font-bold text-primary tabular-nums">{taka(s.price)}</span>
-                  </span>
-                  <span aria-hidden="true" className={cx("flex h-9 w-9 flex-none items-center justify-center rounded-full text-lg leading-none transition-colors", on ? "bg-primary text-gold" : "bg-primary-soft text-primary group-hover:bg-gold/50")}>{on ? "✓" : "+"}</span>
+                <span className="mt-2.5 block px-1">
+                  <span className="block text-[15px] leading-snug font-semibold">{main}</span>
+                  {sub && <span className="block text-xs leading-snug text-muted">{sub}</span>}
+                </span>
+                <span className="mt-1 flex items-center justify-between gap-2 px-1 pb-0.5">
+                  <span className="text-base leading-none font-bold text-gold-ink tabular-nums">{taka(s.price)}</span>
+                  <span aria-hidden="true" className={cx("flex h-7 w-7 flex-none items-center justify-center rounded-full text-base leading-none transition-colors", on ? "bg-primary text-gold" : "bg-primary-soft text-primary group-hover:bg-primary/15")}>{on ? "✓" : "+"}</span>
                 </span>
               </button>
             );
