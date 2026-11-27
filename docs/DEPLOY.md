@@ -1,153 +1,117 @@
-# Deploying the Salon POS (Vercel + Neon)
+# Deploying (Neon + Render + Vercel)
 
-> **Architecture changed.** The app is now two deployments: the web app (`Client/`, Vercel) and a separate API
-> (`Server/`, Render). Follow `Client/README.md` and `Server/README.md` for the current steps. Neon, the
-> secrets, and the first-time migrate/seed (sections 1 and 3 below) are unchanged, except that the database
-> strings now go on **Render** (not Vercel), and Vercel needs only `API_URL`, `API_KEY` and `SESSION_SECRET`.
-> Run migrate/seed from `Server/` (`npm run db:migrate`, `npm run db:seed`).
+One GitHub repository, three services:
 
+| Part | Folder | Runs on |
+|---|---|---|
+| Public website (`/`) and POS (`/pos`, `/admin`) | `Client/` | Vercel |
+| API: business rules, auth, database access | `Server/` | Render |
+| Database | | Neon Postgres |
 
-You run every command yourself. Nothing here is automatic except the migration step in the Production build (section 4).
+Only the API talks to the database. Only the web app talks to the API. Never paste connection strings or secrets into chat, commits or screenshots.
 
 ## 0. What you need
 
-- A GitHub repo with this code pushed (the client's or a handed-over account).
-- A Vercel account and a Neon account.
-- Node 20+ and `npm` on your computer.
-- The **real** shop code and admin PIN you want to start with (4 to 8 digits each). Never use the demo `1234` / `0000` on `main`.
+- This code pushed to a GitHub repository (the client's, or one you will hand over).
+- Neon, Render and Vercel accounts.
+- Node 22 or newer on your computer (`.nvmrc` pins 24).
+- The **real** admin PIN and shop code (4 to 8 digits each) and a starting barber password (6+ characters, letters and digits). Never use the demo values on production.
+- The website details filled in: `Client/src/site/config.ts` (address, phone, WhatsApp, opening hours, real reviews). Empty items are hidden. Prices on the public website are in `Client/src/site/services.ts`; they are separate from the POS menu.
 
 ## 1. Neon: the production database
 
-1. Create a Neon project. Region: **AWS Asia Pacific (Singapore) `ap-southeast-1`**, next to Vercel `sin1`.
-2. The default branch is `main`. This is the production database.
-3. In the Neon dashboard, open **Connect** for the `main` branch and copy two connection strings:
-   - **Pooled** (host contains `-pooler`): goes in `DATABASE_URL`. The app uses it at runtime.
-   - **Direct** (no `-pooler`): goes in `DIRECT_URL`. Migrations and the seed use it.
-4. Backups: on the free plan history is short. On a paid plan, set the history retention (point-in-time restore) to at least 7 days (Project settings, Storage). Check this once before real money goes through the app.
-5. Never paste these strings in chat, commit them, or put them in screenshots.
+1. Create a project in **Singapore (`ap-southeast-1`)**. The default branch `main` is production.
+2. From **Connect**, copy two strings for `main`:
+   - **Pooled** (host contains `-pooler`): `DATABASE_URL`
+   - **Direct** (no `-pooler`): `DIRECT_URL`
+3. On a paid plan, set history retention (point-in-time restore) to at least 7 days.
 
-Generate the cookie-signing secret on your computer:
+Generate two **different** secrets (run twice):
 
 ```bash
-openssl rand -base64 32
+node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"
 ```
 
-If you have no `openssl`: `node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"`.
+One is `SESSION_SECRET`, the other is `API_KEY`.
 
-## 2. Vercel: create the project
+## 2. Create the tables and the first data (from your computer)
 
-1. Vercel dashboard, **Add New, Project**, import the GitHub repo. Framework: Next.js (detected). Leave the build command and output directory alone. `package.json` already sets `npm run build`, and `vercel.json` pins the region to `sin1`.
-2. Before the first deploy, open **Settings, Environment Variables** and add these. Tick **Production** for all of them. For Preview, see the note below.
-
-| Name | Value | Notes |
-|---|---|---|
-| `DATABASE_URL` | Neon **pooled** string of `main` | Runtime. Used by the app. |
-| `DIRECT_URL` | Neon **direct** string of `main` | Used by the migration step during the Production build, so it must be available at build time. |
-| `SESSION_SECRET` | the random string from section 1 | At least 32 characters. If it is missing or short, every login fails (by design). |
-
-Do **not** set `TRUST_PROXY_HEADERS`. On Vercel the client IP header is trusted automatically (`VERCEL=1`).
-
-**Preview deployments:** do not give Preview the `main` database. Create a separate Neon branch (for example `preview`), put its strings in the Preview scope, and use a different `SESSION_SECRET`. Previews never run migrations (see section 4), but they can read and write whatever database they point at.
-
-3. Do not deploy yet. Migrate and seed the database first (section 3). The seed is always a manual step.
-
-## 3. First-time database setup on `main` (you run this from your computer)
-
-Use a one-off shell. The strings are only in that shell's environment, not in a file.
-
-PowerShell (Windows):
+Run from the repository root, after `npm install`. PowerShell:
 
 ```powershell
-$env:DIRECT_URL = "<paste the direct string>"
+$env:DIRECT_URL = "<direct string of main>"
 npm run db:migrate
 $env:SEED_ENV = "production"
 $env:SEED_ADMIN_PIN = "<real admin PIN>"
 $env:SEED_SHOP_CODE = "<real shop code>"
+$env:SEED_BARBER_PASSWORD = "<starting barber password>"
 npm run db:seed
-Remove-Item Env:DIRECT_URL, Env:SEED_ENV, Env:SEED_ADMIN_PIN, Env:SEED_SHOP_CODE
+Remove-Item Env:DIRECT_URL, Env:SEED_ENV, Env:SEED_ADMIN_PIN, Env:SEED_SHOP_CODE, Env:SEED_BARBER_PASSWORD
 ```
 
-Bash (macOS / Linux / Git Bash):
+- A value set in the shell wins over `Server/.env` and `Client/.env.local`. The seed prints `Seeding Neon endpoint: ep-xxxx`: compare it with the endpoint of `main` in the Neon console and stop if it differs.
+- The seed is safe to run again: tables that already have rows are left alone. So it never changes the passwords of barbers that already exist; change those on the admin barbers page.
 
-```bash
-export DIRECT_URL='<paste the direct string>'
-npm run db:migrate
-SEED_ENV=production SEED_ADMIN_PIN='<real admin PIN>' SEED_SHOP_CODE='<real shop code>' npm run db:seed
-unset DIRECT_URL
-```
+## 3. Render: the API
 
-Before you run them: `drizzle-kit` also reads `.env.local`. If that file points at your dev branch, the variable you set in the shell wins, because `.env.local` only fills in values that are not already set. Confirm the target:
+1. **New, Blueprint**, choose the repository. The root `render.yaml` defines the `salon-api` service.
+2. Enter the four secrets when asked: `DATABASE_URL`, `DIRECT_URL`, `SESSION_SECRET`, `API_KEY`.
+3. The build installs the `Server` workspace and applies pending migrations, then `npm run start:api` starts it. Health check: `https://<name>.onrender.com/health` returns `{"ok":true}`.
 
-- The seed prints `Seeding Neon endpoint: ep-xxxx`. Compare that id with the endpoint of `main` in the Neon console. If it differs, stop.
-- The seed is safe to run again: a table that already has rows is left alone, and a changed PIN or shop code is never overwritten.
-- The seed refuses to run with `SEED_ENV=production` unless both the PIN and the shop code are set, so the demo values can never reach `main`.
+`plan: free` sleeps after 15 minutes without traffic and the next request waits about a minute. For a shop that is open all day, use `starter`. The public website does not depend on the API, so it stays fast either way.
 
-Check in the Neon SQL editor (branch `main`):
+## 4. Vercel: the web app
 
-```sql
-select count(*) from services;   -- expect your menu size
-select count(*) from barbers;
-```
+1. **Add New, Project**, import the same repository.
+2. Set **Root Directory** to `Client` and leave "Include source files outside of the Root Directory" on. Framework: Next.js. Leave the commands at their defaults. `Client/vercel.json` pins region `sin1`.
+3. Environment variables (Production):
 
-## 4. Deploying and how migrations run
+| Name | Value |
+|---|---|
+| `API_URL` | the Render URL, no trailing slash |
+| `API_KEY` | exactly the same as on Render (32+ characters) |
+| `SESSION_SECRET` | exactly the same as on Render |
 
-`npm run build` runs `scripts/build.mjs`:
+No database variables belong on Vercel.
 
-- On a **Vercel Production build** (`VERCEL_ENV=production`) it runs `drizzle-kit migrate` against `DIRECT_URL` first, then `next build`.
-- On **Preview builds, CI and your computer** it skips the migration and only builds. A pull request can never change the production database.
-- If a migration fails, the build fails. Vercel keeps serving the previous deployment. Read the build log, fix, and push again.
+**Preview deployments** need their own API and Neon branch. Never point them at production.
 
-Why this is not fully safe on its own, and the rule that makes it safe: during a deploy, the old code keeps running against the new schema until the new deployment goes live. So every migration must be **backward compatible**: add tables and columns (nullable or with a default), and drop or rename things only in a later release, after no running code uses them. Never edit a migration that has already been applied. Always run `npm run db:generate`, read the SQL, and commit it.
+### Moving from the old two-repository setup
 
-If you would rather not migrate during the build at all (the stricter option), run `npm run db:migrate` from your computer (section 3) before every deploy that has a new migration, and delete the `drizzle-kit migrate` step from `scripts/build.mjs`.
-
-First deploy:
-
-1. Push to `main` on GitHub. Vercel builds and deploys by itself. (Or **Deployments, Redeploy** in the dashboard.)
-2. Open the Production URL. Expected: the unlock page. Unlock with the real shop code, pick a barber, and make a test sale.
-3. Void that test sale from `/admin/sales` (login with the real admin PIN) so it is not counted.
+Earlier versions published `Client/` and `Server/` to two separate repositories. Any Vercel or Render project still connected to those must be reconnected to this repository (Vercel: Root Directory `Client`; Render: create the service from the root Blueprint, or set build command `npm ci --include=dev -w Server && npm run db:migrate` and start command `npm run start:api` with an empty Root Directory). The old repositories receive no more updates.
 
 ## 5. After the first deploy: checklist
 
-- [ ] `/unlock` loads, the shop code works, `/admin/login` accepts the real PIN, and the demo `1234` / `0000` are refused.
+- [ ] `/` shows the website; contact details are correct.
+- [ ] On a new device (or a private window) `/pos` asks for the shop code; `1234` is refused; the real code lists the barbers and a barber can log in.
+- [ ] `/admin/login` accepts the real PIN and refuses `0000`; no barber accepts `barber123`.
 - [ ] Wrong PIN six times in a row shows the "too many tries" message.
-- [ ] A sale shows on the receipt, in `/admin/sales`, and in the dashboard totals.
-- [ ] Browser console has no errors (open DevTools on `/` and `/admin`).
-- [ ] In Vercel, **Settings, Functions** shows region `Singapore (sin1)`.
-- [ ] Neon backup / history retention confirmed (section 1).
-- [ ] The Bangla owner README exists (PRD section 17, item 7).
+- [ ] A test sale shows on the receipt, in `/admin/sales` and in the dashboard. Then void it.
+- [ ] No errors in the browser console on `/`, `/pos`, `/admin`.
+- [ ] Neon backup / history retention confirmed.
+- [ ] The owner has `docs/OWNER-GUIDE.md` with the site address written in.
 
-## 6. Changing the PIN or shop code later
+## 6. Updates, migrations and rollback
 
-Use the Settings screen in `/admin/settings`.
+Pushing to `main` deploys both services (Render only when `Server/` or the root package files change). GitHub Actions (`.github/workflows/ci.yml`) runs typecheck, lint, build and tests.
 
-## 7. Rolling back
+Migrations run during the Render build, while the old version is still serving. So every migration must be **backward compatible**: add, do not rename or drop in the same release. Edit `Server/src/db/schema.ts`, run `npm run db:generate`, read the SQL, `npm run db:migrate` on a dev branch, then commit it. Never edit an applied migration and never run `drizzle-kit push` against `main`.
 
-**A bad deployment (code problem)**: in the Vercel dashboard, **Deployments**, pick the last good one, **Promote to Production** (or **Instant Rollback**). From a terminal: `npx vercel rollback` and follow the prompt. This swaps the code in seconds. It does not touch the database.
+- **Bad web deploy:** Vercel, Deployments, **Instant Rollback**.
+- **Bad API deploy:** Render, Events, **Rollback** to the previous deploy.
+- **Bad migration:** roll the code back, then write a new migration that undoes it. For real data damage use Neon point-in-time restore (into a new branch first, so you can compare). Before a risky migration, create a Neon branch `before-<change>`.
+- **Leaked secret:** set a new value on **both** Render and Vercel and redeploy. Everyone logs in again.
 
-**A bad migration**: the migrations are forward-only. Options, safest first:
+## 7. Operating notes
 
-1. Roll the code back (above). Because migrations are backward compatible, the old code works on the new schema.
-2. Write a new migration that undoes the change (`npm run db:generate`, review, commit, deploy).
-3. Restore the data with Neon: **Branches, Restore** (point-in-time). Pick a time just before the bad change. Neon can restore in place, or create a new branch from that time so you can compare first (recommended). If you restore in place, the sales taken after that time are lost, so only do it for real data damage, and write down what was lost.
+- The first request after a quiet period is slower (Neon and the free Render plan both sleep).
+- Day and month boundaries always use Asia/Dhaka. Do not set a `TZ` variable.
+- Logs contain error names only. Look in Render **Logs** (API), Vercel **Logs** (web) and Neon **Monitoring**.
+- `login_attempts` grows slowly. Old rows can be cleared: `delete from login_attempts where created_at < now() - interval '30 days';`
 
-**Before any risky migration**, make a restore point: in Neon create a branch from `main` named `before-<change>`. It is instant. Delete it a week later.
+## 8. The owner forgot the admin PIN
 
-**A leaked or wrong `SESSION_SECRET`**: set a new value in Vercel and redeploy. Everyone has to log in again.
-
-## 8. Operating notes (what to watch)
-
-- **First request after quiet time is slower.** Neon suspends an idle database (the free plan after about 5 minutes) and Vercel functions start cold, so the first screen after a long gap can take a second or two. This is normal. A paid Neon plan can disable auto-suspend.
-- **Dates are Dhaka time.** Vercel runs in UTC, but day and month boundaries in the code always use Asia/Dhaka (UTC+6). Do not set a `TZ` variable.
-- **Logs:** the app logs only an error name (never a message, query, PIN, URL, or cookie). If you see `getClientIp` messages in the Vercel logs, login is being refused because no client IP header arrived.
-- **Where to look when something fails:** Vercel, **Logs** (filter by Error), and for the database Neon, **Monitoring**.
-- **The `login_attempts` table grows slowly** (one row per login try). It is safe to clear old rows from the Neon SQL editor, for example `delete from login_attempts where created_at < now() - interval '30 days';`.
-
-## 8b. The owner forgot the admin PIN
-
-There is no recovery inside the app (by design). You reset it from your computer, against the database you mean to change (check the endpoint id it prints):
-
-PowerShell:
+There is no recovery inside the app, by design. From your computer (check the endpoint id it prints):
 
 ```powershell
 $env:DIRECT_URL = "<direct string of main>"
@@ -156,15 +120,4 @@ npm run admin:reset-pin
 Remove-Item Env:DIRECT_URL, Env:NEW_ADMIN_PIN
 ```
 
-Bash: `DIRECT_URL=... NEW_ADMIN_PIN=... npm run admin:reset-pin`. Every existing admin session stops working. Tell the owner the new PIN in person, not in a chat message, and ask them to change it in Settings.
-
-## 9. Command summary
-
-| What | Command |
-|---|---|
-| Generate a migration after editing `src/db/schema.ts` | `npm run db:generate` (then read the SQL) |
-| Apply migrations to the database in `DIRECT_URL` | `npm run db:migrate` |
-| Reset a forgotten admin PIN | `npm run admin:reset-pin` (see section 8b) |
-| Seed the first menu, barbers and credentials | `npm run db:seed` (see section 3 for the variables) |
-| Check the code before you push | `npm run typecheck && npm run lint && npm test && npm run build` |
-| Browser tests (separate Neon branch, never `main`) | `npm run test:e2e` |
+Existing admin sessions stop working. Tell the owner the PIN in person and ask them to change it in Settings.

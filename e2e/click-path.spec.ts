@@ -27,7 +27,6 @@ test.beforeEach(async () => {
 // ---------- login and unlock ----------
 
 test("unlock with the connection lost: a Bangla message on the form, not the crash page", async ({ page, context }) => {
-  test.fail(true, "BUG CP-01: the rejected action is rethrown to the error boundary");
   await page.goto("/unlock");
   await page.getByLabel("দোকানের কোড").fill(shopCode());
   const go = page.getByRole("button", { name: "চালু করুন" });
@@ -38,7 +37,6 @@ test("unlock with the connection lost: a Bangla message on the form, not the cra
 });
 
 test("admin login with the connection lost: a Bangla message on the form, not the crash page", async ({ page, context }) => {
-  test.fail(true, "BUG CP-01: the rejected action is rethrown to the error boundary");
   await page.goto("/admin/login");
   await page.getByLabel("এডমিন পিন").fill(adminPin());
   const go = page.getByRole("button", { name: "লগইন" });
@@ -130,7 +128,6 @@ test("the server answers with an error page (database down): a Bangla message, t
 });
 
 test("device no longer unlocked while a cart is open: the barber is sent to unlock, not told to enter the ADMIN pin", async ({ page, context }) => {
-  test.fail(true, "BUG CP-03: the session was lost; the barber gets a connection message or an admin-PIN message");
   await unlockShop(page);
   await pickBarber(page, "Rahim");
   await addService(page, "Hair Cutting");
@@ -142,7 +139,6 @@ test("device no longer unlocked while a cart is open: the barber is sent to unlo
 // ---------- admin forms ----------
 
 test("PIN change with the connection lost: the admin sees a Bangla message", async ({ page, context }) => {
-  test.fail(true, "BUG CP-02: no try/catch and no busy flag in the PIN form");
   await adminReady(page);
   await page.getByRole("link", { name: "সেটিংস" }).first().click();
   await page.getByLabel("বর্তমান পিন").fill(adminPin());
@@ -153,19 +149,17 @@ test("PIN change with the connection lost: the admin sees a Bangla message", asy
   await expect(page.getByText(NET)).toBeVisible();
 });
 
-test("an expired admin session in a form sends you to login (or says so), not a 'connection problem'", async ({ page, context }) => {
-  test.fail(true, "BUG CP-04: an expired session looks like a network error and the user is not sent to login");
+test("an expired admin session in a form says to log in again, not a 'connection problem'", async ({ page, context }) => {
   await adminReady(page);
   await page.getByRole("link", { name: "নাপিত", exact: true }).first().click();
   await page.getByRole("button", { name: "নতুন নাপিত" }).click();
   await page.getByLabel("নাম").fill("Temp Barber");
   await context.clearCookies(); // the session expires while the dialog is open
   await page.getByRole("button", { name: "সেভ করুন" }).click();
-  await expect(page).toHaveURL(/\/admin\/login/, { timeout: 8_000 });
+  await expect(page.getByText("আবার এডমিন পিন দিয়ে ঢুকুন")).toBeVisible({ timeout: 8_000 });
 });
 
 test("backup download with an expired admin session must not save a login page as the backup", async ({ page, context }) => {
-  test.fail(true, "BUG CP-05: the anchor download saves whatever the redirect returns");
   await adminReady(page);
   await page.getByRole("link", { name: "সেটিংস" }).first().click();
   const button = page.getByRole("button", { name: "ব্যাকআপ ডাউনলোড" });
@@ -196,8 +190,8 @@ test("logout leaves the device unlocked for barbers, and the admin area asks for
   await adminReady(page);
   await page.getByRole("button", { name: "লগআউট" }).click();
   await expect(page).toHaveURL(/\/admin\/login/);
-  await page.goto("/");
-  await expect(page).toHaveURL(/\/$/); // not bounced to /unlock: the device is still unlocked
+  await page.goto("/pos");
+  await expect(page).toHaveURL(/\/pos$/); // not bounced to /unlock: the device is still unlocked
   await page.goto("/admin");
   await expect(page).toHaveURL(/\/admin\/login/);
 });
@@ -206,7 +200,7 @@ test("logout leaves the device unlocked for barbers, and the admin area asks for
 
 test("every internal link on the barber and admin screens leads to a real page", async ({ page }) => {
   await unlockShop(page);
-  const hrefs = new Set<string>(["/"]);
+  const hrefs = new Set<string>(["/pos"]);
   const collect = async () => {
     for (const h of await page.locator("a[href^='/']").evaluateAll((as) => as.map((a) => (a as HTMLAnchorElement).getAttribute("href")!))) {
       hrefs.add(h);

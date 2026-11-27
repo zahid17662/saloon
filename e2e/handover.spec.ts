@@ -18,8 +18,6 @@ test.beforeEach(async () => {
 });
 
 test("a full working day: 3 barbers, 15 sales, 2 voids, 1 payout; every screen matches the hand-calculated numbers", async ({ page }, testInfo) => {
-  // On a phone the sales page is wider than the screen, so the void dialog's buttons cannot be reached.
-  test.fail(testInfo.project.name === "mobile-375", "BUG CP-12: /admin/sales is wider than a 375 px phone (sr-only header cell)");
   await addBarber("Salim", 45); // Rahim 50 %, Karim 40 %, Salim 45 % (half-up rounding matters here)
 
   // One sale goes through the real barber screen (Karim: 150 + 100 + 50 = 300).
@@ -113,7 +111,7 @@ test("a full working day: 3 barbers, 15 sales, 2 voids, 1 payout; every screen m
   await expect(page.getByRole("row", { name: /Hair Wash/ })).toContainText(tk(350));
 
   // The barber's own screen: today's customers and earnings (payouts do not reduce "earned today").
-  await page.goto("/");
+  await page.goto("/pos");
   await pickBarber(page, "Salim");
   const line = page.getByText(/জন কাস্টমার/).first();
   await expect(line).toContainText(`আজ ${bn(4)} জন`);
@@ -135,19 +133,19 @@ test("changing the shop code signs a second device out; the old code stops worki
   const second = await other.newPage();
   try {
     await unlockShop(second); // the second device is a barber's phone
-    await second.goto("/");
-    await expect(second).toHaveURL(/\/$/);
+    await second.goto("/pos");
+    await expect(second).toHaveURL(/\/pos$/);
 
     await adminReady(page); // the owner's device
     await changeCode(page, NEW);
 
-    await second.goto("/"); // the barber's phone is now signed out
+    await second.goto("/pos"); // the barber's phone is now signed out
     await expect(second).toHaveURL(/\/unlock/);
     await second.goto("/barber/1");
     await expect(second).toHaveURL(/\/unlock/);
 
-    await page.goto("/"); // the owner's own device stays unlocked
-    await expect(page).toHaveURL(/\/$/);
+    await page.goto("/pos"); // the owner's own device stays unlocked
+    await expect(page).toHaveURL(/\/pos$/);
 
     await second.goto("/unlock");
     await second.getByLabel("দোকানের কোড").fill(old); // the old code no longer works
@@ -157,7 +155,7 @@ test("changing the shop code signs a second device out; the old code stops worki
     await expect(second).toHaveURL(/\/unlock/);
     await second.getByLabel("দোকানের কোড").fill(NEW);
     await second.getByRole("button", { name: "চালু করুন" }).click();
-    await expect(second).toHaveURL(/\/$/);
+    await expect(second).toHaveURL(/\/pos$/);
   } finally {
     await changeCode(page, old); // leave the shared E2E database as the other specs expect it
     await other.close();
@@ -166,7 +164,7 @@ test("changing the shop code signs a second device out; the old code stops worki
 
 test("a device that was never unlocked cannot open the barber pages or a receipt (§12-11)", async ({ page }) => {
   const id = await seedSale({ barber: "Rahim", items: [C] });
-  for (const path of ["/", "/barber/1", `/receipt/${id}`]) {
+  for (const path of ["/pos", "/barber/1", `/receipt/${id}`]) {
     await page.goto(path);
     await expect(page, path).toHaveURL(/\/unlock/);
   }
@@ -191,7 +189,7 @@ test("price change, then reprint of the old receipt: still the old price, and Pr
   await expect(dialog).toBeHidden();
 
   // A new sale uses the new price...
-  await page.goto("/");
+  await page.goto("/pos");
   await pickBarber(page, "Rahim");
   await addService(page, "Hair Cutting");
   await page.getByRole("button", { name: "সেভ", exact: true }).click();
@@ -311,8 +309,7 @@ test("the Dhaka day boundary: 23:50 on the 30th and 00:10 on the 31st land on di
   await expect(page.locator("tfoot").first()).toContainText(tk(250));
 });
 
-test("no admin page is wider than the screen (no sideways page scroll on a phone)", async ({ page }, testInfo) => {
-  test.fail(testInfo.project.name === "mobile-375", "BUG CP-12: /admin (grid track) and /admin/sales (sr-only cell) overflow a 375 px phone");
+test("no admin page is wider than the screen (no sideways page scroll on a phone)", async ({ page }) => {
   await seedSale({ barber: "Rahim", items: [C, B] });
   await seedSale({ barber: "Karim", items: [W] });
   await adminReady(page);
@@ -328,7 +325,6 @@ test("no admin page is wider than the screen (no sideways page scroll on a phone
 });
 
 test("typing a start date after the end date keeps the date pickers on screen so it can be corrected", async ({ page }) => {
-  test.fail(true, "BUG CP-11: the error replaces the whole reports page, including the date pickers");
   await adminReady(page);
   await page.goto("/admin/reports");
   await page.getByRole("group", { name: "সময়সীমা" }).getByRole("button", { name: "কাস্টম" }).click();

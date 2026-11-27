@@ -1,5 +1,12 @@
 # Bug log
 
+## Fixed on 2026-11-27 (not committed yet)
+
+The rows further down describe the state when each was found. Fixed since: CP-01, CP-02, CP-03, CP-04, CP-05, CP-06, CP-07, CP-08, CP-11, CP-12, S-006, A-07, B-016.
+The staff screens are behind the shop code again (regression tests in `Server/src/server/security.test.ts`).
+CP-04 now shows "log in again" in the form; it does not redirect by itself.
+The browser tests were updated to match but have not been run since these changes.
+
 Verification run: 2026-11-23, branch `main`, Windows 11, Node via npm. Nothing was fixed during this run.
 
 ## Command results

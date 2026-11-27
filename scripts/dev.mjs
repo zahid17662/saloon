@@ -36,11 +36,10 @@ function pipePrefixed(stream, prefix, target) {
 }
 
 function start(name, args) {
-  const cmd = process.platform === "win32" ? "npm.cmd" : "npm";
-  const child = spawn(cmd, args, {
-    stdio: ["ignore", "pipe", "pipe"],
-    shell: process.platform === "win32",
-  });
+  const isWin = process.platform === "win32";
+  const child = isWin
+    ? spawn("cmd.exe", ["/d", "/s", "/c", "npm", ...args], { stdio: ["ignore", "pipe", "pipe"] })
+    : spawn("npm", args, { stdio: ["ignore", "pipe", "pipe"] });
   procs.push(child);
   pipePrefixed(child.stdout, `[${name}]`, process.stdout);
   pipePrefixed(child.stderr, `[${name}]`, process.stderr);
@@ -55,5 +54,5 @@ function start(name, args) {
 process.on("SIGINT", () => killAll(0));
 process.on("SIGTERM", () => killAll(0));
 
-start("api", ["run", "dev", "--prefix", "Server"]);
-start("web", ["run", "dev", "--prefix", "Client"]);
+start("api", ["run", "dev", "-w", "Server"]);
+start("web", ["run", "dev", "-w", "Client"]);

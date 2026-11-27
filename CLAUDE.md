@@ -7,10 +7,10 @@ The single source of truth is **`docs/PRD.md`**. Read §0 (status), §6 (busines
 ## Stack
 Next.js 16.4 (App Router, Turbopack) · React 19 · Tailwind v4 (`@theme` tokens in `Client/src/app/globals.css`) · TypeScript strict · **Drizzle ORM** + **Neon Postgres** (`@neondatabase/serverless`, `drizzle-orm/neon-serverless` Pool) · Vitest · Vercel (region `sin1`).
 
-This is a dev **meta-repo** of two independent packages (no npm workspaces; each has its own `package-lock.json` and `node_modules`), published to two GitHub repos with `npm run publish:split`:
-- `Client/` → `saloon_software_frontend`, the Next.js app on **Vercel**. It has no DB code: Server Actions and pages call the backend through `Client/src/lib/api.ts` only.
-- `Server/` → `saloon_software_backend`, a **Hono API on Render** (`src/http/`) that owns all business logic, auth and Neon access. `POST /rpc/<name>` with `Authorization: Bearer API_KEY`; callable actions are listed in `Server/src/http/registry.ts`.
-- `Client/src/shared/lib/*` are generated copies of pure helpers from `Server/src/lib/*` (`npm run sync:shared`; `npm run check:shared` in Client fails when stale). Never edit the copies.
+An **npm workspaces monorepo** (one root `package-lock.json`; run commands from the root):
+- `Client/`: the Next.js app on **Vercel** (Root Directory `Client`). The public website is `/` (`src/app/(site)/`, `src/site/`, English, static, never calls the API; it and the POS each have their own root layout); the POS is under `src/app/(pos)/` (`/pos`, `/admin`). It has no DB code: Server Actions and pages call the API through `Client/src/lib/api.ts` only.
+- `Server/`: a **Hono API on Render** (`src/http/`, root `render.yaml`) that owns all business logic, auth and Neon access. `POST /rpc/<name>` with `Authorization: Bearer API_KEY`; callable actions are listed in `Server/src/http/registry.ts`.
+- `Client/src/shared/lib/*` are generated copies of pure helpers from `Server/src/lib/*` (`npm run sync:shared`; `npm run check:shared -w Client` fails when stale). Never edit the copies.
 - `API_KEY` and `SESSION_SECRET` must be identical on Vercel and Render.
 
 ## Next.js 16 is different from your training data
@@ -26,7 +26,7 @@ This is a dev **meta-repo** of two independent packages (no npm workspaces; each
 - Day and month boundaries use **Asia/Dhaka (UTC+6)**; see `Server/src/lib/time.ts`. Store `timestamptz`.
 - Every sale has an idempotency key (unique index), so a double-tap never creates two sales.
 - A barber can void their own sale within 10 minutes. The admin can void anything, with a reason. A payout can be deleted within 24 h.
-- All UI text is **Bangla**. Numbers shown in the UI use `bnDigits` / `taka`.
+- All POS UI text is **Bangla**; numbers shown there use `bnDigits` / `taka`. The public website (`Client/src/site/`) is English.
 
 ## Code layout
 - `Server/src/db/schema.ts` holds the tables, `Server/src/db/index.ts` holds `db`, and `Server/src/db/migrations/` holds the generated SQL (commit it; never edit an applied migration).

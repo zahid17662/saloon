@@ -18,7 +18,7 @@ export async function unlockShop(page: Page): Promise<void> {
   const go = page.getByRole("button", { name: "চালু করুন" });
   await expect(go).toBeEnabled(); // waits for the form to be ready
   await go.click();
-  await expect(page).toHaveURL(/\/$/);
+  await expect(page).toHaveURL(/\/pos$/);
 }
 
 export async function pickBarber(page: Page, name: string): Promise<void> {

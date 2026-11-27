@@ -1,28 +1,38 @@
 {
   "name": "salon-software",
   "private": true,
-  "version": "0.1.0",
-  "description": "Dev meta-repo. Client/ deploys to Vercel (frontend repo), Server/ deploys to Render (backend repo). Each is an independent package; there are no npm workspaces.",
+  "version": "0.2.0",
+  "description": "Nir Smart Gents Parlour: public website + salon POS. npm workspaces monorepo: Client/ (Next.js web app, Vercel) and Server/ (Hono API, Render).",
+  "workspaces": [
+    "Client",
+    "Server"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
   "scripts": {
-    "install:all": "npm install --prefix Client && npm install --prefix Server",
     "dev": "node scripts/dev.mjs",
-    "dev:api": "npm run dev --prefix Server",
-    "dev:web": "npm run dev --prefix Client",
-    "typecheck": "npm run typecheck --prefix Client && npm run typecheck --prefix Server",
-    "lint": "npm run lint --prefix Client",
-    "test": "npm test --prefix Server && npm test --prefix Client",
-    "build": "npm run build --prefix Client",
-    "db:generate": "npm run db:generate --prefix Server",
-    "db:migrate": "npm run db:migrate --prefix Server",
-    "db:seed": "npm run db:seed --prefix Server",
-    "sync:shared": "npm run sync:shared --prefix Client",
-    "publish:split": "node scripts/publish-split.mjs",
+    "dev:api": "npm run dev -w Server",
+    "dev:web": "npm run dev -w Client",
+    "build": "npm run build -w Client",
+    "start:api": "npm start -w Server",
+    "start:web": "npm start -w Client",
+    "typecheck": "npm run typecheck -w Client && npm run typecheck -w Server",
+    "lint": "npm run lint -w Client",
+    "test": "npm test -w Server && npm run check:shared -w Client && npm test -w Client",
+    "check": "npm run typecheck && npm run lint && npm test && npm run build",
+    "db:generate": "npm run db:generate -w Server",
+    "db:migrate": "npm run db:migrate -w Server",
+    "db:seed": "npm run db:seed -w Server",
+    "db:studio": "npm run db:studio -w Server",
+    "admin:reset-pin": "npm run admin:reset-pin -w Server",
+    "sync:shared": "npm run sync:shared -w Client",
     "test:e2e": "playwright test",
     "e2e:init": "node scripts/e2e-init.mjs"
   },
   "devDependencies": {
+    "@neondatabase/serverless": "^1.2.1",
     "@playwright/test": "^1.65.1",
-    "dotenv": "^18.0.10",
-    "@neondatabase/serverless": "^1.2.1"
+    "dotenv": "^18.0.10"
   }
 }

@@ -37,14 +37,14 @@ export default defineConfig({
     {
       // The API talks to the dedicated E2E database (DATABASE_URL and SESSION_SECRET come from
       // Client/.env.test via loadE2eEnv above).
-      command: "npm start --prefix Server",
+      command: "npm start -w Server",
       url: `http://localhost:${API_PORT}/health`,
       timeout: 120_000,
       reuseExistingServer: false,
       env: { PORT: String(API_PORT), API_KEY, TRUST_PROXY_HEADERS: "1", NODE_ENV: "production" },
     },
     {
-      command: "npm run build --prefix Client && npm start --prefix Client",
+      command: "npm run build -w Client && npm start -w Client",
       url: `http://localhost:${PORT}/unlock`,
       timeout: 300_000,
       reuseExistingServer: false,
