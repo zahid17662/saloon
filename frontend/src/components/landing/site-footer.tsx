@@ -1,9 +1,16 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Logo } from "../logo";
-import { PhoneIcon, PinIcon } from "../icons";
+import { FacebookIcon, MailIcon, PhoneIcon, PinIcon, WhatsAppIcon } from "../icons";
 import { bnDigits } from "@/lib/money";
 import type { PublicMenu } from "@/lib/types";
+
+// Developer credit contacts.
+const ELORIS = [
+  { label: "Eloris Labs-কে ইমেইল", href: "mailto:elorislabs444@gmail.com", Icon: MailIcon },
+  { label: "Eloris Labs-কে WhatsApp", href: "https://wa.me/8801828255113", Icon: WhatsAppIcon },
+  { label: "Eloris Labs Facebook", href: "https://www.facebook.com/share/19p2Yd2HA6/", Icon: FacebookIcon },
+] as const;
 
 const QUICK = [
   { href: "/book", label: "বুক করুন" },
@@ -109,14 +116,31 @@ export function SiteFooter({ menu, name }: { menu: PublicMenu; name: string }) {
           <p className="text-center text-xs sm:text-left">
             © {bnDigits(new Date().getFullYear())} {name}। সর্বস্বত্ব সংরক্ষিত।
           </p>
-          <div className="inline-flex items-center gap-3 rounded-full border border-white/15 bg-white/[0.06] py-1.5 pr-5 pl-1.5">
-            <span className="flex h-9 w-9 flex-none items-center justify-center rounded-full bg-white">
-              <Image src="/eloris-labs.png" alt="" width={24} height={24} className="h-6 w-6" />
-            </span>
-            <span className="leading-tight">
-              <span className="block text-[10px] tracking-[0.22em] text-white/50 uppercase">Developed by</span>
-              <span className="font-display block text-sm font-semibold tracking-wide text-white">Eloris Labs</span>
-            </span>
+          <div className="flex flex-col items-center gap-3 sm:items-end">
+            <div className="inline-flex items-center gap-3 rounded-full border border-white/15 bg-white/[0.06] py-1.5 pr-5 pl-1.5">
+              <span className="flex h-9 w-9 flex-none items-center justify-center rounded-full bg-white">
+                <Image src="/eloris-labs.png" alt="" width={24} height={24} className="h-6 w-6" />
+              </span>
+              <span className="leading-tight">
+                <span className="block text-[10px] tracking-[0.22em] text-white/50 uppercase">Developed by</span>
+                <span className="font-display block text-sm font-semibold tracking-wide text-white">Eloris Labs</span>
+              </span>
+            </div>
+            <ul className="flex items-center gap-2.5">
+              {ELORIS.map(({ label, href, Icon }) => (
+                <li key={href}>
+                  <a
+                    href={href}
+                    aria-label={label}
+                    title={label}
+                    {...(href.startsWith("http") ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+                    className="flex h-11 w-11 items-center justify-center rounded-full border border-white/15 bg-white/[0.06] text-white/75 transition-colors hover:border-gold/60 hover:bg-white/10 hover:text-gold active:scale-95 sm:h-9 sm:w-9"
+                  >
+                    <Icon className="h-[18px] w-[18px]" />
+                  </a>
+                </li>
+              ))}
+            </ul>
           </div>
         </div>
       </div>
