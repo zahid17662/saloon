@@ -155,3 +155,8 @@ export const CloseIcon = ({ className }: P) => (
     <path d="M6 6l12 12M18 6L6 18" />
   </svg>
 );
+export const NextIcon = ({ className }: P) => (
+  <svg {...base} className={className}>
+    <path d="M9 18l6-6-6-6" />
+  </svg>
+);
