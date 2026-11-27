@@ -38,7 +38,7 @@
   --color-mint: #eaf6f0;
 
   --font-sans: var(--font-latin), var(--font-bn), ui-sans-serif, system-ui, sans-serif;
-  --font-serif-bn: var(--font-bn-serif), var(--font-bn), serif;
+  --font-serif-hero: var(--font-hero-serif), "Times New Roman", serif;
   --font-display: var(--font-display-latin), var(--font-bn), ui-sans-serif, system-ui, sans-serif;
 
   --shadow-card: 0 1px 2px rgb(16 29 67 / 0.04), 0 10px 28px -10px rgb(16 29 67 / 0.14);

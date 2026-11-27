@@ -50,28 +50,28 @@ export function Landing({ menu }: { menu: PublicMenu | null }) {
           <div aria-hidden="true" className="absolute inset-x-0 bottom-0 -z-10 h-px bg-gradient-to-r from-transparent via-gold/70 to-transparent" />
 
           <div className="mx-auto w-full max-w-6xl px-4 pt-16 pb-9">
-            <p className="flex items-center gap-3 text-xs font-semibold text-gold">
+            <p className="flex items-center gap-3 text-[11px] font-semibold tracking-[0.32em] text-gold uppercase">
               <span aria-hidden="true" className="h-px w-8 bg-gold" />
-              জেন্টস পার্লার · সাভার
+              Gents Parlour · Savar
             </p>
-            <h1 id="hero-h" className="font-serif-bn mt-3 text-[2rem] leading-[1.3] font-bold text-white sm:text-5xl sm:leading-[1.25]">
-              ভালো দেখুন,
+            <h1 id="hero-h" className="font-serif-hero mt-4 text-[2.5rem] leading-[1.1] font-semibold text-white sm:text-6xl">
+              Timeless Style,
               <br />
-              <span className="text-gold">আত্মবিশ্বাসী থাকুন</span>
+              <span className="font-medium text-gold italic">Modern Confidence</span>
             </h1>
-            <p className="mt-3 max-w-md text-sm leading-relaxed text-white/75">ওয়াক-ইন স্বাগত। অনলাইনে সিরিয়াল নিন, অথবা আগাম বুকিং করুন।</p>
+            <p className="mt-4 max-w-md text-sm leading-relaxed text-white/75">Walk-ins welcome. Join the queue online or reserve your visit in advance.</p>
             <div className="mt-6 flex items-center gap-3">
               <Link
                 href="/book"
                 className="inline-flex h-12 items-center rounded-full bg-gold px-7 font-bold text-primary shadow-[0_8px_24px_-8px_rgb(214_173_67/0.6)] transition-transform hover:-translate-y-0.5"
               >
-                বুক করুন
+                Book Now
               </Link>
               <a
                 href="#services"
                 className="inline-flex h-12 items-center rounded-full border border-white/25 bg-white/10 px-6 text-sm font-semibold text-white backdrop-blur-sm transition-colors hover:bg-white/20"
               >
-                সেবা দেখুন
+                Our Services
               </a>
             </div>
           </div>

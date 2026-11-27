@@ -23,7 +23,7 @@ export function SiteFooter({ menu, name }: { menu: PublicMenu; name: string }) {
               <Logo size={46} />
               <div>
                 <div className="font-display text-sm font-semibold tracking-[0.08em] text-white">{name}</div>
-                <div className="text-xs text-gold">ভালো দেখুন, আত্মবিশ্বাসী থাকুন</div>
+                <div className="text-xs text-gold">Timeless style, modern confidence</div>
               </div>
             </div>
             <div className="mt-5 space-y-2.5 text-sm">

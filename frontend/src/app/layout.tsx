@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Noto_Sans_Bengali, Noto_Serif_Bengali, Outfit, Poppins } from "next/font/google";
+import { Noto_Sans_Bengali, Playfair_Display, Outfit, Poppins } from "next/font/google";
 import { connection } from "next/server";
 import { CatalogBoundary } from "@/components/catalog-boundary";
 import { fetchShopName } from "@/lib/shop-name";
@@ -26,11 +26,12 @@ const bangla = Noto_Sans_Bengali({
   weight: ["400", "500", "600", "700", "800"],
 });
 
-// Elegant Bangla serif, used for the home hero headline only.
-const banglaSerif = Noto_Serif_Bengali({
-  variable: "--font-bn-serif",
-  subsets: ["bengali"],
-  weight: ["600", "700"],
+// Classic high-contrast serif, used for the home hero headline only.
+const heroSerif = Playfair_Display({
+  variable: "--font-hero-serif",
+  subsets: ["latin"],
+  weight: ["500", "600", "700"],
+  style: ["normal", "italic"],
 });
 
 const FALLBACK_TITLE = "সেলুন হিসাব";
@@ -51,7 +52,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="bn" className={`${latin.variable} ${display.variable} ${bangla.variable} ${banglaSerif.variable} h-full antialiased`}>
+    <html lang="bn" className={`${latin.variable} ${display.variable} ${bangla.variable} ${heroSerif.variable} h-full antialiased`}>
       <body className="min-h-full font-sans">
         <CatalogBoundary>{children}</CatalogBoundary>
       </body>
