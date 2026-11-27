@@ -80,14 +80,14 @@ export function Landing({ menu }: { menu: PublicMenu | null }) {
         <div className="mx-auto max-w-6xl space-y-12 px-4 pt-10 pb-14">
           <section id="services" aria-labelledby="services-h" className="scroll-mt-24">
             <h2 id="services-h" className={h2}>
-              সেবা
+              Our Services
             </h2>
             <Services menu={menu} />
           </section>
 
           <section id="trending" aria-labelledby="trending-h" className="scroll-mt-24">
             <h2 id="trending-h" className={h2}>
-              জনপ্রিয় সেবা
+              Trending Services
             </h2>
             <Trending menu={menu} />
           </section>
