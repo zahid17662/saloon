@@ -25,7 +25,7 @@ export function SiteHeader({ name }: { name: string }) {
         </span>
 
         <Link
-          href="/book"
+          href="/#services"
           className="inline-flex h-10 flex-none items-center rounded-full bg-primary px-5 text-sm font-semibold whitespace-nowrap text-gold transition-colors hover:bg-primary-hover max-sm:ml-auto desk:hidden"
         >
           বুক করুন

@@ -53,7 +53,7 @@ export function DeskMenu({ items }: { items: readonly DeskNavItem[] }) {
             ))}
           </nav>
           <Link
-            href="/book"
+            href="/#services"
             onClick={() => setOpen(false)}
             className="mt-2 flex h-11 items-center justify-center rounded-full bg-primary text-sm font-semibold text-gold transition-colors hover:bg-primary-hover"
           >

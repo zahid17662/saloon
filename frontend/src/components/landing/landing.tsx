@@ -62,16 +62,16 @@ export function Landing({ menu }: { menu: PublicMenu | null }) {
             <p className="mt-4 max-w-md text-sm leading-relaxed text-white/75">Walk-ins welcome. Join the queue online or reserve your visit in advance.</p>
             <div className="mt-6 flex items-center gap-3">
               <Link
-                href="/book"
+                href="#services"
                 className="inline-flex h-12 items-center rounded-full bg-gold px-7 font-bold text-primary shadow-[0_8px_24px_-8px_rgb(214_173_67/0.6)] transition-transform hover:-translate-y-0.5"
               >
                 Book Now
               </Link>
               <a
-                href="#services"
+                href="#location"
                 className="inline-flex h-12 items-center rounded-full border border-white/25 bg-white/10 px-6 text-sm font-semibold text-white backdrop-blur-sm transition-colors hover:bg-white/20"
               >
-                Our Services
+                Find Us
               </a>
             </div>
           </div>
