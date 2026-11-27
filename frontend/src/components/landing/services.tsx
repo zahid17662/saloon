@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { taka } from "@/lib/money";
@@ -9,17 +9,46 @@ import type { PublicMenu } from "@/lib/types";
 import { BackIcon } from "../icons";
 import { ServicePhoto } from "../service-photo";
 
+export const SHOW_ALL_SERVICES = "show-all-services";
+
+function ServiceCard({ s }: { s: PublicMenu["services"][number] }) {
+  return (
+    <Link
+      href={`/book?service=${s.id}`}
+      className="group flex h-full flex-col rounded-3xl bg-surface p-2.5 shadow-card ring-1 ring-primary/5 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lift"
+    >
+      <span className="relative block aspect-[16/10] w-full overflow-hidden rounded-2xl bg-gradient-to-br from-primary-soft to-white">
+        <ServicePhoto name={s.name} />
+      </span>
+      <span className="mt-2.5 block px-1 text-[15px] leading-snug font-semibold break-words text-fg">{s.name}</span>
+      <span className="mt-auto flex items-center justify-between gap-2 px-1 pt-1 pb-0.5">
+        <span className="text-base leading-none font-bold text-gold-ink tabular-nums">{taka(s.price)}</span>
+        <span aria-hidden="true" className="rounded-full bg-primary-soft px-2.5 py-1 text-xs font-semibold text-primary transition-colors group-hover:bg-primary group-hover:text-gold">
+          বুক
+        </span>
+      </span>
+    </Link>
+  );
+}
+
 /** Categories as photo tiles; opening one shows that category's services, like the shop screen. */
 export function Services({ menu }: { menu: PublicMenu }) {
   const groups = menu.categories
     .map((c) => ({ ...c, items: menu.services.filter((s) => s.categoryId === c.id) }))
     .filter((g) => g.items.length > 0);
-  const [open, setOpen] = useState<number | null>(null);
+  const [open, setOpen] = useState<number | "all" | null>(null);
   const cur = groups.find((g) => g.id === open);
+
+  // The "সব সেবা দেখুন" button in Trending asks for the full list.
+  useEffect(() => {
+    const showAll = () => setOpen("all");
+    window.addEventListener(SHOW_ALL_SERVICES, showAll);
+    return () => window.removeEventListener(SHOW_ALL_SERVICES, showAll);
+  }, []);
 
   if (groups.length === 0) return <p className="py-6 text-center text-sm text-muted">সেবার তালিকা শীঘ্রই যোগ হবে।</p>;
 
-  if (!cur) {
+  if (open === null) {
     return (
       <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
         {groups.map((g) => (
@@ -48,37 +77,54 @@ export function Services({ menu }: { menu: PublicMenu }) {
     );
   }
 
+  const back = (
+    <button
+      onClick={() => setOpen(null)}
+      className="inline-flex h-9 items-center gap-1.5 rounded-full px-3 text-sm font-medium text-primary transition-colors hover:bg-primary-soft"
+    >
+      <BackIcon className="h-4 w-4" />
+      সব ক্যাটাগরি
+    </button>
+  );
+
+  if (open === "all") {
+    return (
+      <div>
+        <div className="mb-4 flex items-center gap-3">
+          {back}
+          <span className="text-sm font-semibold text-fg">সব সেবা</span>
+        </div>
+        <div className="space-y-7">
+          {groups.map((g) => (
+            <div key={g.id}>
+              <h3 className="mb-3 text-[11px] font-semibold tracking-[0.14em] text-muted uppercase">{g.name}</h3>
+              <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+                {g.items.map((s) => (
+                  <li key={s.id}>
+                    <ServiceCard s={s} />
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (!cur) return null;
+
   return (
     <div>
       <div className="mb-4 flex items-center gap-3">
-        <button
-          onClick={() => setOpen(null)}
-          className="inline-flex h-9 items-center gap-1.5 rounded-full px-3 text-sm font-medium text-primary transition-colors hover:bg-primary-soft"
-        >
-          <BackIcon className="h-4 w-4" />
-          সব ক্যাটাগরি
-        </button>
+        {back}
         <span className="text-sm font-semibold text-fg">{cur.name}</span>
       </div>
 
       <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
         {cur.items.map((s) => (
           <li key={s.id}>
-            <Link
-              href={`/book?service=${s.id}`}
-              className="group flex h-full flex-col rounded-3xl bg-surface p-2.5 shadow-card ring-1 ring-primary/5 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lift"
-            >
-              <span className="relative block aspect-[16/10] w-full overflow-hidden rounded-2xl bg-gradient-to-br from-primary-soft to-white">
-                <ServicePhoto name={s.name} />
-              </span>
-              <span className="mt-2.5 block px-1 text-[15px] leading-snug font-semibold break-words text-fg">{s.name}</span>
-              <span className="mt-auto flex items-center justify-between gap-2 px-1 pt-1 pb-0.5">
-                <span className="text-base leading-none font-bold text-gold-ink tabular-nums">{taka(s.price)}</span>
-                <span aria-hidden="true" className="rounded-full bg-primary-soft px-2.5 py-1 text-xs font-semibold text-primary transition-colors group-hover:bg-primary group-hover:text-gold">
-                  বুক
-                </span>
-              </span>
-            </Link>
+            <ServiceCard s={s} />
           </li>
         ))}
       </ul>

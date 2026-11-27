@@ -7,6 +7,7 @@ import type { PublicMenu } from "@/lib/types";
 import { BackIcon, NextIcon } from "../icons";
 import { cx } from "../ui";
 import { ServicePhoto } from "../service-photo";
+import { SHOW_ALL_SERVICES } from "./services";
 
 /**
  * A short, hand-picked row of services the shop wants to show first: one from each category,
@@ -81,12 +82,16 @@ export function Trending({ menu }: { menu: PublicMenu }) {
       </ul>
 
       <div className="mt-6 flex items-center justify-center gap-4">
-        <a
-          href="#services"
+        <button
+          type="button"
+          onClick={() => {
+            window.dispatchEvent(new Event(SHOW_ALL_SERVICES));
+            document.getElementById("services")?.scrollIntoView({ behavior: "smooth", block: "start" });
+          }}
           className="inline-flex h-12 items-center rounded-xl border border-primary px-7 text-sm font-semibold text-primary transition-colors hover:bg-primary hover:text-gold"
         >
           সব সেবা দেখুন
-        </a>
+        </button>
         <div className="flex items-center gap-2.5">
           <button
             type="button"
