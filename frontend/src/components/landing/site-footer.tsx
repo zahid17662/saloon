@@ -22,7 +22,7 @@ const QUICK = [
 export function SiteFooter({ menu, name }: { menu: PublicMenu; name: string }) {
   const { shop } = menu;
   return (
-    <footer className="border-t border-line bg-primary text-white/70 pb-[calc(3.5rem+env(safe-area-inset-bottom))] lg:pb-0">
+    <footer className="border-t border-line bg-primary text-white/70 pb-[calc(3.5rem+env(safe-area-inset-bottom))] desk:pb-0">
       <div className="mx-auto max-w-6xl px-4 py-10 sm:py-12">
         <div className="grid gap-8 sm:grid-cols-2 sm:gap-10 lg:grid-cols-4">
           <div>

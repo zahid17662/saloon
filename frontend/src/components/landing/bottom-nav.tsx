@@ -36,7 +36,7 @@ export function BottomNav() {
   return (
     <nav
       aria-label="নিচের মেনু"
-      className="fixed inset-x-0 bottom-0 z-30 border-t border-line bg-surface/95 pb-[env(safe-area-inset-bottom)] backdrop-blur lg:hidden"
+      className="fixed inset-x-0 bottom-0 z-30 border-t border-line bg-surface/95 pb-[env(safe-area-inset-bottom)] backdrop-blur desk:hidden"
     >
       <ul className="mx-auto grid max-w-md grid-cols-4">
         {ANCHORS.map(({ id, label, Icon }) => {

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Logo } from "../logo";
 import { PinIcon } from "../icons";
+import { DeskMenu } from "./desk-menu";
 
 const NAV = [
   { href: "#services", label: "সেবা" },
@@ -18,25 +19,19 @@ export function SiteHeader({ name }: { name: string }) {
           <span className="font-display truncate text-sm font-semibold tracking-[0.08em] text-fg sm:text-base">{name}</span>
         </Link>
 
-        <nav aria-label="প্রধান মেনু" className="ml-6 hidden flex-1 items-center gap-7 lg:flex">
-          {NAV.map((n) => (
-            <Link key={n.href} href={n.href} className="text-sm font-medium text-muted transition-colors hover:text-primary">
-              {n.label}
-            </Link>
-          ))}
-        </nav>
-
-        <span className="ml-auto hidden items-center gap-1.5 rounded-full bg-primary-soft px-3.5 py-2 text-xs font-semibold text-primary sm:inline-flex">
+        <span className="ml-auto hidden items-center gap-1.5 rounded-full bg-primary-soft px-3.5 py-2 text-xs font-semibold text-primary sm:inline-flex desk:hidden">
           <PinIcon className="h-3.5 w-3.5" />
           সাভার
         </span>
 
         <Link
           href="/book"
-          className="inline-flex h-10 flex-none items-center rounded-full bg-primary px-5 text-sm font-semibold whitespace-nowrap text-gold transition-colors hover:bg-primary-hover max-sm:ml-auto"
+          className="inline-flex h-10 flex-none items-center rounded-full bg-primary px-5 text-sm font-semibold whitespace-nowrap text-gold transition-colors hover:bg-primary-hover max-sm:ml-auto desk:hidden"
         >
           বুক করুন
         </Link>
+
+        <DeskMenu items={NAV} />
       </div>
     </header>
   );

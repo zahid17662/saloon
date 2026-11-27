@@ -3,6 +3,9 @@
 /*
  * Barbershop theme: deep navy and gold on a warm ivory canvas. Keep it quiet: one dark colour, one accent.
  */
+/* Wide screens (and phones in "desktop site" mode, ~980px): hamburger header, no bottom bar. */
+@custom-variant desk (@media (min-width: 56.25rem));
+
 @theme {
   /* Surfaces: ivory canvas, white cards, warm lines */
   --color-bg: #f7f6f1;

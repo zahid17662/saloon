@@ -144,3 +144,14 @@ export const FacebookIcon = ({ className }: P) => (
     <path d="M13.5 22v-8.2h2.8l.5-3.3h-3.3V8.4c0-.95.4-1.7 1.8-1.7h1.6V3.8c-.3 0-1.3-.15-2.4-.15-2.5 0-4.1 1.5-4.1 4.2v2.65H7.6v3.3h2.8V22h3.1Z" />
   </svg>
 );
+
+export const MenuIcon = ({ className }: P) => (
+  <svg {...base} className={className}>
+    <path d="M4 7h16M4 12h16M4 17h16" />
+  </svg>
+);
+export const CloseIcon = ({ className }: P) => (
+  <svg {...base} className={className}>
+    <path d="M6 6l12 12M18 6L6 18" />
+  </svg>
+);
