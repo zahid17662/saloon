@@ -17,20 +17,21 @@ export function SiteFooter({ menu, name }: { menu: PublicMenu; name: string }) {
   return (
     <footer className="border-t border-line bg-primary text-white/70 pb-[calc(3.5rem+env(safe-area-inset-bottom))] lg:pb-0">
       <div className="mx-auto max-w-6xl px-4 py-10 sm:py-12">
-        <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
-          <div className="lg:col-span-1">
+        <div className="grid gap-8 sm:grid-cols-2 sm:gap-10 lg:grid-cols-4">
+          <div>
             <div className="flex items-center gap-3">
               <Logo size={46} />
-              <div>
-                <div className="font-display text-sm font-semibold tracking-[0.08em] text-white">{name}</div>
+              <div className="min-w-0">
+                <div className="font-display text-sm font-semibold tracking-[0.08em] break-words text-white">{name}</div>
                 <div className="text-xs text-gold">Timeless style, modern confidence</div>
               </div>
             </div>
-            <div className="mt-5 space-y-2.5 text-sm">
+
+            <div className="mt-5 divide-y divide-white/10 rounded-2xl border border-white/10 bg-white/[0.05] text-sm sm:bg-transparent sm:border-0 sm:divide-y-0 sm:space-y-2.5 sm:rounded-none">
               {shop.address && (
-                <p className="flex items-start gap-2">
+                <p className="flex items-start gap-3 p-4 sm:p-0">
                   <PinIcon className="mt-0.5 h-4 w-4 flex-none text-gold" />
-                  <span>
+                  <span className="min-w-0 break-words">
                     {shop.address}
                     <br />
                     সাভার, ঢাকা
@@ -38,38 +39,55 @@ export function SiteFooter({ menu, name }: { menu: PublicMenu; name: string }) {
                 </p>
               )}
               {shop.phone && (
-                <p className="flex items-center gap-2">
+                <p className="flex items-center gap-3 p-4 sm:p-0">
                   <PhoneIcon className="h-4 w-4 flex-none text-gold" />
-                  <a href={`tel:${shop.phone}`} className="transition-colors hover:text-white">{bnDigits(shop.phone)}</a>
+                  <a href={`tel:${shop.phone}`} className="text-white transition-colors sm:text-inherit sm:hover:text-white">{bnDigits(shop.phone)}</a>
                 </p>
               )}
+              <p className="flex items-center justify-between gap-3 p-4 sm:hidden">
+                <span>প্রতিদিন খোলা</span>
+                <span className="font-medium text-white">সকাল ১০টা – রাত ৯টা</span>
+              </p>
+            </div>
+
+            {shop.phone && (
+              <div className="mt-4 grid grid-cols-2 gap-3 sm:hidden">
+                <a href={`tel:${shop.phone}`} className="inline-flex h-12 items-center justify-center rounded-full bg-gold text-sm font-bold text-primary active:scale-[0.98]">
+                  ফোন করুন
+                </a>
+                <Link href="/book" className="inline-flex h-12 items-center justify-center rounded-full border border-white/25 text-sm font-semibold text-white active:scale-[0.98]">
+                  বুক করুন
+                </Link>
+              </div>
+            )}
+          </div>
+
+          <div className="grid grid-cols-2 gap-6 sm:contents">
+            <div>
+              <h3 className="text-sm font-semibold text-gold">সেবা</h3>
+              <ul className="mt-2 sm:mt-3">
+                {menu.categories.slice(0, 6).map((c) => (
+                  <li key={c.id}>
+                    <Link href="#services" className="flex min-h-11 items-center text-sm transition-colors hover:text-white">{c.name}</Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <div>
+              <h3 className="text-sm font-semibold text-gold">দ্রুত লিংক</h3>
+              <ul className="mt-2 sm:mt-3">
+                {QUICK.map((q) => (
+                  <li key={q.href}>
+                    <Link href={q.href} className="flex min-h-11 items-center text-sm transition-colors hover:text-white">{q.label}</Link>
+                  </li>
+                ))}
+              </ul>
             </div>
           </div>
 
-          <div>
-            <h3 className="text-xs font-semibold tracking-[0.2em] text-gold uppercase">সেবা</h3>
-            <ul className="mt-4 space-y-2.5 text-sm">
-              {menu.categories.slice(0, 6).map((c) => (
-                <li key={c.id}>
-                  <Link href="#services" className="transition-colors hover:text-white">{c.name}</Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          <div>
-            <h3 className="text-xs font-semibold tracking-[0.2em] text-gold uppercase">দ্রুত লিংক</h3>
-            <ul className="mt-4 space-y-2.5 text-sm">
-              {QUICK.map((q) => (
-                <li key={q.href}>
-                  <Link href={q.href} className="transition-colors hover:text-white">{q.label}</Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          <div>
-            <h3 className="text-xs font-semibold tracking-[0.2em] text-gold uppercase">খোলার সময়</h3>
+          <div className="hidden sm:block">
+            <h3 className="text-sm font-semibold text-gold">খোলার সময়</h3>
             <dl className="mt-4 space-y-2.5 text-sm">
               <div className="flex justify-between gap-4">
                 <dt>প্রতিদিন</dt>
